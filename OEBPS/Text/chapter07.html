@@ -1,0 +1,919 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 7</h1>
+ <h2 align="center">Predefined Object Procs</h2>
+
+<a name="ObjectProcChapter">
+
+<p>
+</p><blockquote>  That which is the dark night of all beings, for the disciplined
+  man is the time of waking; when worldly people are working the enlightened
+  sage is unaware of the material waking.
+</blockquote>
+<center>--Bhagavat Gita</center>
+
+<p>
+Just as there are a number of pre-defined variables defining the properties
+of objects, there are also pre-defined procs that control how the objects
+behave in certain situations.  A programmer would call many of these
+<em>event handlers</em>, because they define how the object responds to
+various events.
+</p><p>
+Some of the pre-defined procedures don't do anything at all but exist solely
+for the purpose of allowing you to override them with your own definition.
+Such empty procedures are often called <em>hooks</em> because they provide a
+place for you to attach your own handler for an event.  However, in DM, not
+just the hooks, but all other object procedures as well are available to be
+redefined and customized to suit your own needs.
+</p></a><p><a name="ObjectProcChapter">
+</a><a name="7.1">
+</a></p>
+<h3><a name="7.1">1. Movement Procs</a></h3>
+<a name="7.1">
+</a><a name="MovementProcs">
+
+<p>
+Both mobs and objs are capable of movement (though mobs are usually the only
+ones to do it of their own volition).  You have already seen how the density
+variable restricts movement: no two dense objects may occupy the same
+position.  This rule, among others, is enforced by the various movement
+procs.
+</p><p>
+Note that movement is not restricted to positions on the map.  Objects can
+move inside of each other as well.  For example, when a mob picks up a
+sword, the sword moves from the map into the mob.  The sword could then be
+moved into a bag object for safe keeping.  Any change of location, whether
+it be on the map or inside other objects, is considered a movement.
+</p></a><p><a name="MovementProcs">
+</a><a name="7.1.1">
+</a></p>
+<h4><a name="7.1.1">1.1 <var>Enter</var></a></h4>
+<a name="7.1.1">
+
+<p>
+The <var>Enter</var> proc is defined for all four object types.  It returns 1
+if the specified object may enter the source and 0 if not.  If the object
+entering is dense and there is already a dense object at the location,
+entrance will be refused.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Enter</var> </td>
+<td> (O) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>O</code> is the object entering. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>src</code> is the location being entered. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>usr</code> is the entering mob if any. 
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Suppose you introduced a magic spell that made people intangible (i.e.
+non-dense) and able to walk through walls.  You might still want some walls
+to be impenetrable.  This could be easily accomplished by overriding the
+<var>Enter</var> proc.
+</p><p>
+
+</p><pre>turf/lead_wall
+   name = "lead wall"
+   Enter(O)
+      return 0 //none may enter here
+</pre>
+</a><p><a name="7.1.1">
+</a><a name="7.1.2">
+</a></p>
+<h4><a name="7.1.2">1.2 <var>Exit</var></a></h4>
+<a name="7.1.2">
+
+<p>
+The <var>Exit</var> proc is the counterpart to <var>Enter</var>.  It returns 1
+if the specified object may exit the source and 0 if not.  By default, exits
+are always allowed.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Exit</var> </td>
+<td> (O) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>O</code> is the object exiting. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>src</code> is the location being exited. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>usr</code> is the exiting mob if any. 
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+By redefining this proc, one could make a nasty trap.
+</p><p>
+
+</p><pre>turf/pit/Exit(O)
+   O &lt;&lt; "You are stuck in [src]!"
+</pre>
+</a><p><a name="7.1.2">
+</a><a name="7.1.3">
+</a></p>
+<h4><a name="7.1.3">1.3 <var>Bump</var></a></h4>
+<a name="7.1.3">
+
+<p>
+The <var>Bump</var> proc is called when movement fails because of a dense
+blockage.  If the mob trying to move happens to be in the group list of the
+mob who was in the way, the two will swap positions.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Bump</var> </td>
+<td> (Blockage) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Blockage</code> is the object in the way. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>src</code> is the object who was blocked. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>usr</code> is the mob who was blocked if any.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This proc could be overridden to also include the rule that all players,
+regardless of group membership, will swap positions.
+</p><p>
+
+</p><pre>mob/Bump(mob/M)
+   if(istype(M) &amp;&amp; M.key &amp;&amp; src.key)
+      var/pos = M.loc
+      M.loc = usr.loc
+      usr.loc = pos
+   else ..()
+</pre>
+<p>
+
+</p><p>
+The <var>istype()</var> instruction is used to determine if the value
+contained by a variable is indeed of the same type as the variable.  Here we
+use it to see if the blockage is really a mob.  It could also have been
+spelled out like this: <code>istype(M,/mob)</code>.
+</p><p>
+If the blockage is a mob and if both mobs in question have keys, their
+positions are swapped.  Instead of directly assigning the mobs to their new
+positions, you might want to make one of them non-dense and do a proper
+movement.  How and why you would do that is described next.
+</p></a><p><a name="7.1.3">
+</a><a name="7.1.4">
+</a></p>
+<h4><a name="7.1.4">1.4 <var>Move</var></a></h4>
+<a name="7.1.4">
+
+<p>
+The <var>Move</var> proc is the one which ties all the other movement procs
+together.  It calls the <var>Enter</var> proc of the destination.  If this
+fails, it calls <var>Bump</var>.  Otherwise, the <var>Exit</var> proc of the
+original location is called next and finally, if that succeeds, the source
+is assigned to the new location.  The return value is 1 on success and 0 on
+failure.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Move</var> </td>
+<td> (Dest,Dir) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Dest</code> is the destination location. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Dir</code> is the direction of movement. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>src</code> is the object moving. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>usr</code> is the mob who is moving (if any). 
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+
+</p><p>
+The direction parameter need not be specified.  It is relevant to one more
+thing that the <var>Move</var> proc handles, which is changing the direction
+the object that moved is facing.  If the direction argument is specified, it
+will be used as the new direction to face; otherwise it will be computed
+from the relative positions of the original and final locations.
+</p><p>
+The other movement procs are not usually called directly.  The <var>Move</var>
+proc, on the other hand, can be useful if you want an object to move in
+accordance with all the movement rules.  Directly assigning the object to a
+location bypasses all such density checking, bumping, and direction changing.
+</p><p>
+You could, for example, make a magic scroll that would teleport the spell
+caster to any open position in view.
+</p><p>
+
+</p><pre>obj/scroll/teleport
+   verb/teleport(T as turf)
+      set src = usr.contents
+      if(!usr.Move(T)) usr &lt;&lt; "You cannot move there!"
+      else view() &lt;&lt; "[usr] dances through the ethers!"
+</pre>
+</a><p><a name="7.1.4">
+There is much more to say on the subject of movement.  For example, one
+might want to make NPC mobs walk around without mindlessly bumping into
+obstacles.  Many useful movement instructions and techniques will be discussed
+in section </a><a href="../../C%3A/Users/trist/Desktop/chap14.html#MovementInstructions">14.2</a>.
+</p>
+<p>
+<a name="7.2">
+</a></p>
+<h3><a name="7.2">2. Object Creation and Destruction</a></h3>
+<a name="7.2">
+</a><a name="NewDel">
+
+<p>
+You have already seen examples using the instructions <var>new</var> and
+<var>del</var>.  These are used to create or destroy objects.  Another way of
+creating objects is to place them on the initial map using the map editor.
+When the world is finally shut down, any objects that remain are destroyed
+at that time.  Since you might want to do some special action when an object
+is created or destroyed, DM provides procs to handle these events.
+</p></a><p><a name="NewDel">
+</a><a name="7.2.1">
+</a></p>
+<h4><a name="7.2.1">2.1 <var>New</var> proc</a></h4>
+<a name="7.2.1">
+
+<p>
+The <var>New</var> proc is called when an object has been created.  It may be
+used to do any special initializations required by the object.  By default,
+it doesn't do anything.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>New</var> </td>
+<td> (Loc) </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Loc</code> is the initial position of the object.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+When an object is created with <var>new</var>, the location and any additional
+arguments you define are passed in at that time.  The syntax for doing so is:
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>new</var> </td>
+<td> Type(Loc,...) </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Type</code> is the type of object to create. </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Loc</code> is the initial position of the object. </td>
+</tr>
+<tr><td>
+             </td>
+<td> ... contains any additional arguments.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Note that the object is created at the initial position.  It doesn't move
+there--it just gets directly assigned to the location.  If no initial
+position is specified, the object's location is <var>null</var>, which means
+it won't show up on the map.
+</p><p>
+As an example, one could make an object that plays a sound when created.
+</p><p>
+
+</p><pre>obj/portal
+   New()
+      view() &lt;&lt; "A shimmering portal appears!"
+      view() &lt;&lt; 'portal.wav'
+mob/DM
+   verb
+      make_portal(NewName as text)
+         var/obj/portal/P = new/obj/portal(usr.loc)
+         if(NewName) P.name = NewName
+</pre>
+<p>
+The use of <var>new</var> here is very common.  We declared a variable,
+assigned it to a new object, and made additional modifications through the
+variable.  In this case a useful abbreviation can be applied.  The variable
+being assigned has the same type as the new object being created.  Instead
+of specifying the redundant type information, it can simply be left out.  In
+that case, the call would be <code>new(usr.loc)</code> instead.  Also note that
+in the example above, space is optional between <var>new</var> and
+<code>/obj/portal</code>.
+</p><p>
+The same example can be redesigned to pass the new name in as a parameter.
+</p><p>
+
+</p><pre>obj/portal
+   New(Loc,Name)
+      if(Name) name = Name
+      view() &lt;&lt; "A shimmering portal appears!"
+      view() &lt;&lt; 'portal.wav'
+mob/DM
+   make_portal(Name as text)
+      new/obj/portal(usr.loc,Name)
+</pre>
+<p>
+The choice of whether to pass such information as a parameter to
+<var>New</var> or whether to perform the assignments elsewhere depends on how
+often you will be doing that same configuration task.  One time when you
+would want to use parameters to <var>New</var> is if you wish to handle the
+information differently in derived objects.  Then you could simply override
+the <var>New</var> proc in those cases.
+</p></a><p><a name="7.2.1">
+</a><a name="7.2.2">
+</a></p>
+<h4><a name="7.2.2">2.2 <var>Del</var> proc</a></h4>
+<a name="7.2.2">
+
+<p>
+The <var>Del</var> proc is called to destroy an object.  By default, this
+causes the contents of an obj or mob to be dumped to its location.  A player
+using the mob will be disconnected from the world.  Any additional cleanup
+can be handled in your own redefinition of the <var>Del</var> proc.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Del</var>()
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This proc can be called directly or it can be called by using the
+<var>del</var> command.  The advantage of the <var>del</var> instruction is you
+don't need to have the type of the object declared as you do to call the
+<var>Del</var> sub-procedure.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>del</var> </td>
+<td>  Object </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Object</code> is the object to destroy.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+
+</p></a><p><a name="7.2.2">
+When an object is deleted, any existing references to it are set to
+<var>null</var>.  Therefore, if you have a variable referring to an object that
+could have been deleted, you should check to make sure it isn't
+<var>null</var> before trying to access any of the object's variables or
+procedures.  If you don't, your proc will crash.  Debugging techniques
+related to this issue will be discussed in section </a><a href="../../C%3A/Users/trist/Desktop/chap19.html#Debugging">19.3.2</a>.
+</p>
+<p>
+A very simply example of <var>Del</var> would make an object play a little
+death tune.
+</p>
+<p>
+
+</p>
+<pre>mob/Del()
+   view() &lt;&lt; 'death.wav'
+   ..()
+</pre>
+<p>
+It is important to remember to call the parent proc, since it performs the
+actual deletion.
+</p>
+<p>
+In practice, it is usually best to define a second proc (say <code>Die</code>) that
+handles a real death and reserve <var>Del</var>() for the abstract business of
+deleting the object.  That way (for example) you can remove player mobs when
+they are not in use by saving them to a file and then deleting them.  You
+probably wouldn't want them to appear to die each time they log off!
+</p>
+<p>
+
+</p>
+<pre>obj/corpse
+   icon = 'corpse.dmi'
+mob
+   var/corpse = /obj/corpse
+   proc/Die()
+      if(corpse) new corpse(loc)
+      src &lt;&lt; "See you around!"
+      del src
+</pre>
+<p>
+With this definition, we would call <code>mob.Die()</code> when we want a mob to die.
+By default, that just creates a corpse and deletes the mob.  That behavior
+could easily be overridden for different types of mobs.  For example, you
+might want players to remain connected but be penalized in some way.
+</p>
+<p>
+<a name="7.2.3">
+</a></p>
+<h4><a name="7.2.3">2.3 Areas and Rooms</a></h4>
+<a name="7.2.3">
+
+<p>
+The creation and deletion of areas are handled somewhat specially.  When the
+same area is placed in several positions, the actual area object is only
+created once.  <var>New()</var> is only called the first time the area is
+created.  From then on, new positions are simply marked as part of the
+existing area.
+</p><p>
+It is also possible to create areas that are not on the map.  These are
+called <em>rooms</em> and may be used as locations for any number of other
+objects.  (Note that density is ignored in rooms; it only applies to objects
+on the map.)
+</p><p>
+Rooms can be created with <var>new</var> by not specifying a location (or by
+passing <var>null</var>).  Another even easier way is to define the area but
+never place it on the map.  When you access the area at run-time, the room
+will be automatically created.
+</p><p>
+You could, for example, create a special room for players to enter when they
+die where they can do penance and meditate on the sins of their previous
+life.
+</p><p>
+
+</p><pre>area/Purgatory
+   Enter()
+      usr &lt;&lt; "Welcome to [src]."
+      return ..()
+
+mob/proc
+   Die()
+      if(key) //players
+         loc = locate(/area/Purgatory)
+      else    //NPCs
+         del src
+</pre>
+<p>
+You would probably also want to provide a way out, since the patience of
+players who have just suffered a gruesome death is often rather thin.  A
+verb that teleports them back to the land of the living would do the trick.
+In both cases, the <var>locate</var> instruction is useful for getting a
+reference to the destination.
+</p></a><p><a name="7.2.3">
+</a><a name="7.3">
+</a></p>
+<h3><a name="7.3">3. <var>Stat</var> proc</a></h3>
+<a name="7.3">
+</a><a name="StatProc">
+
+<p>
+The <var>Stat</var> proc is used to display information about an object in
+some panels on the player's screen.  These are called the <em>stats</em>.  By
+default, the player only sees the stats of her own mob, but the designer
+could provide facilities for the player to see the stats of other objects.
+</p><p>
+
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Stat</var> </td>
+<td> () </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>src</code> is the object being viewed. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>usr</code> is the mob of the player viewing.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Each stat panel consists of a number of lines.  The lines each have an
+optional name and a corresponding value which is displayed next to it.  To
+generate a line of output in the stat panel, one uses the <var>stat</var>
+instruction.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>stat</var> </td>
+<td> (Name,Value) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Name</code> is the optional name of the line. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Value</code> is the value to display.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example generates a typical panel of player stats.
+</p><p>
+
+</p><pre>mob/Stat()
+   stat("description",desc)
+   stat("")  //blank line
+   stat("strength",strength)
+   stat("health",health)
+   stat("odor",odor)
+</pre>
+<p>
+To provide structure to the stats, a second instruction, <var>statpanel</var>,
+provides the ability to create multiple panels.  It takes the name of a
+panel and an optional stat line to display.  If no stat line is specified,
+the given panel becomes the default panel for subsequent output.  If no call
+to <var>statpanel</var> is made, the default panel simply has the name "" (an
+empty text string).
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>statpanel</var> </td>
+<td> (Panel,Name,Value) </td>
+</tr>
+<tr><td>
+                   </td>
+<td> <code>Panel</code> is the name of the panel. </td>
+</tr>
+<tr><td>
+                   </td>
+<td> <code>Name</code> and <code>Value</code> are the same as for <var>stat</var>(). </td>
+</tr>
+<tr><td>
+                   </td>
+<td> Returns true if panel is currently visible to player.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+One final nuance is that you can pass an entire list of objects as the value
+for a stat, in which case the objects are displayed in a list to the
+player.  This is equivalent to looping through the list and generating an
+individual (unnamed) stat line for each item.  This feature is most often
+used with <var>statpanel</var> to create a separate panel for the list.
+</p><p>
+The following example displays the player's description as well as an
+inventory and group list.
+</p><p>
+
+</p><pre>mob/Stat()
+   stat(desc)
+   statpanel("Inventory",usr.contents)
+   statpanel("Group",usr.group)
+</pre>
+</a><p><a name="StatProc">
+One additional nicety would be to avoid generating the inventory and group
+panels if their contents are blank.  You could accomplish that by checking
+<var>usr.contents.len</var>, a variable indicating the length of the list.
+This and other list details will be discussed in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap10.html#ListChapter">10</a>.
+</p>
+<p>
+The following example shows the framework for generating a typical
+multi-panel stat display.
+</p>
+<p>
+
+</p>
+<pre>mob/Stat()
+   if(statpanel("Stats"))
+      stat("health",health)
+      stat("strength",strength)
+   if(statpanel("Description"))
+      stat("appearance",desc)
+      stat("race",race)
+   statpanel("Inventory",contents)
+</pre>
+<p>
+Notice the use of <var>statpanel()</var> in a conditional statement, making
+use of the fact that this procedure returns true only when the specified
+panel is visible to the player.  This is not strictly necessary but it is
+more efficient, because it doesn't bother to fill panels that aren't visible
+to the player.  Since the <var>Stat</var> proc may be called quite frequently
+to update the stats display, it is good to avoid extra overhead when
+possible.
+</p>
+<p>
+<a name="7.4">
+</a></p>
+<h3><a name="7.4">4. <var>Click</var> and <var>DblClick</var></a></h3>
+<a name="7.4">
+</a><a name="ObjectClick">
+
+</a><p><a name="ObjectClick">
+The <var>Click</var> proc is called when the player clicks an object, and the
+<var>DblClick</var> proc is called by double-clicking.  By default, nothing
+happens, so these procedures exist merely as hooks for your own use.  More
+will be said about them in section </a><a href="../../C%3A/Users/trist/Desktop/chap09.html#ClientClick">9.2.2</a>.
+</p>
+<p>
+</p>
+<table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Click</var> (Panel) </td>
+</tr>
+<tr><td>
+<var>DblClick</var> </td>
+<td> (Panel) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Panel</code> is the stat panel name.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p>
+<p>
+The object may be clicked on the map or in the stat panels.  If it was on
+the map, the panel argument is <var>null</var>.
+</p>
+<p>
+The following example uses clicking to play sounds.
+</p>
+<p>
+
+</p>
+<pre>obj/instrument
+  var/melody
+  piano
+    melody = 'entertainer.wav'
+  trumpet
+    melody = 'jazzy.wav'
+  Click()
+    usr &lt;&lt; melody // play them tunes!
+</pre>
+<p>
+<a name="7.5">
+</a></p>
+<h3><a name="7.5">5. <var>Login</var> and <var>Logout</var></a></h3>
+<a name="7.5">
+</a><a name="Login">
+
+<p>
+When a player connects to a mob, the mob's <var>Login</var>() proc is called.
+When the player disconnects from the mob, the <var>Logout</var>() proc is
+called.  Often, by the time <var>Logout</var>() is activated, the player is
+already disconnected.  However, you can call <var>Logout</var> yourself if you
+want to force a player to disconnect.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Login</var>() </td>
+</tr>
+<tr><td>
+<var>Logout</var>()
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+One common use of the <var>Login</var>() proc is to welcome players and place
+them at a starting location.  By default, <var>Login</var>() places the player
+at the first available opening on the map.
+</p><p>
+
+</p><pre>turf/landing_pad
+   name = "landing pad"
+mob/Login()
+   if(loc)  //reconnecting
+      usr &lt;&lt; "Welcome back, [name]."
+   else
+      usr &lt;&lt; "Welcome, [name]!"
+      loc = locate(/turf/landing_pad)
+</pre>
+<p>
+If there is a possibility of players reconnecting to existing mobs, it is
+best to check if the player is already at some location before making the
+initial placement as we have done here.  If, on the other hand, you don't
+want player mobs to be retained when players disconnect, you could remove
+them in the <var>Logout</var> proc.
+</p><p>
+
+</p><pre>mob/Logout()
+   del src
+</pre>
+</a><p><a name="Login">
+Alternately, you could just make the mob disappear by setting the location
+to <var>null</var>.  That is a quick and easy way to "save" players when
+they log out.  It won't, however, survive a shutdown of the world, which
+could happen if you need to reboot it after making code changes or (if there
+is a serious bug) the server crashes.  To handle cases like that, you need
+to use a save file, which will be discussed in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap12.html#SavefileChapter">12</a>.
+</p>
+<p>
+<a name="7.6">
+</a></p>
+<h3><a name="7.6">6. <var>Topic</var></a></h3>
+<a name="7.6">
+
+</a><a name="ObjectTopic">
+<p>
+An object's <var>Topic</var> proc is executed when the player clicks on a
+hyperlink that references that object.  A hyperlink is a clickable region in
+the output text (usually underlined) that causes some action to take place
+when it is selected.  In this case, the hyperlink is called a <em>topic</em>
+link because it contains information (called the topic) which the object may
+use to form a response.
+</p><p>
+First, you need to know how to embed a link to an object in some output
+text.  Since hyperlinks were popularized by the web, DM uses the same syntax
+as an HTML web document.  It is a little strange, but my mother always says
+an ounce of strangeness is better than a pound of competing syntaxes.  So
+following that wisdom, we use the HTML <em>anchor</em> tag &lt;A&gt; to form a
+hyperlink.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+"... </td>
+<td> &lt;A HREF=#<code>\ref</code>[Obj]<it>Topic</it>
+&gt; <u>click here</u> &lt;/A&gt; ..."</td>
+</tr>
+<tr><td>
+        </td>
+<td> <code>Obj</code> is the linked object. </td>
+</tr>
+<tr><td>
+        </td>
+<td> <code>Topic</code> is the link topic.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The code <code>\ref</code><code>[Obj]</code> is used to specify the object associated
+with the hyperlink.  This is followed by whatever text you need in order to
+identify this particular link from others to the same object.
+</p><p>
+The player, of course, doesn't see the scary looking stuff inside the
+&lt; &gt;'s.  All he has to do is click on the link to call the object's
+<var>Topic</var> proc with the hidden topic data.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Topic</var> </td>
+<td> (Topic) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Topic</code> is the link topic.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example uses topic links to form the skeleton for a
+conversational NPC.
+</p><p>
+
+</p></a><pre><a name="ObjectTopic">mob/Noah/Topic(Topic)
+   if(Topic == "weather")
+      usr &lt;&lt; "Looks a little </a><a href="#\ref[src]storm">stormy</a>."
+   if(Topic == "storm")
+      usr &lt;&lt; "I'd say about 40 days worth!"
+
+mob/Noah/verb/hello()
+   set src in view()
+   usr &lt;&lt; "Nice <a href="#\ref[src]weather">weather</a>, eh?"
+</pre>
+<p>
+Object topics are just one type of hyperlink.  More will be said on the
+subject in section <a href="../../C%3A/Users/trist/Desktop/chap09.html#ClientTopic">9.2.4</a> and chapter <a href="../../C%3A/Users/trist/Desktop/chap11.html#InputOutputChapter">11</a>.
+</p>
+<p>
+
+</p>
+</body>
+</html>

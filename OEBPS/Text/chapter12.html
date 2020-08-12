@@ -1,0 +1,952 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 12</h1>
+ <h2 align="center">Savefiles</h2>
+
+<a name="SavefileChapter">
+
+<p>
+</p><blockquote>  Life was like one of those many-storied houses of dreams where the
+  dreamer, with a slow or sudden rush of understanding like a wash of cool
+  water, knows himself to have been merely asleep and dreaming, to have
+  merely invented the pointless task; the dreamer awakes relieved in his own
+  bed and rises yawning, and has odd adventures, which go on until (with a
+  slow sudden rush of understanding) he awakes in this palace antechamber;
+  and so on and on.
+</blockquote>
+<center>--<i>John Crowley</i>, Little Big</center>
+
+<p>
+Savefiles are used to store information on the disk.  There are two reasons
+why this is usually done.  One is to store information about the world so
+that it can be shut down and rebooted (possibly with new code).  The saved
+information can then be loaded and the relevant aspects of the world
+restored to their previous state.
+</p><p>
+Another reason for using savefiles is to store information about players.
+Such player savefiles may be used to re-create their mobs when they log in
+or could even be transferred from one world to another along with the
+player.  In this way, a world could be distributed across several servers
+running in parallel.
+</p></a><p><a name="SavefileChapter">
+</a><a name="12.1">
+</a></p>
+<h3><a name="12.1">1. The <var>savefile</var> Object</a></h3>
+<a name="12.1">
+
+<p>
+The <var>savefile</var> data object provides control over a savefile on the
+disk.  It is another built-in object type in DM.  All data that is read from
+or written to the file goes through the <var>savefile</var> object.
+</p><p>
+To create a <var>savefile</var> object, the <var>new</var> instruction is used.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>new</var> </td>
+<td> /savefile(Name) </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Name</code> is the optional file name.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+If a file with the specified name already exists, it will be used by the
+<var>savefile</var>.  Otherwise, a new one is created.  If no name is
+specified, a unique temporary file will be created.
+</p><p>
+When the <var>savefile</var> object is deleted the specified file will
+remain.  It can be accessed at a later time by creating another
+<var>savefile</var> object with the same name.  Notice the difference between
+creating the object and creating the file.  Several savefile objects may be
+created to access the same physical file.  That file is only created once
+and lasts until it is explicitly removed.
+</p></a><p><a name="12.1">
+The only case in which this is not true is when no name was given and a
+temporary file was used.  In that case, the file is deleted along with the
+<var>savefile</var> object.  Such temporary savefiles may be useful when
+loading information from another world, as will be described in section
+</a><a href="#World2World">12.6</a>.
+</p>
+<p>
+<a name="12.2">
+</a></p>
+<h3><a name="12.2">2. Saving Players</a></h3>
+<a name="12.2">
+<p>
+The first case we shall consider is how to save a player when they log out
+and restore them when they log back in.  By doing that, you are free to
+delete their mob when they aren't around; it is just taking up memory and
+probably getting into mischief--best to put the avatar into suspended
+animation until the player returns.  Another practical reason is that you
+can freely reboot (or horror of horrors) crash the world without losing
+player information.  <small>(And if you make a backup of the savefile, you
+are "free" to crash your hard-drive too.  What fun!)</small>  
+</p><p>
+The mob <var>Write</var> proc is used to store information about a player and
+the <var>Read</var> proc is used to restore it.  These both take a savefile as
+an argument.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>object</it>
+.<var>Write</var> </td>
+<td> (F) </td>
+</tr>
+<tr><td>
+<it>object</it>
+.<var>Read</var>  </td>
+<td> (F) </td>
+</tr>
+<tr><td>
+                        </td>
+<td> <code>F</code> is the savefile.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+By default, the <var>Write</var> procedure stores the value of each object
+variable.  You will see later how to add additional information or how to
+control which variables are saved.
+</p><p>
+For now, let's just use the default <var>Read</var> and <var>Write</var> procs
+to save a player.  It can be done like this:
+</p><p>
+
+</p><pre>mob/Logout()
+   var/savefile/F = new(ckey)
+   Write(F)
+   del(src)
+
+mob/Login()
+   var/savefile/F = new(ckey)
+   Read(F)
+   return ..()
+</pre>
+<p>
+In this case, each player is saved in a separate file with the same name as
+their key.  To make sure it is a valid file name, we used ckey, the
+canonical form of the key, which is stripped of punctuation.  This is still
+guaranteed to be unique, so there is no fear of conflict.
+</p><p>
+You might be wondering what happens when a new player logs in.  Since they
+don't have a savefile, a new one will be created.  The <var>Read</var> proc,
+of course, will find this file to be empty and will therefore return without
+making any changes.
+</p><p>
+When an existing player logs in, on the other hand, each variable will be
+restored to the value it had when last saved.  Some of those variables may
+just be numbers or text.  Some, like the contents list, may be more
+complicated.  Those are handled too.  <small>(Gasp.  Or at least inhale
+with slight exaggeration.  Otherwise, you won't fully appreciate the
+sentence you just read.)</small>  
+</p></a><p><a name="12.2">
+</a><a name="12.2.1">
+</a></p>
+<h4><a name="12.2.1">2.1 tmp Variables</a></h4>
+<a name="12.2.1">
+
+<p>
+A few things are not saved.  For example, the mob's location is not
+restored.  That is because the location is a reference to an external object
+(like a turf).  If that value were written to the savefile, it would be
+treated just like an item in the contents list--the whole object would be
+written to the savefile.  That is certainly not what you want in the case of
+the mob's location.
+</p><p>
+Variables like <var>loc</var> are called temporary or transient variables,
+because their value is computed at run-time (when the mob is added to the
+contents list of a turf).  In some cases, temporary variables would just be
+wasting space in the savefile, but in others (like <var>loc</var>), it would
+be incorrect to save and restore them as though they were objects "belonging"
+to the player.
+</p><p>
+The <var>Write</var> proc already knows about the built-in temporary
+variables.  If you define any of your own, however, you need to mark them as
+such.  You do that with the <var>tmp</var> variable type modifier.  The syntax
+is just like <var>global</var> and <var>const</var>.
+</p><p>
+The following example defines some temporary variables that reference
+external objects.  We don't happen to want those objects (in this case other
+mobs) to be saved along with the player.  Since there is no way for the
+compiler to know that, we have to tell it by using the <var>tmp</var> flag.
+</p><p>
+
+</p><pre>mob
+   var/tmp
+      mob/leader
+      followers[]
+</pre>
+</a><p><a name="12.2.1">
+</a><a name="12.2.2">
+</a></p>
+<h4><a name="12.2.2">2.2 Overriding <var>Write</var> and <var>Read</var></a></h4>
+<a name="12.2.2">
+<p>
+In some cases, you might want to restore temporary variables when the player
+is loaded.  Take the case of the player's location.  You may not want it
+saved as an object but rather as a coordinate that can be restored when the
+player returns.
+</p><p>
+In other words, you want to save it by <em>reference</em> rather than by
+<em>value</em>.  The trick is, you have to find some sort of reference that
+will still be valid in the future--possibly even after you have recompiled
+and rebooted the world.  That is why the compiler leaves this sort of thing
+up to you: only you can decide how best to do it.
+</p><p>
+In this case, we will simply save the player's map coordinates.  The
+following example gets the job done, but you will see an even better way to
+do it later.
+</p><p>
+
+</p><pre>mob
+   var
+      saved_x
+      saved_y
+      saved_z
+
+   Write(savefile/F)
+      saved_x = x
+      saved_y = y
+      saved_z = z
+      ..() //store variables
+   Read(savefile/F)
+      ..() //restore variables
+      Move(locate(saved_x,saved_y,saved_z))
+</pre>
+<p>
+All we did was copy the player's coordinates into non-temporary variables
+before calling the default <var>Write</var> proc.  Then, when loading the
+player, we simply moved back to the same spot.
+</p><p>
+You are probably thinking it would be more efficient if you could just write
+the coordinates to the file yourself rather than making dummy variables for
+the purpose.  You are right.  Working directly with savefiles is next.
+</p></a><p><a name="12.2.2">
+</a><a name="12.3">
+</a></p>
+<h3><a name="12.3">3. The Structure of a Save File</a></h3>
+<a name="12.3">
+
+<p>
+The interior of a savefile is structured like a tree.  Each node in the tree
+has a data buffer and may also contain additional sub-nodes.  (A
+<em>buffer</em> is simply a sequence of stored values.)  Since the file-system
+is such a familiar analogy, we shall call the nodes <em>directories</em> and
+the top node in the savefile shall be called the <em>root</em>
+directory.  <small>(Yes, savefiles are upside-down trees just like the DM
+object tree.)</small>  
+</p><p>
+Do not be confused between savefile directories and file-system
+directories.  The savefile itself is just a single file.  The
+<var>savefile</var> object simply presents the contents of that file in the
+form of a hierarchical directory structure.  To distinguish between the two,
+one calls these <em>data</em> directories as opposed to <em>file</em>
+directories.
+</p><p>
+The purpose of all this is to allow you to organize information in a logical
+format.  For example, you could have a master savefile with a directory for
+each player.  Or different aspects of the world could be stored in different
+directories.  The freedom to organize things in such a manner is not merely
+esthetic; it determines what data can be saved and retrieved as a unit.  If
+everything were simply written in one continuous stream of data, the entire
+file would have to be read from the beginning in order to find, say, the
+information about a particular player.
+</p></a><p><a name="12.3">
+</a><a name="12.3.1">
+</a></p>
+<h4><a name="12.3.1">3.1 <var>cd</var> variable</a></h4>
+<a name="12.3.1">
+
+<p>
+The savefile variable <var>cd</var> contains the path of the current data
+directory within the savefile.  These paths are like DM object type paths
+except they are stored in a text string.  The root is a slash <code>"/"</code>,
+which also serves as the delimiter between directory names like this:
+<code>"/dir1/dir2"</code>.
+</p><p>
+By assigning <var>cd</var>, the current directory can be changed.  An absolute
+path may be specified (beginning with the root <code>"/"</code>) or a path
+relative to the current directory may be used.  The special path name
+<code>".."</code> may be used to represent the parent of the current directory.
+No matter how you assign it, the new value of <var>cd</var> will always be the
+resulting absolute path.
+</p><p>
+It is possible to change to a directory that does not exist.  If data is
+written to it, the new directory will be automatically created in the
+savefile.  Valid directory names are the same as node names in DM code;
+letters, digits, and the underscore may be used to any length.  They are case
+sensitive, so "KingDan" is different from "kingdan".
+</p></a><p><a name="12.3.1">
+</a><a name="12.3.2">
+</a></p>
+<h4><a name="12.3.2">3.2 <var>dir</var> variable</a></h4>
+<a name="12.3.2">
+
+<p>
+The <var>dir</var> savefile variable is a list of directory names inside the
+current directory.  An entire directory can be deleted by removing it from
+this list.  It is also commonly used to test for the existence of a
+directory.
+</p><p>
+In the following example, a check is made when players log in to see if they
+already exist in a master savefile.
+</p><p>
+
+</p><pre>var/savefile/SaveFile = new("players.sav")
+
+mob/Login()
+   SaveFile.cd = "/"  //make sure we are at the root
+   if(ckey in SaveFile.dir)
+      SaveFile.cd = ckey
+      Read(SaveFile)
+      usr &lt;&lt; "Welcome back, [name]!"
+   else
+      usr &lt;&lt; "Welcome, [name]!"
+   ..()
+</pre>
+<p>
+Note that we are using <var>ckey</var> as the unique data directory name for
+each player.
+</p></a><p><a name="12.3.2">
+</a><a name="12.4">
+</a></p>
+<h3><a name="12.4">4. Data Buffers</a></h3>
+<a name="12.4">
+</a><a name="ReadWrite">
+<p>
+Information in a savefile is stored in buffers.  These are sequential
+records of one or more values.  The term <em>sequential</em> or <em>serial</em>
+implies that values which are written in a particular order must be read
+back in that same order.  This is different from <em>random access</em> data
+which may be retrieved in any order (like items in a DM list object).  In a
+savefile, the directories are randomly accessed and the data within buffers
+is sequentially accessed.  The two methods each serve their own purpose.
+</p></a><p><a name="ReadWrite">
+</a><a name="12.4.1">
+</a></p>
+<h4><a name="12.4.1">4.1 File Input/Output</a></h4>
+<a name="12.4.1">
+
+<p>
+The <b>&lt;&lt;</b> operator places a value in a buffer and the
+<b>&gt;&gt;</b> operator reads a value from a buffer.  If no
+directory is specified, the buffer in the current directory is used.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>savefile</it>
+ </td>
+<td> <b>&lt;&lt;</b> <it>value</it>
+ </td>
+</tr>
+<tr><td>
+<it>savefile</it>
+ </td>
+<td> <b>&lt;&lt;</b> <it>variable</it>
+ </td>
+</tr>
+<tr><td>
+           </td>
+<td> Or </td>
+</tr>
+<tr><td colspan="2">
+<it>savefile</it>
+ <b>[}<code>"</code><it>directory</it><code>"</code><b></b></b> <b>&lt;&lt;</b> <it>value</it>
+ </td>
+</tr>
+<tr><td colspan="2">
+<it>savefile</it>
+ <b>[}<code>"</code><it>directory</it><code>"</code><b></b></b> <b>&gt;&gt;</b> <it>variable</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+When a directory is not specified, the current position in the buffer is
+accessed.  This position always starts at the beginning when the directory
+is entered (by setting <var>cd</var>).  Subsequent values are appended to the
+buffer as they are written.
+</p><p>
+When a directory is specified, the value written replaces any previous
+contents of the given directory.  This is equivalent to entering the
+directory, writing to it, returning to the previous directory, and restoring
+the position in the buffer.  An absolute or relative path may be used to
+specify the location of the directory.
+</p><p>
+We can now return to the problem of saving the player's coordinates.  Before,
+this had to be done using dummy variables.  Now it can be done directly.
+</p><p>
+
+</p><pre>mob/Write(savefile/F)
+   //store coordinates
+   F &lt;&lt; x
+   F &lt;&lt; y
+   F &lt;&lt; z
+   //store variables
+   ..()
+mob/Read(savefile/F)
+   var {saved_x; saved_y; saved_z}
+   //load coordinates
+   F &gt;&gt; saved_x
+   F &gt;&gt; saved_y
+   F &gt;&gt; saved_z
+   //restore variables
+   ..()
+   //restore coordinates
+   Move(locate(saved_x,saved_y,saved_z))
+</pre>
+<p>
+Ok, so we still had to define some dummy variables, but at least they are
+hidden in the <var>Read</var> proc rather than cluttering up the object
+definition.  That saves memory and, as it happens, it also saves space in
+the savefile, because we chose to write the coordinates sequentially into
+the same buffer rather than into three separately named buffers.
+</p></a><p><a name="12.4.1">
+</a><a name="12.4.2">
+</a></p>
+<h4><a name="12.4.2">4.2 Stored Variables</a></h4>
+<a name="12.4.2">
+<p>
+The way variables are normally stored is to make a separate directory for
+each one with the same name as the variable.  If you wanted complete control
+over the savefile format, you could do that yourself with something like the
+following code:
+</p><p>
+
+</p><pre>mob/Write(savefile/F)
+   F["name"]   &lt;&lt; name
+   F["gender"] &lt;&lt; gender
+   F["icon"]   &lt;&lt; icon
+mob/Read(savefile/F)
+   F["name"]   &gt;&gt; name
+   F["gender"] &gt;&gt; gender
+   F["icon"]   &gt;&gt; icon
+</pre>
+<p>
+The advantage of having each variable in its own directory is flexibility.
+In the future, you could add or remove variables and old savefiles would
+still work.  That saves you the headache of trying to maintain backwards
+compatibility in a single sequential buffer as items come and go.
+</p><p>
+On the other hand, values which will always be grouped together can be more
+efficiently saved in a single buffer.  That is how we handled the three map
+coordinates in the previous example.  There is less overhead, the fewer
+times you have to change directories.
+</p><p>
+
+</p><center><h3>Figure 12.23: Sample Savefile Format</h3></center>
+
+<table border="0" align="center">
+<tbody><tr><td>
+
+<b>Output Code</b> </td>
+<td> <b>Contents of <tt>players.sav</tt></b> </td>
+</tr>
+<tr><td>
+
+
+
+<pre>mob/Write(savefile/F)
+   F["name"] &lt;&lt; "Dan"
+   F["gender"] &lt;&lt; "male"
+   F["icon"] &lt;&lt; 'peasant.dmi'
+</pre>
+
+</td>
+<td>
+
+
+<pre>/dan
+   name   "Dan"
+   gender "male"
+   icon   'peasant.dmi'
+</pre>
+
+</td>
+</tr>
+<tr><td>
+
+
+
+<pre>mob/Write(savefile/F)
+   F &lt;&lt; "Dan"
+   F &lt;&lt; "male"
+   F &lt;&lt; 'peasant.dmi'
+</pre>
+
+</td>
+<td>
+
+
+<pre>/dan
+   "Dan",
+   "male",
+   'peasant.dmi'
+</pre>
+
+</td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+
+</a><p><a name="12.4.2">
+</a><a name="12.4.3">
+</a></p>
+<h4><a name="12.4.3">4.3 Data Directories</a></h4>
+<a name="12.4.3">
+<p>
+The notation introduced above for reading and writing to a specified
+directory works in general--not just on the left-hand side of the
+input/output operators <b>&lt;&lt;</b> and
+<b>&gt;&gt;</b>.  The syntax is a savefile followed by a
+directory path in square brackets.  This accesses the first value in the
+specified buffer and may be used in any expression, including assignments.
+It therefore behaves like a sort of permanent variable, which is a
+convenient device.
+</p></a><p><a name="12.4.3">
+</a><a name="12.4.4">
+</a></p>
+<h4><a name="12.4.4">4.4 Saving Objects</a></h4>
+<a name="12.4.4">
+<p>
+You may be wondering why we didn't use the <b>&lt;&lt;</b>
+operator to write players to a savefile.  Instead we have been calling the
+<var>Write</var> proc.  With minor modifications, we could have used
+<b>&lt;&lt;</b>.  In fact, <b>&lt;&lt;</b> internally
+calls <var>Write</var> when saving an object, so it would almost be the same.
+</p><p>
+The difference between directly calling <var>Write</var> verses using
+<b>&lt;&lt;</b> to save an object is in how the object will be
+recreated.  When <b>&gt;&gt;</b> is used, a <em>new</em>
+object is returned.  Obviously when you call the object's <var>Read</var> proc
+directly, the object must already exist.
+</p><p>
+The <b>&lt;&lt;</b> operator works by first recording the type of
+the object being saved.  It then moves into a fresh temporary directory and
+calls the object's <var>Write</var> proc.  When this returns, the entire
+contents of the temporary directory (sub-directories and all) are packed up
+and written as a single value after the object type information which was
+already saved.  This allows you to treat an object like any other value when
+it is written to a serial buffer.  <small>(Programmers refer to this
+process as serialization of the object.)</small>  
+</p><p>
+The <b>&gt;&gt;</b> operator simply reverses the sequence of
+operations.  It reads the stored type, creates a new object, and calls its
+<var>Read</var> proc.
+</p><p>
+The terminology used to distinguish between the two different cases is a
+<em>property</em> save verses an <em>instance</em> save.  When you call
+<var>Write</var> directly, you are doing a property save, because you are only
+saving the properties of the object.  When you instead use
+<b>&lt;&lt;</b>, you are doing an instance save, because you are
+saving a full instance of the object (along with its properties).  You must
+use the same method for restoring an object that you used to save it.
+</p></a><p><a name="12.4.4">
+</a><a name="12.4.4.1">
+</a></p>
+<h5><a name="12.4.4.1">4.4.1 Saving a Player Instance</a></h5>
+<a name="12.4.4.1">
+<p>
+Up until now, we assumed that the mob created for a player logging in was
+the same type as the mob which was last saved.  If your world allows players
+to inhabit other types of mobs, however, this assumption could be wrong.  In
+that case, you would want to create a new mob from the savefile rather than
+using the default <var>world.mob</var>.  In other words, you would want to save
+the mob instance rather than just saving its properties.
+</p><p>
+
+</p><pre>client/New()
+   var/savefile/F = new(ckey)
+   F &gt;&gt; usr
+   return ..()
+client/Del()
+   var/savefile/F = new(ckey)
+   F &lt;&lt; usr
+   del(usr)
+</pre>
+<p>
+In this case, we handled saving in <var>client.New</var> rather than
+<var>mob.Login</var>.  There are two reasons.  One is that we want to create
+the mob from the savefile before the default <var>client.New</var> creates one
+for us.  The second reason is that presumably this world allows the player to
+switch from one mob to another.  If that is the case, we can't use
+<var>Login</var> as an indicator that the player is signing into the game; it
+might just be a movement from one mob to another.
+</p><p>
+In all the examples up to this point, we have been using server-side
+savefiles.  That just means they are stored on the server's filesystem.  It
+is also possible to store savefiles on the player's computer.  These are
+called client-side savefiles.
+</p></a><p><a name="12.4.4.1">
+</a><a name="12.5">
+</a></p>
+<h3><a name="12.5">5. The Key Save File</a></h3>
+<a name="12.5">
+
+<p>
+The player's key may have a savefile attached to it.  This file can be
+obtained by calling <var>client.Import()</var>.  It returns a savefile
+reference or <var>null</var> if there is none.
+</p><p>
+To copy a savefile back to the key, <var>client.Export()</var> is used.
+Note that if changes are made to an imported file, these are not saved to
+the key unless that file is exported.  That is because behind the scenes,
+<var>Import</var> and <var>Export</var> upload and download the savefile from
+the client to the server.  The imported file on the server side is merely a
+temporary copy of the key's savefile.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>client.Import</var> </td>
+<td> (Object) </td>
+</tr>
+<tr><td>
+                       </td>
+<td> <code>Object</code> is the optional object to read.</td>
+</tr>
+<tr><td>
+                       </td>
+<td> Returns copy of key savefile. </td>
+</tr>
+<tr><td>
+<var>client.Export</var> </td>
+<td> (File) </td>
+</tr>
+<tr><td>
+                       </td>
+<td> <code>File</code> is the <var>savefile</var> to export.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+If no file is specified in the call to <var>Export()</var>, the key's savefile
+is deleted.  If a value other than a savefile is given, this is written into
+a temporary savefile and exported to the key.  Similarly, an object may be
+passed to <var>Import()</var> and it will be automatically read from the file.
+</p></a><p><a name="12.5">
+</a><a name="12.5.1">
+</a></p>
+<h4><a name="12.5.1">5.1 Client-Side Saving</a></h4>
+<a name="12.5.1">
+<p>
+One reason to use client-side saving is if the player will be connecting to a
+group of worlds which all share the same savefile format.  That way, changes
+made to the player's mob in one world would be automatically transferred to
+any of the other worlds the player accesses.
+</p><p>
+The following example outlines how player information can be saved in the
+key file.
+</p><p>
+
+</p><pre>mob
+   Login()
+      var/savefile/F = client.Import()
+      if(F) Read(F) //restore properties
+      ..()
+   proc/SavePlayer()
+      var/savefile/F = new()
+      Write(F)      //save properties
+      client.Export(F)
+</pre>
+<p>
+Like the previous server-side example, the player is loaded in
+<var>Login()</var>.  However, it is not a good idea to save the player in
+<var>Logout()</var> as we did before, because in this case the client is needed
+in order to export the file.  By the time <var>Logout()</var> is called, the
+player may have already disconnected.
+</p><p>
+It is therefore necessary to save the player before logging out.  The
+<var>SavePlayer()</var> proc in this example was defined for that purpose, but
+it needs to be called from somewhere else in the code.  You could do that
+every time a change is made or whenever the player requests it.  Another
+method is to require the player to exit properly from the world in order to
+be saved rather than simply disconnecting without warning.
+</p></a><p><a name="12.5.1">
+</a><a name="12.6">
+</a></p>
+<h3><a name="12.6">6. Transmission Between Worlds</a></h3>
+<a name="12.6">
+</a><a name="World2World">
+<p>
+Client-side savefiles are one method for transferring player information
+between worlds.  This is best used when the player is free to randomly
+connect to any one of the worlds.  It is also suited for situations in which
+the contents of the player savefile are not sensitive--that is, the player
+can't cheat by modifying or backing up the file.
+</p><p>
+There are times when a client-side savefile is not appropriate.  In that
+case, savefiles can be transferred directly between worlds without using the
+player's key as an intermediary.  That gives you assured control over the
+contents of the file.
+</p></a><p><a name="World2World">
+</a><a name="12.6.1">
+</a></p>
+<h4><a name="12.6.1">6.1 <var>Export</var>, <var>Import</var>, and <var>Topic</var></a></h4>
+<a name="12.6.1">
+
+</a><p><a name="12.6.1">
+The procedures for transferring files between worlds are similar to the ones
+for manipulating the player's key file.  The procedure
+<var>world.Export()</var> can be used to send a file.  This causes a message
+to be sent to the remote world, which handles it in the
+<var>world.Topic()</var> procedure.  If the remote world expects and is
+willing to receive a savefile, it calls <var>world.Import()</var> to download
+it.  These three procedures were already introduced in section
+</a><a href="../../C%3A/Users/trist/Desktop/chap08.html#WorldTopicProc">8.2.4</a>.
+</p>
+<p>
+There are a few differences between the world <var>Import</var> and
+<var>Export</var> procs and the corresponding client procs.  In the case of
+exporting from one world to another, the remote world's network address and
+import topic must be specified in addition to the file being sent.
+</p>
+<p>
+On the remote end, <var>world.Import()</var> is used to receive the file, just
+as with a key file.  However, this results in the savefile being
+downloaded into the world's resource cache.  A reference to this cache file
+is returned instead of automatically creating a <var>savefile</var> object as
+<var>client.Import()</var> does.  That allows for the transferral of other
+types of files.  The cache reference can be easily opened as a temporary
+savefile by simply specifying it in place of the name of the file to open.
+</p>
+<p>
+<a name="12.6.2">
+</a></p>
+<h4><a name="12.6.2">6.2 A Sample Player Transferal System</a></h4>
+<a name="12.6.2">
+<p>
+The following code demonstrates how player savefiles can be transferred
+directly from one world to another.  The destination world is imagined here
+to be running at the address <tt>dm.edu</tt> on port 2001.  This address
+could be any other hard-coded value, or even a variable set at run-time.
+</p><p>
+
+</p><pre>mob/proc/GotoMars()
+   var/savefile/F = new()
+   F &lt;&lt; src
+   if(!world.Export("dm.edu:2001#player",F))
+      usr &lt;&lt; "Mars is not correctly aligned at the moment."
+      return
+   usr &lt;&lt; link("dm.edu:2001")
+
+world/Topic(T)
+   if(T == "player")
+      //download and open savefile
+      var/savefile/F = new(Import())
+
+      //load mob
+      var/mob/M
+      F &gt;&gt; M
+
+      return 1
+</pre>
+<p>
+The <code>GotoMars()</code> proc sends a player to the remote world.  It simply
+writes the player to a file and then sends it.  In this example we happen to
+be using a full object save on the mob rather than a mere property save, but
+it could be done another way.  Note how the return value of <var>Export()</var>
+is checked to ensure that the remote world is alive and well before sending
+the player along.
+</p><p>
+The code for <var>world.Topic()</var> actually belongs in the code for the
+remote world, but here we assume that both worlds have the same player
+import facilities.  The "player" topic causes a savefile to be imported and
+read.  The mob which is created as a result is ready and waiting when the
+player connects to the new world.  One could instead store the savefile and
+load it when the player arrives.
+</p></a><p><a name="12.6.2">
+</a><a name="12.6.3">
+</a></p>
+<h4><a name="12.6.3">6.3 Security</a></h4>
+<a name="12.6.3">
+
+<p>
+You may not want just anyone sending savefiles to your worlds.  There are a
+couple strategies to limit access.  One is to keep the import topic a
+secret.  Another would be to put a password in the savefile itself.
+</p><p>
+Access can also be limited to specific network addresses.  The address of
+the sending world is passed as an argument to <var>world.Topic</var>.  This
+could be compared to a list of permitted addresses and permission granted
+accordingly.
+</p><p>
+To get such a system working, it might be useful to use something like the
+following code to test the sending and receiving of messages.  It simply
+allows you to specify the address and topic you wish to send and displays
+the result.
+</p><p>
+
+</p><pre>mob/verb/export(Addr as text)
+   usr &lt;&lt; "Export([Addr]) == \..."
+   usr &lt;&lt; world.Export(Addr)
+
+world/Topic(T,Addr)
+   world.log &lt;&lt; "Topic([T]) from address [Addr]."
+   return 1
+</pre>
+</a><p><a name="12.6.3">
+</a><a name="12.6.4">
+</a></p>
+<h4><a name="12.6.4">6.4 Sharing Object Types</a></h4>
+<a name="12.6.4">
+<p>
+Care must be taken when transferring objects from one world to another that
+the same type of object is defined in both places.  If an object type that
+was saved in a file does not exist when it is loaded, it cannot be created
+and <var>null</var> will be returned instead.
+</p></a><p><a name="12.6.4">
+The most fool-proof strategy is to compile every world with the same code
+base in which all the transferable object types are defined.  Techniques for
+splitting the code in large projects into multiple files is a topic that
+will be discussed in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap19.html#BigProjectChapter">19</a> and is a useful method
+of re-using code for this purpose.
+</p>
+<p>
+<a name="12.7">
+</a></p>
+<h3><a name="12.7">7. Advanced Savefile Mechanics</a></h3>
+<a name="12.7">
+</a><a name="AdvancedSavefiles">
+
+<p>
+Most of the time, the default reading and writing behavior works and you
+don't have to think too hard about <em>how</em> it works.  I am going to tell
+you how it works anyway.  If you don't want to know, please shut your eyes
+while reading this section.
+</p><p>
+Those of you who still have your eyes open get to learn about a few powerful
+elements of the language.  You will probably never use them, but powerful
+knowledge should rarely be used anyway.  <small>(Knowing how to build an
+H-bomb is a good example.)</small>    It just helps put everything else in perspective.
+</p><p>
+I will start by showing you how you could soft-code the default save
+routines.  Then I will explain how it works.  Then I will explain how it
+really works.  Then the rest of you can open your eyes again.
+</p><p>
+
+</p><pre>mob/Write(savefile/F)
+   var/V
+   for(V in vars)
+      if(issaved(vars[V]))
+         if(initial(vars[V]) == vars[V])
+            F.dir.Remove(V)    //just in case
+         else F[V] &lt;&lt; vars[V]  //write variable
+mob/Read(savefile/F)
+   var/V
+   for(V in vars)
+      if(issaved(vars[V]))
+         if(V in F.dir)
+            F[V] &gt;&gt; vars[V]    //read variable
+</pre>
+<p>
+This same code would, of course, be defined for object types other than mob
+as well.  It depends only on the existence of a special variable named
+<var>vars</var>, which happens to be defined for all object types.  It is a
+list of the variables belonging to an object.
+</p><p>
+You can access and loop through <var>vars</var> like any other list.  The only
+special behavior is that when you index it with the name of a variable, you
+get, not the name, but the value of the variable.  So whenever you see
+<code>vars[V]</code> in the above code, it is accessing the value of the mob's
+variable whose name is stored in <code>V</code>.  Note that this value can even
+be modified.  It is just as if you were accessing the variable directly.
+</p><p>
+The next thing you must be wondering about in the above code is
+<var>issaved()</var>.  That is where we check to see if the variable being
+considered is temporary.  If the variable is marked global, const, or tmp,
+it is not saved to the file because the <var>issaved</var> instruction returns
+0.
+</p><p>
+Finally, before saving the variable, we check if it has changed.  We do that
+by using the <var>initial()</var> instruction to get the original compile-time
+value of the variable.  Only if the variable has changed is it saved.  That
+saves space, but it also makes the savefile more adaptable.  In the future,
+you may wish to change the default value of a variable.  When you recompile
+your world, existing savefiles will automatically use the new value if the
+variable still had its initial value when saved.
+</p></a><p><a name="AdvancedSavefiles">
+</a><a name="12.7.1">
+</a></p>
+<h4><a name="12.7.1">7.1 Duplicate References</a></h4>
+<a name="12.7.1">
+<p>
+If you think for a while (maybe a long while) about the above saving scheme,
+you will come to the conclusion that it is subtly flawed.  Fortunately, the
+savefile is smarter than you think.
+</p><p>
+Each variable is written to its own directory using the
+<b>&lt;&lt;</b> operator, be it a number, text string, object, or
+list of objects.  That means, of course, that objects are written in full.
+If we are saving a player who has a bunch of items in the contents list, an
+instance of each of these is written to the file.
+</p><p>
+But what happens if two variables refer to the same object?  If these were
+each written as a separate instance, the savefile would contain two
+independent instances of the same object.  When loading this information, a
+new object would be created for each reference to the original one.  That
+could lead to all sorts of subtle problems.  Ick.
+</p><p>
+Fortunately, the savefile can detect this case and handle it correctly.
+During any single savefile operation, such as writing an object, a special
+de-duplication mode is entered.  In this mode, the first occurrence of an
+object is written in full but subsequent occurrences are written as a
+reference to the first one.  This will even handle recursive references that
+would otherwise cause an infinite loop.
+</p><p>
+De-duplication mode lasts for the duration of the first operation that
+initiated it.  For example, if you write a mob to the savefile,
+de-duplication mode will extend through the writing of each mob variable,
+which might in turn include writing entire objects belonging to the mob.
+All duplicate references within the single top-most operation will be
+detected.
+</p><p>
+The only rule you must abide by is to make sure things are always read back
+in the same order they were written.  That ensures that the first occurrence
+of an object (which is saved in full) will be restored before any references
+to it are encountered.
+</p><p>
+
+</p></a>
+</body>
+</html>

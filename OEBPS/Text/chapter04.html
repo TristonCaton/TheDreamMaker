@@ -1,0 +1,1009 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 4</h1>
+ <h2 align="center">Verbs</h2>
+
+<a name="VerbChapter">
+
+<p>
+</p><blockquote>  It might be only a dream after all, part and parcel of this magic
+  house of dreams.
+</blockquote>
+<center>--<i>L.M. Montgomery</i>, Anne's House of Dreams</center>
+
+<p>
+Players have several ways to interact with their world.  They can move
+around with the arrow keys, select objects with the mouse, and type commands
+(or select them from a menu).  In DM, the commands you define for players to
+use are called verbs.  They form a sort of player language.
+</p></a><p><a name="VerbChapter">
+</a><a name="4.1">
+</a></p>
+<h3><a name="4.1">1. Defining a Verb</a></h3>
+<a name="4.1">
+<p>
+Verbs are always attached to some object.  This is done by putting the verb
+inside the object definition.  This object is called the <em>source</em> of the
+verb.  The simplest case, is a verb attached to the player's mob.
+</p><p>
+
+</p><pre>mob
+   verb
+      intangible()
+         density = 0  //now we can walk through walls!
+</pre>
+<p>
+This example defines a verb called <code>intangible</code>.  A player who has
+executed this command can walk through other dense objects like walls.
+</p><p>
+
+</p><p>
+As you can see, the definition goes inside a node called <var>verb</var> and is
+followed by parentheses.  The name of the verb itself (like any node)
+follows the same rules as an object type name.  It is case sensitive,
+consists of letters, digits, and underscores, and must not start with a
+digit.
+</p></a><p><a name="4.1">
+</a><a name="4.2">
+</a></p>
+<h3><a name="4.2">2. Setting Verb Properties</a></h3>
+<a name="4.2">
+</a><a name="VerbSettings">
+
+<p>
+Just as with object types, you can override the actual name of the verb (as
+seen by the user) to overcome the limitations of the node name.  This is
+done with the <var>set</var> command.  Example:
+</p><p>
+
+</p><pre>obj/lamp/verb/Break()
+   set name = "break"
+   luminosity = 0
+</pre>
+</a><p><a name="VerbSettings">
+The reason the verb node could not be directly specified in lowercase is
+that there is a reserved word <var>break</var> that prevents
+this.  Capitalization is a simple way to avoid conflicts with reserved words
+because they never begin with a capital letter.  <small>(If you are
+curious about the meaning of <var>break</var> hang on until chapter
+</small></a><small><a href="../../C%3A/Users/trist/Desktop/chap06.html#ProcChapter">6</a>.)</small>  
+</p>
+<p>
+
+</p>
+<p>
+Notice the condensed style using slashes in place of stair-step indentation.
+The use of the <var>set</var> command distinguishes between an assignment of
+the object's name and an assignment of the verb's name.  Also note that the
+name assignment is said to take place at <em>compile-time</em> rather than
+<em>run-time</em>.  Otherwise, like the assignment of luminosity, it would not
+happen until the verb was executed by the player.
+</p>
+<p>
+There are other properties of a verb that can be configured using the
+<var>set</var> command.  They are presented in the following list.
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<li><b>name</b>
+<p>
+As you have already seen, this is the name of the verb as seen by the user.
+It defaults to the node name with any underscores replaced by spaces.
+</p><p>
+
+</p></li>
+<li><b>desc</b>
+<p>
+A description of the verb.  Players can see this by typing the verb name and
+pressing <b>F1</b>.  Another way is to hold the mouse over it in the verb
+panel.  The syntax is described for you, by default, but if you wish to
+override the way individual arguments appear, you can do so inside
+parentheses at the beginning of the text.  See page <a href="#SetDesc">[4.5.1]</a> for an
+example.
+</p><p>
+
+</p></li>
+<li><b>category</b>
+<p>
+Verbs can be grouped by assigning a category name of your choosing.  They
+will show up accordingly in the verb panels.
+</p><p>
+
+</p></li>
+<li><b>hidden</b>
+<p>
+This is 1 or 0 to indicate if the verb is secret.  A hidden verb will not
+appear in the panels and will not be expanded on the command line.  As a
+slight variation of this, verbs beginning with a dot are like hidden verbs
+except they expand once at least the dot has been typed.  You might, for
+example, have a large number of social commands that you don't want
+cluttering up the normal verb menus.  In that case you would probably want
+to use the dot prefix to hide them.
+</p><p>
+
+</p></li>
+<li><b>src</b>
+<p>
+This is where you define the relationship between the user and the source of
+the verb.  The effect is to control who has access to the verb.  See the
+explanation in the next section.
+</p><p>
+
+</p><p>
+<a name="4.3">
+</a></p><h3><a name="4.3">3. Verb Accessibility</a></h3><a name="4.3">
+
+<p>
+One of the most important aspects of a verb is what it is attached to and
+who may use it.  The intangibility verb seen earlier in this chapter is
+attached to a mob and accessible to the mob's player alone.  You can use your
+own intangibility verb and other people can use their own intangibility verbs,
+but you can't use each other's verbs.  If you could, it would be possible to
+turn each other intangible.
+</p><p>
+Of course, in some cases, you might actually want people to be able to use
+each other's verbs.  To do that, you need to override the default
+accessibility settings.  Before we get into that, you need to understand how
+the defaults work.
+</p><p>
+When a verb is attached to a mob, the default accessibility setting is
+<code>set src = usr</code>.  That means the source of the verb must be equal to
+the user of the verb.  Nobody else is allowed to use it (or even see it).
+This statement makes use of two special pre-defined variables.  The variable
+<var>src</var> refers to the object containing the verb--that is, the source
+object.  The variable <var>usr</var> refers to the mob (of the player) who is
+using the verb.
+</p><p>
+Here is a commonly used verb which allows people to turn each other into
+potatoes.
+</p><p>
+
+</p><pre>mob/verb/make_potato()
+   set src in view()
+   name = "potato"
+   desc = "Mmm.  Where's the sour cream?"
+   icon = 'potato.dmi'
+</pre>
+<p>
+Instead of the default accessibility (<code>src = usr</code>) this verb uses
+<code>src in view()</code>.  That means anyone within view of the user can be
+turned into a potato.  The <var>view</var> procedure computes a list of
+everything which is visible to the user.
+</p><p>
+Also note that in this example an underscore was used in the name of the
+verb.  This will be automatically converted into a space in the name of the
+command.  However, when the user types it in, a `-' will be inserted on the
+command line instead of a space.  That is because spaces are only allowed on
+the command line between arguments or inside of quotes.  The user doesn't
+have to worry--the substitution of a dash happens automatically.
+</p><p>
+Consider instead a verb that is attached to an obj.
+</p><p>
+
+</p><pre>obj/torch/verb/extinguish()
+   set src in view(1)
+   luminosity = 0
+</pre>
+<p>
+The verb <code>extinguish</code> in this example causes a torch to stop shining.  It
+again makes use of the <var>view</var> instruction, but this time an
+additional parameter is specified to limit the range.  In this case, the
+range is 1, so the torch must be in the user's turf or an adjacent one for
+the verb to be accessible.  Somebody standing across the room will not be
+able to extinguish the torch.
+</p></a><p><a name="4.3">
+Try this example on a suitable map with some torches scattered about.  If
+you move up to a torch and type "<tt>extinguish torch</tt>" it will go
+out (see figure </a><a href="#InputInterlude">4.5</a>).
+</p><p>
+</p><hr/>
+<center><h3>Figure 4.5: Look Ma, no hands! (and other ways to avoid typing...)</h3></center>
+<a name="InputInterlude">
+<p>
+You need not worry about players having to deal with typing lengthy
+commands.  Dream Seeker provides many convenient ways to ease the burden
+on the users' fingers.  For example, there are several methods for
+a player to access the aforementioned <code>extinguish torch</code> verb:
+</p><p>
+</p><ol>
+<p>
+</p>
+<li>Type "<tt>extinguish torch</tt>".
+<p>
+</p></li>
+<li>Type the first few letters of the command, for instance, "<tt>ex</tt>"
+and then hit the spacebar to <em>expand</em> the command.  Dream Seeker
+will fill in the remaining letters, indicating ambiguity on-screen.
+<p>
+</p></li>
+<li>Click on the "<code>extinguish</code>" entry in the on-screen <b>verb</b>
+panels.
+<p>
+</p></li>
+<li>Right-click on the torch to pull up a context-menu from which the
+<code>extinguish</code> verb may be selected.
+<p>
+</p></li>
+</ol>
+<hr/>
+<p>
+You may have noticed a subtle difference between the <code>extinguish</code> verb
+and the <code>intangible</code> verb seen earlier.  In one case we just had to type
+"<tt>intangible</tt>" and in the other "<tt>extinguish torch</tt>".  In the
+first case we didn't have to specify the verb source and in the second case
+we did.  The term for this difference is an implicit versus an explicit
+source.
+</p></a><p><a name="InputInterlude">
+</a><a name="4.3.1">
+</a></p><h4><a name="4.3.1">3.1 Explicit versus Implicit Source</a></h4><a name="4.3.1">
+
+<p>
+Suppose one practices a religion in which praying must be done in the
+vicinity of a torch.  We don't want the command to be "<tt>pray torch</tt>"
+but just "<tt>pray</tt>".  In other words, we want an implicit source, not
+an explicit one.
+</p><p>
+Whether the source syntax is implicit or explicit depends on how the
+<var>src</var> setting is specified.  If <var>src</var> is assigned (e.g.
+<code>set src=usr</code> or even <code>set src=view(1)</code>) the computer
+automatically picks the source from the available possibilities.  On the
+other hand, if <var>src</var> is not assigned but just limited to anything in
+a list (e.g. <code>set src in view(1)</code>) it is up to the user to specify the
+source--even if there is only one choice.  This gives the designer control
+over the command syntax.
+</p><p>
+Return to the example of torch enabled prayers.  Since we want an implicit
+source, we use <b>=</b> to assign the source rather than <b>in</b>, which
+would merely limit it.
+</p><p>
+
+</p><pre>obj/torch/verb/pray()
+   set src = view(1)
+   //God fills in this part!
+</pre>
+<p>
+
+</p><p>
+In general, one uses an implicit source when the mere presence of an object
+gives the user some ability that is otherwise independent of the source
+object.  Another case (like <code>set src=usr</code>) is when the source object
+is always unique.  Verbs in this latter case are called <em>private</em> verbs
+because they are only accessible to the mob itself.
+</p></a><p><a name="4.3.1">
+</a><a name="4.3.2">
+</a></p><h4><a name="4.3.2">3.2 Default Accessibility</a></h4><a name="4.3.2">
+
+</a><p><a name="4.3.2">
+For convenience, verbs attached to different object types have different
+default accessibilities.  These are summarized in figure
+</a><a href="#VerbAccessibilities">4.6</a>.
+</p><p>
+
+</p><center><h3>Figure 4.6: Default Verb Accessibilities</h3></center>
+<a name="VerbAccessibilities">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+mob  </td>
+<td> src = usr     </td>
+</tr>
+<tr><td>
+obj  </td>
+<td> src in usr    </td>
+</tr>
+<tr><td>
+turf </td>
+<td> src = view(0) </td>
+</tr>
+<tr><td>
+area </td>
+<td> src = view(0) </td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+<p>
+Note that the default obj accessibility is really an abbreviation for
+<code>src in usr.contents</code>, which means the contents (or inventory) of the
+user's mob.  As you shall see later on, the <b>in</b> operator always treats
+the right-hand side as a list--hence <var>usr</var> is treated as
+<var>usr.contents</var> in this context.
+</p><p>
+In the case of both turf and area, the default accessibility is
+<code>view(0)</code> and is implicit.  Since the range is zero, this gives the
+player access to the verbs of the turf and area in which the mob is standing.
+</p><p>
+Making use of this convenient default, suppose we wanted a dark area to have
+a magical trigger that would turn on the lights at the sound of clapping
+hands.  You could do it like this:
+</p><p>
+
+</p><pre>area/dark/verb/clap()
+   luminosity = 1
+</pre>
+<p>
+Abracadabra!
+</p></a><p><a name="VerbAccessibilities">
+</a><a name="4.3.3">
+</a></p><h4><a name="4.3.3">3.3 Possible Access Settings</a></h4><a name="4.3.3">
+</a><a name="SrcSettings">
+</a><p><a name="SrcSettings">
+There are a limited number of possible settings for a verb's source access
+list.  They are compiled in figure </a><a href="#SourceSettingsList">4.7</a>.
+</p><p>
+
+</p><center><h3>Figure 4.7: Possible Source Access Settings</h3></center>
+<a name="SourceSettingsList">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+usr </td>
+</tr>
+<tr><td>
+usr.loc </td>
+</tr>
+<tr><td>
+usr.contents </td>
+</tr>
+<tr><td>
+usr.group </td>
+</tr>
+<tr><td>
+view() </td>
+</tr>
+<tr><td>
+oview() </td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+<p>
+Two of these (namely, <var>usr</var> and <var>usr.loc</var>) are not lists of
+objects but instead refer to an individual item.  For that reason, they
+behave a little differently when used in an assignment versus an <b>in</b>
+clause.  Don't let that confuse you--it's really quite simple.  When used in
+an assignment, they are treated as a single object.  When used with
+<b>in</b> they represent the list of objects that they contain.
+</p><p>
+The rest of the <var>src</var> access settings are all lists.  The <var>view</var>
+instruction has already been mentioned, but it requires a little more
+description so that you can understand the related <var>oview</var>
+instruction.
+</p><p>
+
+</p></a><p><a name="SourceSettingsList">
+The <var>view()</var> list contains all objects seen by the user up to a
+specified distance.  The list starts with objects in the user's inventory,
+followed by the user herself, objects at her feet, then in neighboring
+squares, and so forth proceeding radially outward.  A distance of 0
+therefore includes the turf (and area) the user is standing on and its
+contents.  A distance of 1 adds the neighboring eight squares and their
+contents.  The maximum distance is 5, since that includes the entire visible
+map on the player's screen.  <small>(You will see how to change the map
+viewport size in chapter </small></a><small><a href="../../C%3A/Users/trist/Desktop/chap14.html#MapChapter">14</a>.)</small>   Because this is often the desired
+range, it is the default when no range is specified.  The special range of
+-1 includes only the user and contents.
+</p><p>
+The related instruction <var>oview()</var> stands for `other' or `outside'
+view.  It is identical to <var>view()</var> except it doesn't include the usr
+or the usr's contents.  In other words, it excludes objects in
+<var>view(-1)</var>, the so-called <em>private</em> or <em>personal</em> range.
+</p><p>
+As an example of using <var>usr</var> and <var>usr.loc</var>, consider a pair of
+verbs to allow picking up and dropping objects.
+</p><p>
+
+</p><pre>obj/verb
+   get()
+      set src in usr.loc
+      loc = usr
+   drop()
+      set src in usr  //actually this is the default
+      loc = usr.loc
+</pre>
+<p>
+To see how <var>oview()</var> might come in handy, suppose there was a magical
+torch that one could summon from a greater distance than provided by the
+standard <code>get</code> verb.
+</p><p>
+
+</p><pre>obj/torch/verb/summon()
+   set src in oview()
+   loc = usr  //presto!
+</pre>
+<p>
+Making use of the default range, torches can be summoned from anywhere in
+the player's view.  If we had used <var>view()</var> instead of
+<var>oview()</var>, objects already inside the user's inventory could be
+summoned, which wouldn't make much sense.
+</p><p>
+<a name="4.4">
+</a></p><h3><a name="4.4">4. Overriding Verbs</a></h3><a name="4.4">
+
+<p>
+Suppose instead of a magical <code>summon</code> verb, we just wanted the <code>get</code>
+verb to have a greater range for torches.  This is an example of
+object-oriented programming in which a child object type provides the same
+sort of operations as its parent but implements them differently.
+</p><p>
+Here is the code for such a modified <code>get</code> verb.
+</p><p>
+
+</p><pre>obj
+   verb
+      get()
+         set src in usr.loc
+         loc = usr
+      drop()
+         set src in usr
+         loc = usr.loc
+   torch
+      get() //extended range
+         set src in oview()
+         loc = usr
+</pre>
+<p>
+The example is written in full to demonstrate the syntax for overriding a
+previously defined verb.  Notice that inside <code>torch</code>, we do not put
+<code>get()</code> under a verb node.  This indicates to the compiler that we are
+overriding an existing verb rather than defining a new one.
+</p><p>
+The difference in the syntax for definition verses re-definition serves the
+purpose (among other things) of preventing errors that might happen in large
+projects.  For example, you might define a new verb that mistakenly has the
+same name as an existing one, or you might try to override an existing verb
+but misspell it in the re-definition.  In both of these cases the compiler
+will issue an error, preventing a problem that might otherwise go unnoticed
+for quite some time.
+</p></a><p><a name="4.4">
+</a><a name="4.5">
+</a></p><h3><a name="4.5">5. Friendly Arguments</a></h3><a name="4.5">
+
+<p>
+Verbs become much more powerful when you add the ability to take additional
+input from the user.  A programmer would call this a verb <em>parameter</em> or
+<em>argument</em>.  You can define as many arguments to a verb as you wish.
+However, most verbs only take one or two parameters.
+</p><p>
+Arguments are each assigned a different variable name inside the parentheses
+of a verb definition.  In addition to this, an input type must be
+specified.  This indicates what sort of information is required from the
+player.  A generic verb definition would therefore look like this:
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+VerbName(Var1 <var>as</var> Type1,Var2 <var>as</var> Type2,...)
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The variable names follow the same rules as everything else in the
+language.  Case matters, and it may consist of letters, numbers, and the
+underscore.
+</p></a><p><a name="4.5">
+</a><a name="4.5.1">
+</a></p><h4><a name="4.5.1">5.1 Parameter Input Types</a></h4><a name="4.5.1">
+</a><a name="InputTypes">
+<p>
+
+
+
+
+
+
+</p></a><p><a name="InputTypes">
+The possible input types are listed in figure </a><a href="#InputTypeList">4.8</a>.
+</p><p>
+
+</p><center><h3>Figure 4.8: Parameter Input Types</h3></center>
+<a name="InputTypeList">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<var>text</var> </td>
+</tr>
+<tr><td>
+<var>message</var> </td>
+</tr>
+<tr><td>
+<var>num</var> </td>
+</tr>
+<tr><td>
+<var>icon</var> </td>
+</tr>
+<tr><td>
+<var>sound</var> </td>
+</tr>
+<tr><td>
+<var>file</var> </td>
+</tr>
+<tr><td>
+<var>key</var> </td>
+</tr>
+<tr><td>
+<var>null</var> </td>
+</tr>
+<tr><td>
+
+<var>mob</var> </td>
+</tr>
+<tr><td>
+<var>obj</var> </td>
+</tr>
+<tr><td>
+<var>turf</var> </td>
+</tr>
+<tr><td>
+<var>area</var> </td>
+</tr>
+<tr><td>
+<var>anything</var> </td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+<p>
+The first group are the <em>constant</em> input types.  They all represent
+different types of data that the user can insert.  They may be used
+individually or in combination.  To combine several types, put
+<b>|</b> between them like this:
+<var>icon</var><b>|</b><var>sound</var>.
+</p><p>
+The <var>text</var> input type accepts a short (one-line) string from the
+player.  For a longer composition, the <var>message</var> input type is used.
+</p><p>
+Numbers are handled by the <var>num</var> input type.  These, just like numbers
+in the language, may be positive or negative, integer or floating point, and
+may even be specified in scientific notation.
+</p><p>
+There are three input types for resource files: <var>icon</var>,
+<var>sound</var>, and <var>file</var>.  The last one, <var>file</var>, will take
+any type of file as an argument, whereas the other two take only icons and
+sounds, respectively.  The related input type <var>key</var> takes a key entry
+from the player and is only used in obscure situations.
+</p><p>
+The <var>null</var> input type is used in conjunction with other types.  It
+indicates that the argument is optional.  Otherwise, the user is required to
+enter a value before executing the command.
+</p></a><p><a name="InputTypeList">
+The last group are the object input types.  They are used to allow the
+player to select an item from a list of objects.  More will be said on lists
+of objects in section </a><a href="#ArgLists">4.8</a>.  By default, the list is composed of
+all objects in view of the player.
+</p><p>
+Using the various input types, it is possible to compose verbs that give the
+player control over his own appearance.  For example, using the <var>text</var>
+input type, the name can be specified.
+</p><p>
+<a name="SetDesc">
+
+</a></p><pre><a name="SetDesc">mob/verb/set_name(N as text)
+   set desc = "(\"new name\") Change your name."
+   name = N
+</a></pre><a name="SetDesc">
+<p>
+In the client, one could therefore enter a command like the following:
+</p><p>
+
+</p><pre>set-name "Dan The Man
+</pre>
+</a><p><a name="SetDesc">
+Notice in this example that the help text for the verb has been defined.
+First the syntax is described in parentheses and then the purpose of the
+command is stated.  <small>(The reason there are backslashes in front of
+the double quotes inside the text is to prevent them from being mistaken for
+the end of the description.  This is called <em>escaping</em> and will be
+discussed in more detail in section </small></a><small><a href="../../C%3A/Users/trist/Desktop/chap11.html#Escaping">11.3.2</a>.)</small>   If you position the
+mouse over the verb, the help text will be displayed.  It will look
+something like this:
+</p><p>
+
+</p><pre>usage: set-name "new name" (Change your name.)
+</pre>
+<p>
+If we had not specified the syntax help (in parentheses), it would have
+given a generic description of the syntax like this:
+</p><p>
+
+</p><pre>usage: set-name "text" (Change your name.)
+</pre>
+<p>
+Each type of argument has a different default appearance.  Generally
+speaking, it involves the name of the input type.  If you think that will
+confuse the players, override it with your own text.
+</p><p>
+As a slight variation on the previous example, we could make a scroll object
+on which one can write a message.
+</p><p>
+
+</p><pre>obj/scroll/verb
+   write(msg as message)
+      set src in view(0)
+      desc = msg
+   read()
+      set src in view()
+      usr &lt;&lt; desc
+</pre>
+<p>
+Notice that players must be within arm's reach to inscribe a message.  We
+assume that everyone has good eyesight so the complementary <code>read</code>
+command works as long as the scroll is within view.
+</p><p>
+
+</p><p>
+It is amazingly simple to do for the player's icon what we just did for the
+description.  Here is a verb that does the trick.
+</p><p>
+
+</p><pre>mob/verb/set_icon(i as icon)
+   set name = "set icon"
+   icon = i
+</pre>
+<p>
+The command on the client could be issued something like this:
+</p><p>
+
+</p><pre>set-icon 'me.dmi
+</pre>
+<p>
+
+</p><p>
+Here, single quotes surround the file name.  As with text arguments, the
+final quote is optional when there are no additional parameters.
+</p><p>
+<a name="4.6">
+</a></p><h3><a name="4.6">6. Generating Output</a></h3><a name="4.6">
+<p>
+The simplicity of the <code>set_icon</code> verb hides the power behind it.  Think
+about what happens when you use it.  You enter the name of an icon file
+through the client and it magically appears on the map.  In a game running
+over the network with multiple users, it works just the same.  Behind the
+scenes, the file you specify gets transported to the server, which then
+automatically distributes it to all the other clients.  Transmitting
+multi-media files across the network is an elementary operation in DM,
+little different than entering some numbers or text.
+</p><p>
+
+</p><p>
+Speaking of multi-media, here is an example that makes use of the sound
+input type.
+</p><p>
+
+</p><pre>mob/verb/play(snd as sound)
+   view() &lt;&lt; snd
+</pre>
+<p>
+
+</p><p>
+This plays a sound file (either <tt>wav</tt> or <tt>midi</tt>) to everyone
+in view.  The <b>&lt;&lt;</b> operator in this context is used to
+send output to a mob or list of mobs.  In this case, everyone in the list
+computed by the <var>view()</var> instruction receives a sound file.  <small>(To be precise, only those people who need a copy of the sound file will
+receive it.  If they don't have sound turned on or if they already have the
+file, it won't be transmitted.)</small>   If their machine is capable of playing
+sounds and their client is configured to allow it, the sound will
+automatically play for them.  Not bad for two lines of code!
+</p><p>
+The output operator <b>&lt;&lt;</b> opens up all sorts of
+possibilities.  For example, you can say things.
+</p><p>
+
+</p><pre>mob/verb/say(msg as text)
+   view() &lt;&lt; msg
+</pre>
+</a><p><a name="4.6">
+</a><a name="4.6.1">
+</a></p><h4><a name="4.6.1">6.1 Variables in Text</a></h4><a name="4.6.1">
+
+<p>
+Usually, however, you would want some indication of who is doing the
+talking.  To do that, you need a new piece of magic called an embedded text
+expression.  It allows you to display text containing variables.
+</p><p>
+
+</p><pre>mob/verb/say(msg as text)
+   view() &lt;&lt; "[usr] says, '[msg]'"
+</pre>
+</a><p><a name="4.6.1">
+In this example, the variables <var>usr</var> and <code>msg</code> are substituted
+into the text before it is displayed.  The result could be something like
+"<tt>Ug says, 'gimme back my club!'</tt>".  As you can see, the brackets
+<b>[ ]</b> inside of the text are used to surround the variables.  Such a
+construct is called an embedded expression.  It is buried right inside the
+text but it gets replaced at run-time by its value.  More details will be
+revealed on that subject in section </a><a href="../../C%3A/Users/trist/Desktop/chap11.html#TextMacros">11.3</a>.
+</p><p>
+We can now make use of the object input types.  For example, you can wink at
+people with the following verb.
+</p><p>
+
+</p><pre>mob/verb/wink(M as mob)
+   view() &lt;&lt; "[usr] winks at [M]."
+</pre>
+<p>
+The possibilities for intrigue and secrecy increase with a covert version of
+the <code>say</code> command.
+</p><p>
+
+</p><pre>mob/verb/whisper(M as mob,msg as text)
+   M &lt;&lt; "[usr] whispers, '[msg]'"
+</pre>
+<p>
+This example uses two arguments to achieve its purpose.  The first one is
+the target of the message.  The second is the text to transmit.
+</p><p>
+<a name="4.7">
+</a></p><h3><a name="4.7">7. Flexibility in Choice of the Source</a></h3><a name="4.7">
+
+
+<p>
+If you are paying close attention, a thought may have occurred to you.
+Couldn't these verbs that take an object as an argument be written using that
+object as the source rather than an argument?  The answer is yes.  For
+example, <code>wink</code> could be rewritten like this:
+</p><p>
+
+</p><pre>mob/verb/wink()
+   set src in view()
+   view() &lt;&lt; "[usr] winks at [src]."
+</pre>
+<p>
+Instead of taking a mob as an argument, this verb defines a public verb on
+mobs that is accessible to others in view, allowing them to wink at the
+mob.  From the user's point of view, these two cases are identical.  From
+the programmer's view, however, it is sometimes more convenient to use one
+technique over the other.
+</p><p>
+Suppose you wanted to make a special type of mob that when winked at would
+reveal a magic word.  In that case, the best way to do things would be to
+have the target of the wink be the source of the verb.  Then you can
+override the wink verb for the special mob type like this:
+</p><p>
+
+</p><p>
+
+</p><pre>mob/guard/wink()
+   ..()
+   usr &lt;&lt; "[src] whispers, 'drow cigam!'"
+</pre>
+<p>
+When winked at, the guard mob whispers back the magic word.  Notice the line
+that executes the <b>..</b> (dot-dot) procedure.  That is a special name that
+corresponds to the previous (inherited) version of a verb (called the
+<em>parent</em> or <em>super</em> verb).  This saved us from having to rewrite
+the line that generated the wink output.  That is what is meant by re-usable
+code in object-oriented programming.  With complicated procedures it can
+save you a lot of trouble.
+</p><p>
+
+</p><p>
+If, instead, we had used the original version of <code>wink</code> which had the
+target mob as an argument, we would have had to insert code in the general
+wink verb to check if the target was a guard and act accordingly.  In
+general, good object-oriented design attempts to confine code that is
+specific to a particular type of object inside the definition of that
+object.  This was achieved in the above example by making the target the
+source of the wink verb.
+</p><p>
+In a different situation, the reverse might be the best strategy.  For
+example, you might want a special mob who kills people by winking at them.
+(If looks could kill...)
+</p><p>
+
+</p><pre>mob/DM/wink(M as mob)
+   set desc = "This kills people, so be careful!"
+   ..()
+   del M  //poof!
+</pre>
+<p>
+To do the nasty deed, we used the <var>del</var> instruction, which deletes an
+object.  In this case, we have assumed the existence of the first definition
+of <code>wink()</code> which takes a mob argument.  By organizing things this way,
+we were able to isolate the special code to the object it applied to, in this
+case the DM.
+</p><p>
+Of course you might have even more complicated scenarios in which you want
+to do both variations--that is, having code specific to the type of target
+and the user.  It can still be handled without violating good
+object-oriented design, but you would need some tools I haven't fully
+described yet.  (For example, you could define a second procedure that
+carries out a mob's response to being winked at and invoke that from within
+a private <code>wink</code> verb.)
+</p><p>
+However, don't get too carried away trying to blindly adhere to
+object-oriented or any other philosophy of code design.  At the root of all
+such theories is the basic and more important principle of keeping things
+simple.  The simpler things are, the less likely you are to make mistakes
+and the easier it is to fix the errors you do make.
+</p><p>
+The reason the object-oriented approach tries to confine code about an
+object to that object is ultimately just organizational.  When you want to
+change the magic word spoken by the guard, you know where to go in the code
+to do it.  And more importantly, if you want to change the guard to an elf,
+you don't have to remember to also go and modify the wink verb to make elves
+speak the magic word rather than guards--a seemingly unrelated task.
+</p><p>
+But such possibilities are hypothetical and should not take precedence over
+your own knowledge about what future developments are actually probable.  In
+some situations, the simplest structure might be to confine all code having
+to do with winking to one place--a single wink verb that handles every
+special case.  That would be procedure-oriented programming, an aged
+methodology (though tried and true).  But who cares what the theory is.  Get
+the job done with clear, concise code.  That's what matters in the end.
+</p><p>
+(Of course every true programmer knows that there is no such thing as an
+end.  At best there is a level of completeness that one approaches
+asymptotically.  At worst ... well, never mind the worst, those dark
+skeletons, cadaverous parasitic programs that suck at the soul until one
+yields again, hammering out another thousand lines of tangled spaghetti code,
+writhing like a nest of tapeworms, and long sleepless nights turn into
+weeks, years, and still no sign of completion!  Or so I am told.  Being one
+of the cheery daytime programmers, in bed before midnight and up to milk at
+dawn, I wouldn't know whether such horror stories are true.  If it happens to
+you, I can give a few pointers on keeping a cow.)
+</p></a><p><a name="4.7">
+</a><a name="4.8">
+</a></p><h3><a name="4.8">8. A Choice of Arguments</a></h3><a name="4.8">
+</a><a name="ArgLists">
+
+
+<p>
+Notice how in the previous section, there was a slight asymmetry in the two
+versions of <code>wink</code>.  In one case the target was a mob argument and in the
+other it was the source.  In the latter case, we specified that the source
+could be anywhere in view of the user, but in the case of the argument we
+never said anything about the range.  What if we wanted to restrict winking
+to a shorter distance in that case?
+</p><p>
+As it happens, arguments can be limited in much the same way as the source
+of a verb.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+VerbName(Var1 <var>as</var> Type1 <var>in</var> List1,Var2 <var>as</var> Type2 <var>in</var> List2,...)
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+For example, here is a verb for prodding your neighbor.
+</p><p>
+
+</p><pre>mob/verb/poke(M as mob in view(1))
+   view() &lt;&lt; "[usr] pokes [M]!"
+</pre>
+</a><p><a name="ArgLists">
+The use of the <b>in</b> clause in the argument definition limits the user's
+choice to mobs in neighboring positions.  You can use <em>any</em> list
+expression to define the set of possible values.  The most common ones are
+those available for defining the range of a verb source (section
+</a><a href="#SrcSettings">4.3.3</a>).  When no <b>in</b> clause is used, the default list for
+<var>mob</var>, <var>obj</var>, <var>turf</var>, and <var>area</var> input types is
+<var>view()</var>.
+</p><p>
+For example, here is a verb to communicate (by frequency modulated
+electromagnetic waves) with any other player in the game.
+</p><p>
+
+</p><pre>mob/verb/commune(M as mob in world,txt as text)
+   M &lt;&lt; "[usr] communes to you, '[txt]'"
+</pre>
+<p>
+Actually, <var>world</var> is an individual object, but in this context it is
+treated as a list and is therefore an abbreviation for
+<var>world.contents</var>, a list of every object in the game.
+</p><p>
+<a name="4.9">
+</a></p><h3><a name="4.9">9. Default Arguments</a></h3><a name="4.9">
+
+<p>
+Verb arguments can be made optional by using the <var>null</var> input type.
+If the user does not enter a value for the argument, it will be given the
+special value <var>null</var>.  In this case, one will often need to check if
+the argument is indeed null and handle things accordingly.  This can be
+automated in the case where you just want a default value to be substituted
+for <var>null</var> by assigning the default value in the variable definition.
+</p><p>
+The most general syntax for an argument definition contains the variable
+name, a default value, an input type, and a list of possible values.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>variable</it>
+ = <it>default-value</it>
+ <var>as</var> <it>input-type</it>
+ <var>in</var> <it>list</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+If a default value is specified, the <var>null</var> input type is
+automatically applied, since that is necessary to make the argument optional.
+</p><p>
+
+</p><pre>mob/DM
+   verb
+      set_density(d=1 as num)
+         set name = "set density"
+         density = d
+</pre>
+<p>
+This example defines a verb that controls the player's density.  If no
+arguments are given, the mob will be made dense; otherwise the value
+specified by the player will be used.
+</p></a><p><a name="4.9">
+</a><a name="4.10">
+</a></p><h3><a name="4.10">10. <var>anything</var> input type</a></h3><a name="4.10">
+<p>
+The <var>anything</var> input type allows you to combine other input types
+with items from a list.  Its purpose is to make clear the fact that the
+constant input types are in addition to whatever may be in the object list.
+</p><p>
+The following example allows you to change your icon, with the option of
+selecting the icon from a file or from any other object in view.
+</p><p>
+
+</p><pre>mob/verb/set_icon(I as icon|anything in view())
+   icon = I
+</pre>
+<p>
+Note that this happens to work because assigning an object to the icon
+variable causes that object's icon to be assigned instead.  <small>(That
+behavior exists because I did not want to introduce conditional statements
+yet.  Such are the hoops a programmer will jump through to avoid extra
+documentation!)</small>  
+
+</p></a></li>
+</body>
+</html>

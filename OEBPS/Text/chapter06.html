@@ -1,0 +1,2433 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 6</h1>
+ <h2 align="center">Procs</h2>
+
+<a name="ProcChapter">
+<p>
+</p><blockquote>  He rubbed the lamp, and the genie appeared, saying: 'What is thy
+  will?'
+</blockquote>
+<center>--<i>Aladdin and the Wonderful Lamp</i>, The Arabian Nights</center>
+
+<p>
+There are two types of procedures.  Verbs are visible to players as
+commands.  The other type of procedure does not show up as a command.  This
+is called a proc.  In almost every other way, the two are identical.
+</p></a><p><a name="ProcChapter">
+</a><a name="6.1">
+</a></p>
+<h3><a name="6.1">1. Creating a Proc</a></h3>
+<a name="6.1">
+
+<p>
+Procs are useful for defining commonly needed pieces of code.  Rather than
+repeat the same code each time it is used, a proc can be written for the
+purpose.
+</p><p>
+As an example, you might have various situations in which a mob can be
+hurt.  In each case, you would need to check if the mob was fatally
+injured.  Rather than doing that over and over (and maybe forgetting in one
+place by mistake) you could define a proc to handle it.
+</p></a><p><a name="6.1">
+</a><a name="HurtMe">
+
+</a></p>
+<pre><a name="HurtMe">mob
+   var/life = 100
+
+   proc/HurtMe(D)
+      life = life - D
+      if(life &lt; 0)
+         view() &lt;&lt; "[src] dies!"
+         del src
+</a></pre>
+<a name="HurtMe">
+<p>
+This example defines a proc called <code>HurtMe</code>, which takes, as an argument,
+the amount of damage to do.  The damage is subtracted from the mob's life
+and then a fatality check is made.  If the life has dropped below zero, the
+mob gets deleted.
+</p><p>
+The <var>if</var> statement used here is one of the many procedure
+instructions that will be described in the sections that follow.  For now it
+suffices to know that the block of code indented beneath the <var>if</var>
+statement will only be executed when the specified condition is true.
+</p></a><p><a name="HurtMe">
+</a><a name="6.2">
+</a></p>
+<h3><a name="6.2">2. Executing a Proc</a></h3>
+<a name="6.2">
+
+<p>
+The syntax for executing a procedure is the same as accessing a variable,
+with the addition of the arguments to the procedure in parentheses.  In the
+following example, we use the <code>HurtMe</code> proc when the mob drinks some poison.
+</p><p>
+
+</p><pre>obj/poison
+   name = "can of soda"
+   verb/drink()
+      set src in view(0)
+      usr.HurtMe(25)  //OUCH!
+      del src         //one use only (please recycle)
+</pre>
+<p>
+The terminology a programmer normally uses is to <em>call</em> rather than
+<em>execute</em> a procedure.  The two mean the same thing.  Think of the
+procedure as an ephemeral spirit that you can <em>call</em> upon to do your
+bidding.  (You have to amuse yourself somehow during the stretch of tedious
+coding that occasionally pays a visit ... and sometimes not so
+occasionally.)
+</p><p>
+The same syntax is used to call both procs and verbs, though verbs are
+usually only executed by players.  One good way to easily distinguish between
+the two is to capitalize proc names.  Since verbs are usually lowercase,
+this conveniently differentiates the two.  This also prevents any name
+overlaps between procs and verbs.  The compiler considers such conflicts an
+error, since it would not be able to tell when you call the duplicated
+procedure whether you wanted to call the proc or the verb.
+</p><p>
+When a procedure is called, the computer executes each statement one at a
+time, starting from the top.  Some statements, like the <var>if</var>
+statement you just saw, may cause blocks of code to be skipped or in some
+cases executed multiple times.  However, aside from these special
+instructions, each command is processed sequentially.  When there are no
+more instructions, the procedure is complete.  A programmer calls this
+<em>returning</em>, because the point of execution goes back to the caller of
+the procedure (if there was one).
+</p></a><p><a name="6.2">
+</a><a name="6.3">
+</a></p>
+<h3><a name="6.3">3. Proc Inheritance</a></h3>
+<a name="6.3">
+
+<p>
+Just as with verbs, objects may override the procs they inherit from their
+parents.  The syntax is the same.  The original definition is marked by its
+position under a <var>proc</var> node.  After that, it may be overridden, but the
+redefinition stands on its own without a <var>proc</var> node.
+</p><p>
+One might, for example, want certain mobs to behave differently when damaged.
+</p><p>
+
+</p><pre>mob/DM
+   var/vulnerable
+
+   verb/set_vulnerability(v as num)
+      vulnerable = v
+
+   HurtMe(N)
+      if(vulnerable)
+         ..()
+</pre>
+<p>
+This code allows the DM to become vulnerable or invulnerable at will.  In
+the redefinition of <code>HurtMe</code>, the vulnerability is first checked.  If the DM
+has chosen to be vulnerable (maybe to test out a situation), the parent proc
+is invoked, which in this case calls the original definition of <code>HurtMe</code> to
+do the damage.
+</p></a><p><a name="6.3">
+</a><a name="6.4">
+</a></p>
+<h3><a name="6.4">4. Flexibility of Arguments</a></h3>
+<a name="6.4">
+
+<p>
+When you call a procedure, you are allowed to pass in as many arguments as
+you want.  Any that you don't supply will be given the value <var>null</var>.
+This flexibility allows you, for example, to add additional variables in the
+redefinition of a proc.  Any calls to the proc in which the caller does not
+use these additional parameters will set them to <var>null</var>.
+</p><p>
+You can also define <em>fewer</em> variables in the redefinition of a proc.
+This is usually just a matter of convenience when the redefined proc does
+not make use of the parameters.  For example, the <code>DM.HurtMe</code> proc could
+be rewritten like this:
+</p><p>
+
+</p><pre>mob/DM/HurtMe()
+   if(vulnerable)
+      ..()
+</pre>
+<p>
+Since it doesn't make use of <code>N</code>, the amount of damage, we didn't even
+bother to define that parameter.  Calls to this proc will still accept the
+argument.  More importantly, <em>the parent proc still receives the
+arguments even though they were not defined in the child proc</em>.  That works
+because by default, when no arguments are specified to <b>..</b>() those
+that were passed to the current proc are passed to the parent.
+</p></a><p><a name="6.4">
+</a><a name="6.5">
+</a></p>
+<h3><a name="6.5">5. Global Procs</a></h3>
+<a name="6.5">
+
+<p>
+Some procedures may have nothing to do with any particular object.  These
+can be defined at the top level for global access.  Such procs typically
+perform some self-contained computation.
+</p><p>
+DM has many pre-defined global procedures (like <var>view()</var> and
+<var>locate()</var>) which generate repeatedly used results.  To distinguish
+these from user-defined procedures, they are called <em>instructions</em>.
+</p></a><p><a name="6.5">
+</a><a name="6.5.1">
+</a></p>
+<h4><a name="6.5.1">5.1 Defining A Global Proc</a></h4>
+<a name="6.5.1">
+<p>
+A game in which the astrological signs play an important role, for example,
+might rely on a procedure like the following:
+</p><p>
+
+</p><pre>proc/Constellation(day)
+   //day should be 1 to 365
+   if(day &gt; 354) return "Capricorn"
+   if(day &gt; 325) return "Sagittarius"
+   if(day &gt; 295) return "Scorpio"
+   if(day &gt; 265) return "Libra"
+   if(day &gt; 234) return "Virgo"
+   if(day &gt; 203) return "Leo"
+   if(day &gt; 172) return "Cancer"
+   if(day &gt; 141) return "Gemini"
+   if(day &gt; 110) return "Taurus"
+   if(day &gt; 79)  return "Aries"
+   if(day &gt; 50)  return "Pisces"
+   if(day &gt; 20)  return "Aquarius"
+   return "Capricorn"   //day 1 to 20
+</pre>
+<p>
+A second procedure could handle converting from day in month to day in year,
+which is what this procedure requires.  The code determines which
+astrological sign applies to the specified date and then makes use of the
+<var>return</var> statement, which ends the procedure and sends the specified
+value back to the caller.  The details of all this syntax will be given
+shortly.
+</p></a><p><a name="6.5.1">
+</a><a name="6.5.2">
+</a></p>
+<h4><a name="6.5.2">5.2 Calling A Global Proc</a></h4>
+<a name="6.5.2">
+
+<p>
+A global procedure is called just like any other.  If the proc returns a
+value, this can be used anywhere an expression is expected.
+</p><p>
+The term <em>expression</em> means any piece of code which produces a single
+value as its result.  The simplest type of expression is a constant value
+such as a number or a text string.  More complicated expressions may involve
+variables, operators, procedure calls, and so on.
+</p><p>
+Here is an example of how to call and use the value returned by the procedure
+we just defined.
+</p><p>
+
+</p><pre>var/day_of_year = 1
+
+mob/DM/verb/set_date(day as num)
+   set desc = "Enter the day of the year (1-365)."
+
+   day_of_year = day
+   world &lt;&lt; "The sign of [Constellation(day)] is in force."
+</pre>
+<p>
+This verb gives the DM the ability to change the time of year, after which
+everyone is notified about the shift in the heavens.  The procedure call, in
+this case, is simply embedded in some text like any other expression would
+be.
+</p></a><p><a name="6.5.2">
+</a><a name="6.6">
+</a></p>
+<h3><a name="6.6">6. The Procedure Language</a></h3>
+<a name="6.6">
+
+<p>
+In the next chapter we will explore the pre-defined object procs.  Now that
+you know how to override and define new procs of your own, you will be able
+to create objects even more customized to your needs.  Before embarking on
+that adventure, however, you need to master the language of procedures (or
+they will master you when you journey into their land).  Depending on your
+familiarity with other programming languages (specifically C and its
+derivatives), you may choose how thoroughly to read the following material.
+</p></a><p><a name="6.6">
+</a><a name="6.6.1">
+</a></p>
+<h4><a name="6.6.1">6.1 Statements</a></h4>
+<a name="6.6.1">
+
+<p>
+The fundamental unit of a procedure is the <em>statement</em>, a command that
+tells the computer to perform some action.  So far you have seen statements
+that assign variables, generate output, and call other procedures.
+</p><p>
+Such statements are normally placed on a line by themselves.  They can,
+however, be grouped together on a single line by placing a semicolon between
+them.  It is also possible to make a statement span several lines by placing
+a backslash at the end of all but the last line.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+Statement</td>
+</tr>
+<tr><td>
+Statement; Statement; ...</td>
+</tr>
+<tr><td>
+Statement Part 1 \</td>
+</tr>
+<tr><td>
+Statement Part 2
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+In addition to such simple statements, there are also compound ones like
+<var>if</var> which can combine several of these simple statements into one.
+The following sections will describe all the variations on a statement that
+DM understands.
+</p></a><p><a name="6.6.1">
+</a><a name="6.7">
+</a></p>
+<h3><a name="6.7">7. Return Values</a></h3>
+<a name="6.7">
+<p>
+Every type of procedure returns a value.  Even verbs return one, though it
+is rarely used.  When a procedure finishes without explicitly returning
+anything, the special value <var>null</var> is passed back.
+</p></a><p><a name="6.7">
+</a><a name="6.7.1">
+</a></p>
+<h4><a name="6.7.1">7.1 The <var>return</var> statement</a></h4>
+<a name="6.7.1">
+
+<p>
+You have just seen an example using the <var>return</var> statement.  It's
+general format is:
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>return</var> [<it>expression</it>
+]
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This statement causes the proc to cease execution.  If the optional value is
+specified, it is passed back to the caller.  The term <em>expression</em>
+means any sequence of code that produces a value.  This could be a simple
+constant, a mathematical computation, or even the result of another
+procedure call.
+</p></a><p><a name="6.7.1">
+</a><a name="6.7.2">
+</a></p>
+<h4><a name="6.7.2">7.2 The <var>.</var> (dot) variable</a></h4>
+<a name="6.7.2">
+</a><a name="DotVar">
+
+<p>
+If the procedure finishes without using <var>return</var>, or if
+<var>return</var> is used without a following expression, the value passed
+back to the caller is contained in the <var>.</var> (dot) variable.  This
+variable can be assigned and used like any other.  Its default value is
+<var>null</var>.  That is why, if it is never modified and no return value is
+specified, the procedure returns <var>null</var> by default.
+</p><p>
+The choice of whether to use <var>return</var> or the dot variable is purely a
+matter of convenience.  In some cases, the value you want to return may be
+computed before you are ready to finish the procedure (because there is
+still some processing to do).  Then it would make sense to use the dot
+variable.  Another time is when you wish to specify a different default
+return value.
+</p><p>
+The name of the dot variable was chosen to be suggestive of the current
+procedure in the same way it is used in many file systems to represent the
+current directory.  This coincides nicely with the dot dot notation to
+represent the parent procedure (and the parent directory in a file system).
+The analogy goes even further, as you shall see in the discussion of type
+paths.
+</p></a><p><a name="DotVar">
+</a><a name="6.8">
+</a></p>
+<h3><a name="6.8">8. The <var>if</var> statement</a></h3>
+<a name="6.8">
+
+<p>
+To conditionally execute a block of code, one uses the <var>if</var>
+statement.  The general syntax is:
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>if</var></td>
+<td>(<it>expression</it>
+)</td>
+</tr>
+<tr><td>
+</td>
+<td>Statement1</td>
+</tr>
+<tr><td>
+</td>
+<td>Statement2</td>
+</tr>
+<tr><td>
+</td>
+<td>.<br/>.<br/>.<br/>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+</p><center>  Or  </center>
+<p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>if</var>(<it>expression</it>
+) Statement
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The first format may have multiple statements in the indented block beneath
+it.  The second condensed form is for a single statement.  All compound
+statements in DM have these two formats.  For brevity, they will be listed
+from now on in the condensed format, with the understanding that the single
+statement can be replaced by several in an indented block.
+</p><p>
+Another way to group several statements together would be to put braces
+around them.  Then they can be placed on a single line or spread across
+multiple lines as desired.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>if</var>(<it>expression</it>
+) {Statement1; Statement2; ...}
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The statements inside the <var>if</var> statement are said to be its body.
+These are only executed if the conditional expression is true.  DM does not
+have special values to stand for true and false.  Instead, every type of
+value has truth or falsity associated with it.  You will see how that works
+in a moment.
+</p></a><p><a name="6.8">
+</a><a name="6.8.1">
+</a></p>
+<h4><a name="6.8.1">8.1 The <var>else</var> clause</a></h4>
+<a name="6.8.1">
+
+<p>
+Before taking a closer look at the conditional expression itself, the
+<var>else</var> clause should be mentioned.  When the condition is false, an
+alternate body of statements may be executed.  By combining the two, an
+entire sequence of alternate conditions may be tested.  The syntax for
+doing this takes the following general form:
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>if</var>(<it>expression1</it>
+) Statement1</td>
+</tr>
+<tr><td>
+<var>else if</var>(<it>expression2</it>
+) Statement2</td>
+</tr>
+<tr><td>
+.<br/>.<br/>.<br/></td>
+</tr>
+<tr><td>
+<var>else</var> Statement3
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Proceeding from top to bottom, each expression is tested.  As soon as one is
+found to be true, the corresponding body of statements is executed.  Note
+that the first condition found to be true takes effect and the rest are
+ignored.  If none are found to be true, the final <var>else</var> body is
+executed.
+</p></a><p><a name="6.8.1">
+</a><a name="6.9">
+</a></p>
+<h3><a name="6.9">9. Boolean Expressions</a></h3>
+<a name="6.9">
+
+<p>
+When an expression like the conditional one in the <var>if</var> statement is
+interpreted as true or false, a programmer calls it a <em>boolean</em> value.
+In DM, there are three ways for an expression to be false: it can be null,
+0, or <code>""</code> (an empty text string).  Every other value is true.
+</p><p>
+It is customary in DM, when you want a true or false constant, to use 1 and 0
+for the purpose.  These are most often used to set a flag variable (like
+<var>opacity</var>) or as the return value of a procedure.  You could define
+constants <code>TRUE</code> and <code>FALSE</code> for this purpose if you are so inclined.
+</p></a><p><a name="6.9">
+</a><a name="6.9.1">
+</a></p>
+<h4><a name="6.9.1">9.1 Boolean Operators</a></h4>
+<a name="6.9.1">
+
+<p>
+Boolean expressions are such a basic element of procedure code that there
+are a number of special operators for use with them.  These all
+result in a boolean value of 1 or 0, depending on their arguments.  The
+boolean operators and most of the others in DM are identical to those used
+in the C language (and its derivatives like C++ and Java).
+</p><p>
+  <small>(
+   An <em>operator</em> is a special symbol, like <b>=</b> or <b>!</b>, that
+   performs some action or computation.  Those operators which precede their
+   argument are said to be <em>prefix</em>, and the reverse are
+   <em>postfix</em>.  Those that have arguments on both sides are <em>infix</em>.
+)</small>  
+</p></a><p><a name="6.9.1">
+</a><a name="6.9.1.1">
+</a></p>
+<h5><a name="6.9.1.1">9.1.1 <b>!</b> the logical NOT operator</a></h5>
+<a name="6.9.1.1">
+
+<p>
+The <b>!</b> operator computes the logical NOT of the expression that
+follows.  In other words, if the expression is true, it returns 0; and if the
+expression is false, it returns 1.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td><b>!</b><it>expression</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example uses the <b>!</b> operator to toggle a boolean value.
+The term <em>toggle</em> simply means to flip it from true to false or from
+false to true.
+</p><p>
+
+</p><pre>mob/verb/intangible()
+   density = !density
+   if(density) usr &lt;&lt; "You materialize."
+   else usr &lt;&lt; "You dematerialize."
+</pre>
+<p>
+See how it works?
+</p></a><p><a name="6.9.1.1">
+</a><a name="6.9.1.2">
+</a></p>
+<h5><a name="6.9.1.2">9.1.2 <b>&amp;&amp;</b> the logical AND</a></h5>
+<a name="6.9.1.2">
+
+<p>
+The <b>&amp;&amp;</b> operator computes the logical AND of two expressions.  It is
+true if both expressions are true; otherwise it is false.  For efficiency,
+the second argument is not evaluated if the first one is false.  This is
+often convenient when the second expression is a procedure call with a
+side-effect that you don't want to happen if the preceding expression was
+false.  This behavior is known as <em>short-circuiting</em>.  The value of the
+AND expression is equal to the value of the last argument to be
+evaluated.  <small>(The convenient short-circuiting behavior comes from C.
+Unlike C, however, the <b>&amp;&amp;</b> and <b>||</b> operators return
+the last argument to be evaluated rather than 1 or 0.  That handy little
+gem comes from Perl.)</small>  
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td><it>expression1</it>
+ <b>&amp;&amp;</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Here is an example that uses the <b>&amp;&amp;</b> operator to ensure that both
+the poker and pokee are dense in a typical poking operation.
+</p><p>
+
+</p><pre>mob/verb/poke(mob/M)
+   if(density &amp;&amp; M.density)
+      view() &lt;&lt; "[usr] pokes [M]!"
+   else
+      view() &lt;&lt; "[usr]'s finger passes through [M]!"
+</pre>
+</a><p><a name="6.9.1.2">
+</a><a name="6.9.1.3">
+</a></p>
+<h5><a name="6.9.1.3">9.1.3 <b>||</b> the logical OR</a></h5>
+<a name="6.9.1.3">
+
+<p>
+The <b>||</b> operator computes the logical OR of two
+expressions.  It is true if either expression is true; otherwise it is
+false.  As with the <b>&amp;&amp;</b> operator, unnecessary evaluations are
+avoided.  If the first expression is true, the second will not even be
+processed.  The entire expression gets the value of the final argument to be
+evaluated.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td><it>expression1</it>
+ <b>||</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+An example using the short-circuit behavior displays some alternate text if
+the player's description is blank.
+</p><p>
+
+</p><pre>mob/verb/look()
+   set src in view()
+   usr &lt;&lt; (desc || "You see nothing special.")
+</pre>
+</a><p><a name="6.9.1.3">
+</a><a name="6.9.1.4">
+</a></p>
+<h5><a name="6.9.1.4">9.1.4 <b>==</b> the equality test</a></h5>
+<a name="6.9.1.4">
+
+<p>
+The <b>==</b> operator compares two values.  If they are identical, it
+evaluates to 1 and otherwise 0.  Note that a single <b>=</b> is the
+assignment operator, which is a totally different creature.  Unlike the C
+language, DM will not allow you to use <b>=</b> in an expression (like an
+<var>if</var> statement) so you don't have to worry about accidentally using
+the wrong one.
+</p><p>
+When used on numbers, the result is a straightforward comparison of numeric
+values.  When used on references, it is the reference that is compared, not
+the object being referenced.  So if two objects are created that are
+identical in every way, but which are still in fact separate objects, the
+result of a comparison will be false rather than true.  Since identical text
+strings are always combined into a single data object to save memory,
+comparison of text references does produce the expected result--namely a
+case-sensitive comparison.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td><it>expression1</it>
+ <b>==</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example uses the <b>==</b> operator to see if you are laughing
+at yourself.
+</p><p>
+
+</p><pre>mob/verb/laugh(M as mob|null)
+   if(!M)
+      view() &lt;&lt; "[usr] laughs."
+   else if(M == usr)
+      view() &lt;&lt; "[usr] laughs at \himself."
+   else
+      view() &lt;&lt; "[usr] laughs at [M]."
+</pre>
+</a><p><a name="6.9.1.4">
+</a><a name="6.9.1.5">
+</a></p>
+<h5><a name="6.9.1.5">9.1.5 <b>!=</b> and <b>&lt;&gt;</b> inequality tests</a></h5>
+<a name="6.9.1.5">
+<p>
+The <b>!=</b> and <b>&lt;&gt;</b> operators test two values for
+inequality.  They may be used interchangeably.  The result is the reverse of
+the <b>==</b> operator.
+</p></a><p><a name="6.9.1.5">
+</a><a name="6.9.1.6">
+</a></p>
+<h5><a name="6.9.1.6">9.1.6 Relative comparison operators</a></h5>
+<a name="6.9.1.6">
+<p>
+The operators <b>&gt;</b>, <b>&lt;</b>, <b>&gt;=</b>,
+and <b>&lt;=</b> test if the left-hand expression is greater than,
+less than, greater than or equal to, and less than or equal to the right-hand
+expression.  These only apply to numerical expressions.  Any other type of
+data (like null or a text string) is treated like 0.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+  <it>expression1</it>
+ </td>
+<td> <b>&gt;</b>    </td>
+<td> <it>expression2</it>
+ </td>
+</tr>
+<tr><td>
+  <it>expression1</it>
+ </td>
+<td> <b>&lt;</b>       </td>
+<td> <it>expression2</it>
+ </td>
+</tr>
+<tr><td>
+  <it>expression1</it>
+ </td>
+<td> <b>&gt;=</b> </td>
+<td> <it>expression2</it>
+ </td>
+</tr>
+<tr><td>
+  <it>expression1</it>
+ </td>
+<td> <b>&lt;=</b>    </td>
+<td> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="6.9.1.6">
+</a><a name="6.9.1.7">
+</a></p>
+<h5><a name="6.9.1.7">9.1.7 Combining boolean operators</a></h5>
+<a name="6.9.1.7">
+<p>
+Often, several boolean operators are used together in an expression.  When
+this is done, one must be careful that the order in which the computer
+evaluates them is the same order intended.  To force a particular order of
+evaluation, parentheses can be inserted to group arguments and operators as
+desired.
+</p><p>
+For example, the same arguments and operators grouped in different ways can
+yield different results:
+</p><p>
+
+</p><pre> 1  ||  0  &amp;&amp;  0     //equals 1
+ 1  || (0  &amp;&amp;  0)    //equals 1
+(1  ||  0) &amp;&amp;  0     //equals 0
+</pre>
+<p>
+As you can see, when no parentheses are used, <b>&amp;&amp;</b> is evaluated
+before <b>||</b>.  This means that <b>&amp;&amp;</b> has a higher
+<em>order of operations</em> than <b>||</b>.  One can always use
+parentheses to ensure correctness, but if you do start taking advantage of
+the implicit order of operations, you can help remind yourself of it by
+spacing things suggestively:
+</p><p>
+
+</p><pre>1   ||   0 &amp;&amp; 0      //equals 1
+</pre>
+</a><p><a name="6.9.1.7">
+All the boolean operators are listed in figure </a><a href="#BooleanOps">6.9</a> from highest
+order of operations to lowest.  Those that fall on the same line have an
+equal priority and are therefore evaluated from left to right as they occur
+in the expression.
+</p>
+<p>
+
+</p>
+<center><h3>Figure 6.9: Order of Boolean Operations</h3></center>
+<a name="BooleanOps">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+<b>( )</b> <b>!</b> </p>
+</td>
+</tr>
+<tr><td>
+<b>&gt;</b> <b>&lt;</b> <b>&gt;=</b> <b>&lt;=</b> </td>
+</tr>
+<tr><td>
+<b>==</b> <b>!=</b> <b>&lt;&gt;</b> </td>
+</tr>
+<tr><td>
+<b>&amp;&amp;</b> </td>
+</tr>
+<tr><td>
+<b>||</b> </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+</a><p><a name="BooleanOps">
+</a><a name="6.10">
+</a></p>
+<h3><a name="6.10">10. Mathematical Operators</a></h3>
+<a name="6.10">
+</a><a name="MathOperators">
+<p>
+Operators exist for all basic mathematical computations.  From these, other
+more complex functions may be constructed.  All mathematical operations use
+floating point arithmetic unless otherwise stated.  Any non-numerical
+arguments will be treated as 0.
+</p></a><p><a name="MathOperators">
+In addition to these operators, there are some useful built-in mathematical
+procedures (like one for rolling dice).  These will be described in chapter
+</a><a href="../../C%3A/Users/trist/Desktop/chap16.html#MathChapter">16</a>.
+</p>
+<p>
+<a name="6.10.1">
+</a></p>
+<h4><a name="6.10.1">10.1 Arithmetical Operators</a></h4>
+<a name="6.10.1">
+
+
+<p>
+The arithmetical operators are <b>+</b>, <b>-</b>, <b>*</b>, and <b>/</b>.
+These perform addition, subtraction, multiplication, and division.  The
+<b>-</b> operator may also be used (in prefix form) for negation.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>expression1</it>
+ <b>+</b> </td>
+<td> <it>expression2</it>
+ 20pt  </td>
+<td> <i>(addition)</i></td>
+</tr>
+<tr><td>
+<it>expression1</it>
+ <b>-</b> </td>
+<td> <it>expression2</it>
+                </td>
+<td> <i>(subtraction)</i></td>
+</tr>
+<tr><td>
+<it>expression1</it>
+ <b>*</b>   </td>
+<td> <it>expression2</it>
+                </td>
+<td> <i>(multiplication)</i></td>
+</tr>
+<tr><td>
+<it>expression1</it>
+ <b>/</b>   </td>
+<td> <it>expression2</it>
+                </td>
+<td> <i>(division)</i></td>
+</tr>
+<tr><td>
+<b>-</b> <it>expression</it>
+  </td>
+<td>                              </td>
+<td> <i>(negation)</i>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+C programmers should note that division yields the full floating point result
+rather than just the integer portion.  For example, <code>3/2</code> yields the
+expected result of <code>1.5</code>.
+</p></a><p><a name="6.10.1">
+</a><a name="6.10.2">
+</a></p>
+<h4><a name="6.10.2">10.2 <b>**</b> the power operator</a></h4>
+<a name="6.10.2">
+
+<p>
+The <b>**</b> operator raises the left-hand value to the power of the
+right-hand value.  Do not mistakenly use <b>^</b> for this
+purpose, since it has a completely different meaning (described below).
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>expression1</it>
+ <b>**</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="6.10.2">
+</a><a name="6.10.3">
+</a></p>
+<h4><a name="6.10.3">10.3 <b>%</b> the modulus operator</a></h4>
+<a name="6.10.3">
+
+<p>
+The <b>%</b> operator is used to find the remainder of a division.  The
+expression <code>A % B</code> is read "<code>A</code> modulo <code>B</code>" and is equal to the
+remainder of <code>A</code> divided by <code>B</code>.  This operator only works on integer
+arguments.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>expression1</it>
+ <b>%</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This operator is often used in cyclical events.  For example, you could
+define a procedure that makes the sun rise, warning people about especially
+ominous days.
+</p><p>
+
+</p><pre>var
+   day_count
+   day_of_week  //0 is Sunday
+
+proc/NewDay()
+   day_count = day_count + 1
+   day_of_week = day_count % 7  //0 through 6
+
+   if(day_of_week == 1)
+      world &lt;&lt; "It's Monday!"
+   else
+      world &lt;&lt; "A new day dawns."
+</pre>
+</a><p><a name="6.10.3">
+</a><a name="6.10.4">
+</a></p>
+<h4><a name="6.10.4">10.4 Increment and Decrement</a></h4>
+<a name="6.10.4">
+
+<p>
+Adding and subtracting 1 from a variable are such common operations that
+special operators exist for the purpose.  The <em>increment</em> operator
+<b>++</b> adds 1 to a variable.  The <em>decrement</em> operator <b>--</b>
+subtracts 1 from a variable.
+</p><p>
+Each of these operators has a prefix form and a postfix form.  Which one is
+used controls whether the value of the expression as a whole is taken from
+the variable before or after its value is modified.  The prefix form
+modifies the variable and returns the result.  The postfix form modifies the
+variable but returns its <em>original</em> value.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<b>++</b> </td>
+<td> <it>expression</it>
+ </td>
+</tr>
+<tr><td>
+<b>--</b> </td>
+<td> <it>expression</it>
+ </td>
+</tr>
+<tr><td>
+<p>
+<it>expression</it> </p>
+</td>
+<td> <b>++</b> </td>
+</tr>
+<tr><td>
+<it>expression</it>
+ </td>
+<td> <b>--</b>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The previous sun-rising example could make use of the increment operator.
+</p><p>
+
+</p><pre>   day_count = day_count + 1  //long-hand
+   day_count++                //short-hand
+   ++day_count                //or even this
+</pre>
+<p>
+In this case, it didn't matter whether we used the prefix or postfix
+version, because we weren't using the value of the resulting expression.
+Only the side-effect of incrementing the <code>day_count</code> variable matters,
+and that is the same in either case.
+</p><p>
+We could even combine the increment of <code>day_count</code> with the following line
+that makes use of it, like this:
+</p><p>
+
+</p><pre>   day_count = day_count + 1    //increment
+   day_of_week = day_count % 7  //use incremented value
+
+   day_of_week = ++day_count % 7 //increment and use it
+</pre>
+<p>
+Notice that we used the prefix increment.  That is because we wanted
+<code>day_count</code> to be incremented <em>first</em> and then used to compute the
+weekday.  The postfix increment would have used the existing value of
+<code>day_count</code> to compute the weekday and <em>then</em> increment.  The two would
+end up one day out of sync that way.  Of course, in this example that
+wouldn't matter much, but in some situations it could be important.
+</p></a><p><a name="6.10.4">
+</a><a name="6.10.5">
+</a></p>
+<h4><a name="6.10.5">10.5 Order of Mathematical Operations</a></h4>
+<a name="6.10.5">
+<p>
+Just like the boolean operators, the mathematical symbols are evaluated in a
+particular order.  When the default order is not desired, parentheses can be
+used to form smaller expressions that are evaluated first.
+</p></a><p><a name="6.10.5">
+Figure </a><a href="#MathOps">6.10</a> summarizes the order of operations of the mathematical
+symbols from highest to lowest.  Operators on the same line have equal
+precedence and are therefore evaluated as they appear in the expression from
+left to right.
+</p>
+<p>
+
+</p>
+<center><h3>Figure 6.10: Order of Mathematical Operations</h3></center>
+<a name="MathOps">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+<b>( )</b> <b>++</b> <b>--</b> <b>-</b><tt>(negation)</tt> </p>
+</td>
+</tr>
+<tr><td>
+<b>**</b> </td>
+</tr>
+<tr><td>
+<b>*</b> <b>/</b> <b>%</b> </td>
+</tr>
+<tr><td>
+<b>+</b> <b>-</b> </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+</a><p><a name="MathOps">
+</a><a name="6.11">
+</a></p>
+<h3><a name="6.11">11. Bitwise Operations</a></h3>
+<a name="6.11">
+
+
+<p>
+It is sometimes useful to pack several flags into one variable.  The
+<var>mob.sight</var> variable is an example of this.  Each flag
+is represented by a single on/off bit in the value.  For example, in the
+case of <var>mob.sight</var>, the possible values are:
+</p><p>
+  <small>(
+   Don't get too attached to the specifics of this variable.  Tom doesn't
+   like it, and I have a feeling he may stage another insurrection to squelch
+   it.  That heartless demagogue!  Why, without him, DM would still be nice
+   simple assembly language.
+)</small>  
+</p><p>
+
+</p><pre>#define BLIND     1 //binary 00001
+#define SEEINVIS  2 //binary 00010
+#define SEEMOBS   4 //binary 00100
+#define SEEOBJS   8 //binary 01000
+#define SEETURFS 16 //binary 10000
+</pre>
+<p>
+Each value is a power of two, which allows us to generate unique numbers by
+combing them.
+</p><p>
+To make it easier to manipulate individual bits, there are a number of
+bitwise operators (inherited from C).  When using these operators, the
+arguments should be 16 bit integers (in the range 0 to 65535).  <small>(65535 is simply sixteen 1's in binary; that's the largest 16 bit number.)</small>  
+Anything outside this range will be truncated.
+</p></a><p><a name="6.11">
+</a><a name="6.11.1">
+</a></p>
+<h4><a name="6.11.1">11.1 <b>~</b> the bitwise NOT</a></h4>
+<a name="6.11.1">
+
+<p>
+The <b>~</b> operator performs a bitwise NOT of its argument.
+For each of the 16 bits in the argument, if the bit is 1, the corresponding
+bit in the result will be 0, and vice versa.  That is a lot like the
+<b>!</b> operator except the latter doesn't care which bits are on--only
+that at least one bit is on.  The <b>!</b> operator also works with other
+values besides 16 bit integers.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<b>~</b> <it>expression</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="6.11.1">
+</a><a name="6.11.2">
+</a></p>
+<h4><a name="6.11.2">11.2 <b>&amp;</b> the bitwise AND</a></h4>
+<a name="6.11.2">
+
+<p>
+The <b>&amp;</b> operator performs a bitwise AND of its arguments.  For each
+pair of bits in the arguments, the corresponding bit in the result will be 1
+if both are 1, and 0 otherwise.  Note that this is analogous to the logical
+<b>&amp;&amp;</b> operator except that it processes each bit individually rather
+than the value as a whole.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>expression1</it>
+ <b>&amp;</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The <b>&amp;</b> operator is most often used to test if a particular bit
+flag is set.  For example <code>mob.sight &amp; SEEINVIS</code> would be non-zero
+(i.e. true) if the SEEINVIS flag is set and 0 otherwise.
+</p></a><p><a name="6.11.2">
+</a><a name="6.11.3">
+</a></p>
+<h4><a name="6.11.3">11.3 <b>|</b> the bitwise OR</a></h4>
+<a name="6.11.3">
+
+<p>
+The <b>|</b> operator performs a bitwise OR of its arguments.  For each
+pair of bits in the arguments, the corresponding bit in the result will be 1
+if either is 1, and 0 otherwise.  Note that this is analogous to the logical
+<b>||</b> operator except that it processes each bit
+individually rather than the value as a whole.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>expression1</it>
+ <b>|</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The <b>|</b> operator is most often used to combine several bit flags
+together.  For example, <var>mob.sight</var> might be set to
+<code>SEEMOBS | SEEOBJS</code> to give someone x-ray vision of objects
+through walls.  Actually, you can use <b>+</b> for this purpose as long as
+you never include the same flag more than once.
+</p></a><p><a name="6.11.3">
+</a><a name="6.11.4">
+</a></p>
+<h4><a name="6.11.4">11.4 <b>^</b> the bitwise XOR</a></h4>
+<a name="6.11.4">
+
+<p>
+The <b>^</b> operator performs a bitwise exclusive OR of its
+arguments.  For each pair of bits in the arguments, the corresponding bit in
+the result will be 1 if exactly one of them is 1, and 0 otherwise.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>expression1</it>
+ <b>^</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The <b>^</b> operator is most often used to toggle a bit flag.  For
+example, <code>mob.sight = mob.sight ^ SEEINVIS</code> would turn on the
+SEEINVIS flag if it is off, and vice versa.
+</p></a><p><a name="6.11.4">
+</a><a name="6.11.5">
+</a></p>
+<h4><a name="6.11.5">11.5 Bit Shifting</a></h4>
+<a name="6.11.5">
+
+
+<p>
+The <b>&lt;&lt;</b> and <b>&gt;&gt;</b> operators
+perform left and right bit shifts.  They are almost never used in DM
+programs but are included because they are standard C operators.  When used
+outside of an expression (as a statement) these operators have quite a
+different meaning (inherited from C++); in that case they serve as
+input/output operators.  You will almost always use them in that form.
+</p></a><p><a name="6.11.5">
+</a><a name="6.11.6">
+</a></p>
+<h4><a name="6.11.6">11.6 Order of Bitwise Operations</a></h4>
+<a name="6.11.6">
+</a><p><a name="6.11.6">
+The order in which bitwise operators are evaluated is listed in figure
+</a><a href="#BitOps">6.11</a> from highest to lowest.  Those on the same line have equal
+precedence and are therefore evaluated from left to right as they occur in
+the expression.
+</p>
+<p>
+
+</p>
+<center><h3>Figure 6.11: Order of Bitwise Operations</h3></center>
+<a name="BitOps">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+<b>( )</b> <b>~</b> </p>
+</td>
+</tr>
+<tr><td>
+<b>&lt;&lt;</b> <b>&gt;&gt;</b> </td>
+</tr>
+<tr><td>
+<b>&amp;</b> </td>
+</tr>
+<tr><td>
+<b>^</b> </td>
+</tr>
+<tr><td>
+<b>|</b> </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+</a><p><a name="BitOps">
+</a><a name="6.12">
+</a></p>
+<h3><a name="6.12">12. Assignment Operators</a></h3>
+<a name="6.12">
+
+
+<p>
+The <b>=</b> operator causes the left-hand variable to be assigned to the
+right-hand expression.  As noted earlier, this is quite different from the
+<b>==</b> symbol, which performs a comparison.
+</p><p>
+  <small>(
+  The <b>=</b> and <b>==</b> operators have the same meaning in the C
+  language.  Unlike C, however, assignment in DM is not itself an
+  expression.  That prevents the easily made mistake of using <b>=</b> when
+  you really wanted <b>==</b> in a conditional statement.
+)</small>  
+</p></a><p><a name="6.12">
+In an assignment, numbers and references are simply copied to the specified
+variable.  The actual <em>contents</em> of a reference are not
+duplicated--only the reference itself is.  See section </a><a href="../../C%3A/Users/trist/Desktop/chap05.html#References">5.6</a> for a
+discussion of references and variable data.
+</p>
+<p>
+</p>
+<table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>expression1</it>
+ <b>=</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p>
+<p>
+<a name="6.12.1">
+</a></p>
+<h4><a name="6.12.1">12.1 Combining Other Operations with Assignment</a></h4>
+<a name="6.12.1">
+
+<p>
+When you want to add something to a variable, you could do it like this:
+</p><p>
+
+</p><pre>variable = variable + 26
+</pre>
+<p>
+However, DM provides a nice abbreviation for this since it is such a common
+operation.  Instead you can just type:
+</p><p>
+
+</p><pre>variable += 26
+</pre>
+<p>
+This is not just a special case for the <b>+</b> operator.  It works for all
+of them.  In general, the following two statements are equivalent.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<b>1.</b>10pt <it>expression1</it>
+ <b>=</b> <it>expression1</it>
+ <b>(operator)</b> <it>expression2</it>
+ </td>
+</tr>
+<tr><td>
+<b>2.</b>10pt <it>expression1</it>
+ <b>(operator)</b><b>=</b> <it>expression2</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="6.12.1">
+</a><a name="6.13">
+</a></p>
+<h3><a name="6.13">13. <b>?</b> the Conditional Operator</a></h3>
+<a name="6.13">
+
+<p>
+The <b>?</b> operator tests a boolean expression.  Two additional
+expressions are specified: one that takes effect if the boolean expression
+was true, and the other if it was false.  For efficiency, only the required
+expression of the two is evaluated.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>boolean expression</it>
+ <b>?</b> <it>true expression</it>
+ <b>:</b> <it>false expression</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example uses the <b>?</b> operator in place of an <var>if</var>
+statement.
+</p><p>
+
+</p><pre>mob/verb/intangible()
+   density = !density
+   usr &lt;&lt; (density ? "You materialize." : "You dematerialize.")
+</pre>
+<p>
+Ok, this looks like Greek to anyone but a hard-core C programmer (or a Greek).
+Still, once you train your eye to read it, you can walk around feeling
+superior to everyone else.
+</p></a><p><a name="6.13">
+</a><a name="6.14">
+</a></p>
+<h3><a name="6.14">14. Dereference Operators</a></h3>
+<a name="6.14">
+
+<p>
+With a reference to an object stored in one variable, the object's own
+variables and procedures can be accessed using the operators described in the
+following sections.  This sort of operation is known as <em>dereferencing</em>
+a variable, because it requires the computer to access the data pointed to
+by a reference.
+</p></a><p><a name="6.14">
+</a><a name="6.14.1">
+</a></p>
+<h4><a name="6.14.1">14.1 <b>.</b> the "strict" dereference</a></h4>
+<a name="6.14.1">
+
+<p>
+The <b>.</b> (dot) operator is used to access a variable or procedure
+belonging to an object.  To do this, one must have a reference to the object
+stored in a variable of the appropriate type.  The type does not have to be
+completely defined--just enough to get to the definition of the variables
+and procedures that will be accessed.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>object</it>
+<b>.</b><it>variable</it>
+  20pt Or 20pt  <it>object</it>
+<b>.</b><it>procedure</it>
+()
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Unlike most other DM operators, space is not allowed on either side of the
+dot operator.  The variable and procedure names must be on either side of it
+with no separation.
+</p><p>
+The requirement that the object be of a known type is merely to allow the
+compiler to do better error checking.  It won't let you try to access a
+variable or procedure that does not belong to the specified type and is
+therefore known as the "strict" dereference operator.
+</p><p>
+That's at compile-time.  At run-time, you may in fact have assigned the
+variable to an object which isn't even of the same type (like a mob in an
+obj variable).  That is ok.  In fact, the dot operator will still work in
+that case as long as the requested variable exist for the object in
+question.  In this case, we would say that the object has a compatible
+<em>interface</em>.
+</p><p>
+
+</p></a><p><a name="6.14.1">
+If at run-time it turns out that the object doesn't have the requested
+variable, the procedure ceases execution immediately.  This is called a
+procedure <em>crash</em>.  (Even worse is a world crash in which the entire
+world dies.)  The most common case is a null object.  Some debugging output
+will be generated describing the exact cause to help you track down the
+problem.  Chapter </a><a href="../../C%3A/Users/trist/Desktop/chap19.html#BigProjectChapter">19</a> will discuss debugging methods in
+greater detail.
+</p>
+<p>
+The following four verbs illustrate various properties of the dot operator.
+</p>
+<p>
+
+</p>
+<pre>mob/verb
+   summon1(M as mob)
+      M.loc = loc  //compile-time error!
+   summon2(mob/M)
+      M.loc = loc  //this works
+   summon3(obj/M as mob)
+      M.loc = loc  //this works
+   summon4(mob/M as mob|null)
+      M.loc = loc  //could be run-time error!
+</pre>
+<p>
+The first version of the <code>summon</code> verb will not compile.  The input type
+of <code>M</code> was defined to be <var>mob</var>, but the variable type was left
+undefined, so the compiler does not know that <code>M</code> has a <var>loc</var>
+variable.
+</p>
+<p>
+The second version takes care of the variable type and makes use of the fact
+that the default input type is computed from the variable type.
+</p>
+<p>
+The third version is wacky, but it works.  We told the compiler it is an obj
+var and we told the client to take mobs as input.  Since both obj and mob
+have a <var>loc</var> variable, both the compiler and the server are happy.
+You obviously wouldn't want to do things this way, but you could change the
+input type to <code>obj|mob</code> and it would make more sense.
+</p>
+<p>
+The fourth version runs the risk of a proc crash.  It should instead check
+if <code>M</code> is <var>null</var> and avoid dereferencing it in that case.
+Another method would be to assign <code>M</code> a default value (such as
+<var>usr</var>).
+</p>
+<p>
+<a name="6.14.2">
+</a></p>
+<h4><a name="6.14.2">14.2 <b>:</b> the "lax" dereference</a></h4>
+<a name="6.14.2">
+
+<p>
+The <b>:</b> operator allows you to take things one step further by making
+the compile-time checks for validity even less strict.  It works just like
+the dot operator, except the full object type need not be specified.  As
+long as at least one object type derived from the specified one has the
+requested variable, the compiler will allow it.  It is left up to you to
+make sure only compatible objects are used at run-time (or a crash results).
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>variable</it>
+<b>:</b><it>variable</it>
+  20pt Or 20pt  <it>variable</it>
+<b>:</b><it>procedure</it>
+()
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Like the dot operator, the <b>:</b> may not have any spaces between it and
+its arguments.
+</p><p>
+The most common use for this operator is when the object type is not defined
+at all.  In that case, the compiler only checks to make sure that at least
+one object type in the entire tree has the specified variable or procedure.
+This technique should not be used out of laziness but when you have
+legitimate reasons for leaving the object type unspecified.  One reason
+would be if a variable may contain references to objects of types with no
+common ancestor (like obj and mob).  Most of the time, however, it is best
+to make use of the compiler's type checking capabilities.
+</p><p>
+The following verbs exhibit two methods for extending the above <code>summon</code>
+command to take both mobs and objs as arguments.
+</p><p>
+
+</p><pre>mob/verb
+   summon1(obj/M as obj|mob)
+      M.loc = loc
+   summon2(M as obj|mob)
+      M:loc = loc
+</pre>
+<p>
+The first example keeps the compiler happy by lying about the variable
+type.  <code>M</code> might be an obj, but it might also be a mob.  In either case,
+they both have a <var>loc</var> variable, so it will work at run-time.
+</p><p>
+The second case keeps the compiler happy by using the <b>:</b> operator to
+do lax type checking.  Since no type is declared for <code>M</code>, the compiler
+just checks to make sure that <em>some</em> type of object has a <var>loc</var>
+variable.  Since there are several which do (obj, mob, and turf being
+examples) the check succeeds.
+</p><p>
+The bottom line is that neither the strict nor lax operator has any
+influence on the value of the variable itself.  They just control how the
+compiler does type checking.  At run-time all that matters is whether the
+object has the requested variable.
+</p></a><p><a name="6.14.2">
+</a><a name="6.15">
+</a></p>
+<h3><a name="6.15">15. Path Operators</a></h3>
+<a name="6.15">
+
+<p>
+The <b>.</b> and <b>:</b> operators may also be used in path expressions
+along with the normal <b>/</b> separator that you have already seen.  Their
+meaning in this context is reminiscent of the way they behave in dereference
+expressions.  All the path operators have in common the need to be directly
+adjacent to their arguments with no intervening space.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>path-expression</it>
+<b>/</b><it>path-expression</it>
+ </td>
+</tr>
+<tr><td>
+<it>path-expression</it>
+<b>.</b><it>path-expression</it>
+ </td>
+</tr>
+<tr><td>
+<it>path-expression</it>
+<b>:</b><it>path-expression</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Paths are used in two contexts in DM.  One is in object definitions.  In
+this case the path is used to create nodes in the code tree.  The second
+context is in expressions, where path values refer to object types.  In this
+case, the type reference must always start with a path operator to be
+properly recognized.  That is easy to remember, because one almost always
+would want to begin with <b>/</b>, as you will see shortly.
+</p></a><p><a name="6.15">
+</a><a name="6.15.1">
+</a></p>
+<h4><a name="6.15.1">15.1 <b>/</b> the parent-child separator</a></h4>
+<a name="6.15.1">
+
+<p>
+The <b>/</b> operator is used in a path between a parent and its child.  In
+the context of an object definition, that is equivalent to a newline and an
+extra level of indentation.
+</p><p>
+At the beginning of a path, this operator has the special effect of starting
+at the root (or top level) of the code.  Normally, a path is relative to the
+position in the code where it is used.  For example, if you are inside the
+<code>obj</code> node and you define <code>scroll</code>, you are really defining
+<code>/obj/scroll</code>, which is how you would refer to that type elsewhere in
+the code.  A path starting with <b>/</b> is called an <em>absolute</em> path
+to distinguish it from other <em>relative</em> paths.
+</p></a><p><a name="6.15.1">
+</a><a name="6.15.2">
+</a></p>
+<h4><a name="6.15.2">15.2 <b>.</b> the look-up path operator</a></h4>
+<a name="6.15.2">
+</a><a name="DotPathOperator">
+
+<p>
+The <b>.</b> (dot) operator in a path searches for the specified child
+starting in the current node, then its parent, its parent's parent, and so
+on.  It is for this upward searching behavior that we call it the
+<em>look-up</em> operator.  Obviously the node you are looking up must already
+exist for this to work.
+</p><p>
+The most common use for this operator is in specifying the type of an
+ancestor object.  For example, one might want to define groups of mob
+species who always come to each other's aid in combat.
+</p><p>
+
+</p><pre>mob
+   var/species_alignment
+   dragon
+      species_alignment = .dragon
+      red
+      green
+      black
+         species_alignment = .black
+   snake
+      species_alignment = .snake
+      cobra
+      winged
+         species_alignment = .dragon
+      pit_viper
+         species_alignment = .dragon/black
+</pre>
+<p>
+In this example, the <code>species_alignment</code> variable is intended to
+indicate what group of creatures a given type of mob treats as allies.  This
+is done by storing an object type in the variable.  Two mobs with identical
+values for <code>species_alignment</code> will be friends.
+</p><p>
+In this example, dragons are aligned with each other except the black one,
+which is self-aligned.  Snakes are aligned with each other except the winged
+ones, which are aligned with the dragons, and the pit vipers, which are
+aligned with the black dragon.
+</p><p>
+By using the dot operator, we avoided the use of absolute paths.  It's not
+only more compact but less susceptible to becoming invalid when certain code
+changes are made (like moving <code>dragon</code> and <code>snake</code> to
+<code>/mob/npc/dragon</code> and <code>/mob/npc/snake</code>).
+</p></a><p><a name="DotPathOperator">
+</a><a name="6.15.3">
+</a></p>
+<h4><a name="6.15.3">15.3 <b>:</b> the look-down path operator</a></h4>
+<a name="6.15.3">
+
+<p>
+The <b>:</b> operator searches for a child starting in the current node and
+then in all its children if necessary.  It is for this reason that it is
+called the <em>look-down</em> path operator.  At the beginning of a path, it
+causes the search to take place from the root.
+</p><p>
+The previous example could be changed to have <b>:</b> substituted for the
+dot operator.  For instance, <tt>.dragon/black</tt> could be replaced by
+<tt>:black</tt> or <tt>:dragon:black</tt> or <tt>/mob:dragon:black</tt>,
+depending on how ambiguous the name `black' is.  If both
+<tt>/mob/dragon/black</tt> and <tt>/obj/potion/black</tt> exist, then you
+would need to include enough information to distinguish between the black
+dragon and the black potion.  Otherwise the wrong one might be selected
+instead.
+</p><p>
+The dot and <b>:</b> path operators are similar in meaning when operating on
+paths and variables.  The dot operator accesses either a node or variable
+defined at the specified position or above.  The <b>:</b> operator accesses
+a node or variable defined at the specified position or below.
+</p></a><p><a name="6.15.3">
+One powerful way of using the various path operators is to modify an object
+definition from somewhere else in the code.  This is sometimes useful when
+working in large projects that are split between several files.  More will
+be said about that topic in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap19.html#BigProjectChapter">19</a>.  For now, this
+is a facetious example:
+</p>
+<p>
+
+</p>
+<pre>obj/corpse
+   icon = 'corpse.dmi'
+
+mob
+   dragon
+      icon = 'dragon.dmi'
+
+      :corpse  //add to corpse definition
+         var/dragon_meat
+</pre>
+<p>
+In this example, a variable is added to <code>/obj/corpse</code> from inside the
+definition of <code>mob/dragon</code>.  This would presumably then be used by the dragon
+code in some way.  For example, when a dragon dies and produces a corpse,
+the <code>dragon_meat</code> could be set to 1.  Another dragon coming across such a
+corpse might protect it against scavengers.  There would be better ways of
+accomplishing the same thing, but the point is that we were able to put the
+definition of the variable near the only place in the code where it would be
+used--a nice way to organize things.
+</p>
+<p>
+<a name="6.16">
+</a></p>
+<h3><a name="6.16">16. Order of All Operations</a></h3>
+<a name="6.16">
+
+<p>
+The boolean, bitwise, mathematical, conditional, and assignment operators
+may all be used in the same statement.  When no parentheses are used to
+explicitly control the order of operations, it is necessary to know what
+order the compiler will enforce.
+</p></a><p><a name="6.16">
+Figure </a><a href="#AllOps">6.12</a> lists all the DM operators from highest to lowest order
+of operation.  Each line contains operators of equal priority.  These will
+be evaluated in order from left to right as they appear in an expression.
+</p>
+<p>
+
+</p>
+<center><h3>Figure 6.12: Order of All Operations</h3></center>
+<a name="AllOps">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+<b>.</b> <b>:</b> <b>/</b><font size="2">(path)</font> </p>
+</td>
+</tr>
+<tr><td>
+<b>( )</b> <b>!</b> <b>~</b> <b>++</b> <b>--</b> <b>-</b><font size="2">(negation)</font> </td>
+</tr>
+<tr><td>
+<b>**</b> </td>
+</tr>
+<tr><td>
+<b>*</b> <b>/</b> <b>%</b> </td>
+</tr>
+<tr><td>
+<b>+</b> <b>-</b> </td>
+</tr>
+<tr><td>
+<p>
+<b>&gt;</b> <b>&lt;</b> <b>&gt;=</b> <b>&lt;=</b> </p>
+</td>
+</tr>
+<tr><td>
+<b>&lt;&lt;</b> <b>&gt;&gt;</b> </td>
+</tr>
+<tr><td>
+<b>==</b> <b>!=</b> <b>&lt;&gt;</b> </td>
+</tr>
+<tr><td>
+<p>
+<b>&amp;</b> </p>
+</td>
+</tr>
+<tr><td>
+<b>^</b> </td>
+</tr>
+<tr><td>
+<b>|</b> </td>
+</tr>
+<tr><td>
+<p>
+<b>&amp;&amp;</b> </p>
+</td>
+</tr>
+<tr><td>
+<b>||</b> </td>
+</tr>
+<tr><td>
+<p>
+<b>?</b> </p>
+</td>
+</tr>
+<tr><td>
+<p>
+<b>=</b> <b>+=</b> <b>-=</b> etc. </p>
+</td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+</a><p><a name="AllOps">
+</a><a name="6.17">
+</a></p>
+<h3><a name="6.17">17. Loop Statements</a></h3>
+<a name="6.17">
+<p>
+There are a variety of ways to execute the same block of code several times
+in a sequence.  This is called <em>looping</em> because the point of execution
+moves down through the block of code and then jumps back up to the top to do
+it all over.  Every form of loop includes some way of terminating the loop;
+otherwise it would continue forever.  Usually this takes the form of a
+boolean condition that must be met each time the loop repeats.
+</p><p>
+Each form of loop is convenient in different situations.  The syntax and
+uses of each kind will be described in the sections that follow.
+</p></a><p><a name="6.17">
+</a><a name="6.17.1">
+</a></p>
+<h4><a name="6.17.1">17.1 <var>for</var> list loop</a></h4>
+<a name="6.17.1">
+
+<p>
+One very common task in DM programming is doing some operation on each
+item in a list.  The <var>for</var> loop is designed for this purpose.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+   <var>for</var>(<it>variable</it>
+ <var>as</var> <it>input-type</it>
+ <var>in</var> <it>list</it>
+) Statement
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The statements inside the <var>for</var> loop are its body.  The syntax for
+defining the body is the same as the <var>if</var> statement.  A single
+statement may be included on the same line or multiple statements may be
+placed in an indented block beneath the <var>for</var> statement.
+</p><p>
+Each item in the specified list which is of the indicated input type is in
+turn assigned to the supplied variable.  After each assignment, the body of
+the <var>for</var> loop is executed.  A single pass through the <var>for</var>
+loop (or any other) is called an <em>iteration</em>.  The entire process is
+often termed "looping <em>over</em> or <em>through</em> a list".
+</p><p>
+  <small>(
+  Mathematicians and computer scientists have no regard for the preposition,
+  and will often just pick one at random to suit their purposes.  For
+  example, after finally accepting the statement "<b>f</b> <em>of</em>
+  <b>x</b> is a map <em>under</em> the real domain <em>onto</em> the range of
+  <b>f</b>" I found the remainder of calculus to be relatively
+  straightforward.
+)</small>  
+</p><p>
+Notice that the syntax of the <var>for</var> loop is very similar to that of a
+verb argument definition.  A variable is supplied in which a value from a
+list will be stored and all values not belonging to the desired input type
+are filtered out.  The only difference is that the <var>for</var> loop
+variable is not being defined in this statement.  It must be defined in the
+preceding code.
+</p></a><p><a name="6.17.1">
+The same input types can be used in the <var>for</var> loop as in an argument
+definition.  See section </a><a href="../../C%3A/Users/trist/Desktop/chap04.html#InputTypes">4.5.1</a> for a complete list.  Several can
+be used in combination by using the <b>|</b> operator.
+</p>
+<p>
+  <small>(
+  Incidentally, you should now see why <b>|</b> is used in this case.
+  Each input type is actually a bit flag which can be ORed together bitwise.
+)</small>  
+</p>
+<p>
+As is the case with argument definitions, convenient default values are
+supplied for both the input type and the list.  If no input type is
+specified, all items not compatible with the variable type are automatically
+filtered out.  If no list is specified, it defaults to the contents of the
+entire world (<var>world.contents</var> or simply <var>world</var>).  That is
+different from verb arguments, which use the <var>view()</var> list by default.
+</p>
+<p>
+The body of the <var>for</var> loop will of course use the loop variable in
+some way.  For example, an inventory list could be displayed by looping over
+each object in the player's contents.
+</p>
+<p>
+
+</p>
+<pre>mob/verb/inventory()
+   var/obj/O
+   usr &lt;&lt; "You are carrying:"
+   for(O in usr)
+      usr &lt;&lt; O.name
+</pre>
+<p>
+The statement could have been <code>for(O <em>as obj</em> in usr)</code>, but that
+would be redundant in these case since we defined the variable to have that
+type.
+</p>
+<p>
+One subtle point arises when you modify the contents of the list you are
+looping over.  For example, there might be situations when you would want
+the player to drop everything in the inventory.
+</p>
+<p>
+
+</p>
+<pre>mob/verb/strip()
+   var/obj/O
+   for(O in usr)
+      O.loc = usr.loc  //drop it
+</pre>
+<p>
+This will actually work as expected.  If one were to do all the work of
+looping through the list directly (which you shall see how do in section
+<a href="../../C%3A/Users/trist/Desktop/chap10.html#AccessingList">10.2</a>), it would be easy to make a mistake in cases like this
+because the contents of the list are changing with each iteration.  DM
+handles cases like this by making a temporary copy of the list at the
+beginning of the <var>for</var> loop.
+</p>
+<p>
+However, there is one list that DM considers too cumbersome to handle in
+this way, and that is the <var>world.contents</var> list.  Do not loop over the
+contents of the whole world if you are simultaneously changing that list
+(i.e., creating or destroying objects).  It will not necessarily work as you
+expect.  If need be, you can create your own temporary copy of the list
+using techniques described in chapter <a href="../../C%3A/Users/trist/Desktop/chap10.html#ListChapter">10</a>.
+</p>
+<p>
+<a name="6.17.2">
+</a></p>
+<h4><a name="6.17.2">17.2 <var>for</var> conditional loop</a></h4>
+<a name="6.17.2">
+
+<p>
+There is a second form to the <var>for</var> loop.  You might think of this as
+the manual version; you could use it to loop over a list, but it
+would not automatically handle the process for you like the other syntax.
+The advantage is you can use it to do anything you want, the way you want.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>for</var>(initialization; <it>condition</it>
+; iteration) Statement
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+There are three parts to the <var>for</var> loop: an initialization statement,
+a conditional expression, and an iteration statement.  The
+initialization statement is executed once before any iterations take place.
+Then at the beginning of each iteration, the condition is tested.  If it is
+false, the <var>for</var> loop is finished.  Otherwise, the <var>for</var> loop
+body is executed.  (It may be a block of multiple statements.)  Finally, at
+the end of the body, the iteration statement is executed, the condition is
+tested, and the process is repeated until the condition becomes false.
+</p><p>
+  <small>(
+  Some of you will recognize this as the C-style <var>for</var> loop.
+  However, be careful not to use a comma, as you would in C, to pack several
+  statements into one of the loop control statements.  In DM, the comma is
+  identical to the semicolon in this context.  To pack several statements
+  together, you should instead surround them with braces <b>{ }</b>.
+)</small>  
+</p><p>
+Suppose, for example, that you wanted to create a variable number of
+objects.  The simplest way would be to use a <var>for</var> loop.
+</p><p>
+
+</p><pre>obj/scroll/medicine
+   verb/cast(N as num)
+      var/i
+      for(i=1; i&lt;=N; i++)
+         new/obj/medicine(usr)
+</pre>
+</a><p><a name="6.17.2">
+This example defines a medicine scroll which allows the player to create as
+much medicine as desired.  (You would probably want to build in a cost per
+medicine by subtracting from the player's magic power or something.)  The
+<var>new</var> command will be described in detail in section </a><a href="../../C%3A/Users/trist/Desktop/chap07.html#NewDel">7.2</a>.
+It creates an object of the specified type at the given location.  In this
+case, the location is the user's inventory.
+</p>
+<p>
+<a name="6.17.3">
+</a></p>
+<h4><a name="6.17.3">17.3 <var>while</var> loop</a></h4>
+<a name="6.17.3">
+
+<p>
+The <var>while</var> loop is a simpler version of the <var>for</var> loop.  It
+only takes a condition parameter, and leaves the initialization and iteration
+control up to the rest of the code.  Like the <var>for</var> loop, the
+condition is tested at the beginning of each iteration.  If it is false, the
+loop is finished.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>while</var>(<it>condition</it>
+) Statement
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This loop is mainly useful in situations where the initialization and
+iteration statements are unnecessary or can be combined with the condition.
+For example, the <var>for</var> loop example can be made to work with a simple
+<var>while</var> loop.
+</p><p>
+
+</p><pre>obj/scroll/medicine
+   verb/cast(N as num)
+      while(N-- &gt; 0)
+         new/obj/medicine(usr)
+</pre>
+<p>
+This has precisely the same effect of making <code>N</code> medicine objects but does
+so in a different way.  Once you become familiar with the increment and
+decrement operators, compact code like this may seem more appealing.
+Otherwise, you could obviously decrement N at the bottom of the
+<var>while</var> loop body.
+</p></a><p><a name="6.17.3">
+</a><a name="6.17.4">
+</a></p>
+<h4><a name="6.17.4">17.4 <var>do while</var> loop</a></h4>
+<a name="6.17.4">
+
+<p>
+The <var>do while</var> loop is similar to the <var>while</var> loop, except the
+condition is tested at the end of an iteration rather than the beginning.
+The effect this has is to guarantee that the body of the loop is executed at
+least once.  In certain situations, that is just what one needs.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>do</var> </td>
+<td> </td>
+</tr>
+<tr><td>
+            </td>
+<td> Statement </td>
+</tr>
+<tr><td colspan="2">
+<var>while</var>(<it>condition</it>
+)
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+For example, one could make the medicine verb work without any argument at
+all (when the player is in a hurry for some medicine).
+</p><p>
+
+</p><pre>obj/scroll/medicine
+   verb/cast(N as num|null)
+      do
+         new/obj/medicine(usr)
+      while(--N &gt; 0)
+</pre>
+<p>
+Now it is possible to just type "<tt>(cast medicine)</tt>" to make a single
+medicine object.  The same could have been accomplished with a default
+argument of 1.
+</p></a><p><a name="6.17.4">
+</a><a name="6.18">
+</a></p>
+<h3><a name="6.18">18. Jumping Around</a></h3>
+<a name="6.18">
+<p>
+The loop and conditional statements exist because they provide a structured
+syntax for very common operations.  Sometimes, however, they may not quite
+fit your requirements.  Several less-structured instructions exist to help
+you adapt the other control-flow statements to any possible purpose.  These
+are described in the following sections.
+</p></a><p><a name="6.18">
+</a><a name="6.18.1">
+</a></p>
+<h4><a name="6.18.1">18.1 <var>break</var> and <var>continue</var> statements</a></h4>
+<a name="6.18.1">
+
+<p>
+The <var>break</var> and <var>continue</var> statements are used to terminate an
+entire loop or the current iteration of a loop, respectively.  These are
+useful when you have a situation that doesn't exactly fit any of the simple
+loop statements.  They are placed in the body of the loop--usually inside an
+<var>if</var> statement to be executed when some condition is met.
+</p><p>
+One could use the <var>continue</var> statement when listing all the players
+in the game, to avoid including the user in the list.
+</p><p>
+
+</p><pre>mob/verb/who()
+   var/mob/M
+   for(M in world)
+      if(!M.key) continue   //skip NPCs
+      if(M == usr) continue //skip self
+
+      if(M.name == M.key) usr &lt;&lt; M.name
+      else usr &lt;&lt; "[M.name] ([M.key])"
+</pre>
+<p>
+This displays all the other players (and their real key name if they are
+using an alias).  Of course the example could be rewritten without
+<var>continue</var> by rearranging the statements.  However, in more complex
+situations, the use of <var>continue</var> and <var>break</var> can sometimes
+clarify the code immensely.
+</p></a><p><a name="6.18.1">
+</a><a name="6.18.2">
+</a></p>
+<h4><a name="6.18.2">18.2 <var>goto</var> statement</a></h4>
+<a name="6.18.2">
+
+<p>
+The <var>goto</var> statement causes execution to jump to the specified label
+in the code.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>goto</var> <it>label</it>
+ </td>
+</tr>
+<tr><td>
+.<br/>.<br/>.<br/> </td>
+</tr>
+<tr><td>
+<it>label</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="6.18.2">
+The label is actually just a node marking the destination point in the code,
+and can precede or follow the <var>goto</var> statement.  The argument to
+<var>goto</var> is actually the path to the destination node.  As a
+convenience, the path has an implicit dot in front.  That means most of the
+time, you only need to specify the name of the label and no further path
+information.  See section </a><a href="#DotPathOperator">6.15.2</a> on path operators.
+</p>
+<p>
+The <var>goto</var> statement should be used only when it clarifies the code.
+In most situations, the more structured loop and conditional statements are
+preferable.  One situation where it may prove useful is when there is some
+wrapup code that needs to be executed before returning from a procedure, and
+there are multiple points within the rest of the procedure that need to
+wrap up and return.  Rather than repeating the same wrapup code everywhere
+(and possibly forgetting to do it in some places) you can put it at the
+bottom of the procedure with a label in front of it.
+</p>
+<p>
+A simple example is not possible, because in any simple situation, you would
+not want to use <var>goto</var>.  However, the general structure would be
+something like this:
+</p>
+<p>
+
+</p>
+<pre>proc/Example()
+   //Complex code with the occasional:
+   goto wrapup
+
+   //Final code that goes straight down to wrapup
+   //unless it returns.
+
+   wrapup:
+   //Do wrapup stuff here.
+</pre>
+<p>
+As illustrated by this example, you can put an optional colon on the end of
+the label.  This helps distinguish the node from other statements.  It also
+happens to be the standard way labels are declared in most programming
+languages.
+</p>
+<p>
+It is important to clarify that the label in the code doesn't do anything.
+It is just a marker.  If execution reaches the label, it skips right over
+and processes the next statement.
+</p>
+<p>
+<a name="6.18.3">
+</a></p>
+<h4><a name="6.18.3">18.3 Block Labels</a></h4>
+<a name="6.18.3">
+<p>
+In the previous section, you saw how to label a point in the procedure code
+and jump to it.  This is a very flexible technique, but it lacks structure
+and can therefore produce source code that is tangled and difficult to
+understand.  Sometimes you may want to combine the functionality of
+<var>goto</var> with the loop instructions <var>break</var> and
+<var>continue</var>.  To do that, you need to use block labels.
+</p><p>
+A block label is the same as a <var>goto</var> label, except it goes at the
+top of a block of indented code.  Like the <var>goto</var> label, the block
+label doesn't do anything.  Execution skips right over it and starts at the
+first statement in the block.  The block label can even be used as the
+destination of a <var>goto</var> statement.  However, its real purpose is with
+<var>break</var> and <var>continue</var>.
+</p><p>
+Both <var>break</var> and <var>continue</var> work, by default, with the
+inner-most loop containing them.  However, if the name of a block is
+specified, they apply to that block instead.  The <var>break</var> statement
+causes execution to jump to the end of the block; <var>continue</var> causes
+the next iteration of a loop directly contained in the block to take place.
+</p><p>
+The following example makes use of a labeled block to steal food from people.
+</p><p>
+
+</p><pre>obj/scroll/free_lunch/verb/cast()
+   var/mob/M
+   var/obj/food/F
+
+   victim_loop:
+      for(M in view())
+         if(M == usr) continue victim_loop
+         for(F in M)
+            M &lt;&lt; "Thanks for the contribution!"
+            F.loc = usr  //grab the snack
+            continue victim_loop
+         usr &lt;&lt; "[M] has nothing to offer."
+</pre>
+<p>
+There are two loops in this example, an outer one and an inner one.  The
+outer one loops over all the creatures in view of the user.  It has been
+labeled <code>victim_loop</code>.  The first <var>continue</var> statement is used
+to prevent the user from stealing her own food.  It would work with or
+without the <code>victim_loop</code> label, since that is the loop directly
+containing the <var>continue</var> statement.
+</p><p>
+The inside loop iterates over the food carried by the victim.  Notice that
+it is not really a loop at all, because at the end of the very first
+iteration it continues the outer loop.  That is a common trick used to find
+the first item derived from a given type (in this case <code>/obj/food</code>).
+In this case, it was necessary to explicitly use the <code>victim_loop</code>
+label because otherwise <var>continue</var> would have applied to the inner
+loop rather than the outer one.  That would have resulted in the spell being
+much too greedy and stealing all of the food of each victim rather than just
+one item each.
+</p></a><p><a name="6.18.3">
+</a><a name="6.19">
+</a></p>
+<h3><a name="6.19">19. <var>switch</var> statement</a></h3>
+<a name="6.19">
+
+<p>
+The <var>switch</var> statement is used to simplify certain lengthy chains of
+<var>else if</var> statements.  It takes an expression and then executes a
+block of code corresponding to that value.  <small>(The DM <var>switch</var>
+statement is similar to its counterpart in C, but has an improved syntax
+that avoids common errors.  For example, at the end of one <var>if</var> body
+the point of execution automatically skips to the end of the <var>switch</var>
+statement, rather than running into the code for the next case as it does in
+C.)</small>  
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>switch</var> </td>
+<td> (<it>expression</it>
+) </td>
+</tr>
+<tr><td>
+                </td>
+<td> <var>if</var>(<it>constant1</it>
+) Statement </td>
+</tr>
+<tr><td>
+                </td>
+<td> <var>if</var>(<it>constant2</it>
+) Statement </td>
+</tr>
+<tr><td>
+                </td>
+<td> .<br/>.<br/>.<br/> </td>
+</tr>
+<tr><td>
+                </td>
+<td> <var>else</var> Statement
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Multiple constants may be supplied in one of the inner <var>if</var>
+statements by separating them with commas.  A range of integers may also be
+specified using the syntax <it>lower-bound</it> <var>to</var>
+<it>upper-bound</it>.
+</p><p>
+The stellar example used earlier in this chapter can be efficiently
+rewritten to use the <var>switch</var> statement.
+</p><p>
+
+</p><pre>proc/Constellation(day)
+   //day should be 1 to 365
+   switch(day)
+      if(355 to 365) return "Capricorn"
+      if(326 to 354) return "Sagittarius"
+      if(296 to 325) return "Scorpio"
+      if(266 to 295) return "Libra"
+      if(235 to 265) return "Virgo"
+      if(204 to 234) return "Leo"
+      if(173 to 203) return "Cancer"
+      if(142 to 172) return "Gemini"
+      if(111 to 141) return "Taurus"
+      if(80  to 110) return "Aries"
+      if(51  to  79) return "Pisces"
+      if(21  to  50) return "Aquarius"
+      if(1   to  20) return "Capricorn"
+      else           return "Dan!"
+</pre>
+
+</a>
+</body>
+</html>

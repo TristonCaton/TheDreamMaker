@@ -1,0 +1,1145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 14</h1>
+ <h2 align="center">The Map</h2>
+
+<a name="MapChapter">
+
+<p>
+</p><blockquote>  And the earth was without form, and void; and darkness was upon the face
+  of the deep.
+</blockquote>
+<center>--Genesis 1.2</center>
+
+<p>
+The world map is a three-dimensional grid of turfs.  Three coordinates (that
+is, numbers) are necessary to pinpoint the location of an individual turf in
+the grid.  These have the symbolic names <var>x</var>, <var>y</var>, and <var>z</var>.
+</p><p>
+The <var>x</var> coordinate specifies east-west positioning.  A value of 1 is
+the western edge of the world and a value of <var>world.maxx</var> is the
+eastern edge.  On the player's screen, <var>x</var> increases from left to
+right.  The <var>y</var> coordinate goes from 1 in the south to
+<var>world.maxy</var> in the north and normally increases from the bottom to
+the top of the screen.
+</p><p>
+The <var>z</var> coordinate goes from 1 to <var>world.maxz</var> and often
+represents high to low altitude.  However, the interpretation of <var>z</var>
+is entirely up to your code since there are no built-in procedures that move
+objects between <var>z</var>-levels.  Level 1 could be ground level and
+subsequent levels could descend into the earth.  Or level 1 could be a world
+map and the other levels could be detailed city maps.  It's entirely up to
+you.  Most action takes place in the <var>x-y</var> plane because that is what
+players can see.
+</p></a><p><a name="MapChapter">
+</a><a name="14.1">
+</a></p>
+<h3><a name="14.1">1. Spatial Instructions</a></h3>
+<a name="14.1">
+<p>
+There are a number of instructions for working with coordinates and objects
+on the map.  When you want to produce some sort of spatial effect, these are
+the building blocks you will need.
+</p></a><p><a name="14.1">
+</a><a name="14.1.1">
+</a></p>
+<h4><a name="14.1.1">1.1 <var>view</var> list</a></h4>
+<a name="14.1.1">
+
+<p>
+The <var>view</var> instruction returns a list of all visible objects.  It is
+often used without any arguments, but may take a range and center object as
+parameters.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>view</var> </td>
+<td> (Range=world.view,Center=usr) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Range</code> is the maximum distance to look. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Center</code> is the central object in the view. </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns a list of visible objects.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The default view range may be adjusting by setting <var>world.view</var>.  The
+default is 5, which gives you an 11x11 viewport.  However, you can increase
+it up to a maximum of 10, which gives you a 21x21 viewport.  <small>(The
+size of icons may be automatically scaled in order to conveniently fit the
+map viewport on the player's screen.)</small>  
+</p><p>
+As a convenience, the arguments may be specified in any order.  This feature
+is most often used when one wishes to specify a different center of view
+while still using the default range.  For example, if you wanted <var>src</var>
+rather than <var>usr</var> as the center, you could write <code>view(src)</code>
+rather than <code>view(5,src)</code> or even <code>view(,src)</code>.
+</p><p>
+The range of -1 includes the center object and its contents.  A range of 0
+adds the center object's turf or room and any other objects inside it.  A
+range of 1 extends to the region on the map one square away from the center
+(in a diagonal or straight direction).  A range of 2 includes the next line
+of turfs and so on.  The default range of 5 includes the entire 11x11 map
+seen by the player.
+</p><p>
+
+</p><center><h3>Figure 14.24: Viewing Range</h3></center>
+<center>
+<table border="0">
+<tbody><tr><td>
+
+2 </td>
+<td> 2 </td>
+<td> 2 </td>
+<td> 2 </td>
+<td> 2 </td>
+</tr>
+<tr><td>
+
+2 </td>
+<td> 1 </td>
+<td> 1 </td>
+<td> 1 </td>
+<td> 2 </td>
+</tr>
+<tr><td>
+
+2 </td>
+<td> 1 </td>
+<td> 0 </td>
+<td> 1 </td>
+<td> 2 </td>
+</tr>
+<tr><td>
+
+2 </td>
+<td> 1 </td>
+<td> 1 </td>
+<td> 1 </td>
+<td> 2 </td>
+</tr>
+<tr><td>
+
+2 </td>
+<td> 2 </td>
+<td> 2 </td>
+<td> 2 </td>
+<td> 2 </td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+<p>
+Portions of the view may be blocked by opaque objects.  Lighting also plays
+a role.  If the background area lighting is on (<code>area.luminosity =
+1</code>), all objects inside are illuminated.  Otherwise, individual turfs or
+objects on the map may be luminous, lighting up themselves and the objects
+around them.  If nothing is lit up, only the objects immediately around the
+center (up to a distance of 1) are visible.
+</p><p>
+The way in which opaque objects affect the view is rather complicated.
+Roughly speaking, opaque objects block the view of anything behind them.  To
+improve the appearance of the view, any opaque objects on the edge of this
+strictly visible region are also made visible.  This is known as
+<em>boundary highlighting</em> and often yields a much improved effect.
+</p></a><p><a name="14.1.1">
+</a><a name="14.1.2">
+</a></p>
+<h4><a name="14.1.2">1.2 <var>oview</var> list</a></h4>
+<a name="14.1.2">
+
+<p>
+The <var>oview</var> instruction is the same as <var>view</var> except it
+excludes the center object and its contents.  In other words, it excludes
+the objects in <code>view(-1)</code>.  This is most often useful when
+broadcasting a message to everyone in view except the perpetrator of some
+action.
+</p></a><p><a name="14.1.2">
+</a><a name="14.1.2.1">
+</a></p>
+<h5><a name="14.1.2.1">1.2.1 Point of View</a></h5>
+<a name="14.1.2.1">
+
+<p>
+When describing events in the game to players, one may stick strictly to
+third person or use a mixture of second and third person.  For example, when
+a player smiles, everyone could see the text <code>"[usr] smiles"</code>, or
+everyone but the player could see that and the player could instead see
+<code>"You smile"</code>.
+</p><p>
+The advantage of a strict third person point of view is simplicity.  It tends
+to have the feel of a story in which the player's mob is one of the
+characters.  A second person point of view, on the other hand, is less like a
+story and more like a play in which the player is actively taking one of the
+roles.  It's up to you which effect you want.
+</p><p>
+Strict 3rd person output can simply be generated by broadcasting to all in
+<var>view()</var>.  A second person point of view would instead use
+<var>oview()</var>.  The following examples contrast the two methods.
+</p><p>
+
+</p><pre>//3rd person description
+mob/verb/smile()
+   view() &lt;&lt; "[usr] smiles."
+
+//2nd person description
+mob/verb/smile()
+   usr &lt;&lt; "You smile."
+   oview() &lt;&lt; "[usr] smiles."
+</pre>
+<p>
+Commonly, actions involve three groups of people: one who performs an
+action, another who is acted upon, and everyone else.  In a second person
+system, the first two people would get a specially tailored second person
+description and everyone else would get a third person description.
+</p><p>
+The following example demonstrates how this could be achieved.
+</p><p>
+
+</p><pre>mob/verb/smile(M as mob|null)
+   if(!M) //no target mob specified
+      usr &lt;&lt; "You smile."
+      oview() &lt;&lt; "[usr] smiles."
+   else
+      usr &lt;&lt; "You smile at [M]."
+      M &lt;&lt; "[usr] smiles at you."
+      oview() - M &lt;&lt; "[usr] smiles at [M]."
+</pre>
+<p>
+Recall that the <b>-</b> operator produces a list with the specified item
+removed.  If that was not used in this example, the mob being smiled at
+would see the third person description as well.
+</p></a><p><a name="14.1.2.1">
+</a><a name="14.1.3">
+</a></p>
+<h4><a name="14.1.3">1.3 <var>range</var> and <var>orange</var> instructions</a></h4>
+<a name="14.1.3">
+
+<p>
+The <var>range</var> instruction is exactly like <var>view</var> except it
+ignores visibility.  All objects within the specified range are included in
+the list whether they are visible or not.
+</p><p>
+Similarly, the <var>orange</var> instruction behaves like
+<var>oview</var> except it also ignores visibility.  It returns the same list
+as <var>range</var> minus the central object and its contents.
+</p><p>
+  <small>(In case you use it in conversation (I do all the time) it is
+pronounced `<em>oh-range</em>' and not `<em>orange</em>' like the color.  Still,
+it might be useful to poets in search of a rhyme.  <em>Her hair was
+orange\ And she was in my oh-range...</em>)</small>  
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>range</var> (Range=world.view,Center=usr) </td>
+</tr>
+<tr><td>
+<var>orange</var> </td>
+<td> (Range=world.view,Center=usr) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Range</code> is the maximum distance to look. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Center</code> is the central object in the view. </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns a list of objects within range.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="14.1.3">
+</a><a name="14.1.4">
+</a></p>
+<h4><a name="14.1.4">1.4 <var>locate</var> instruction</a></h4>
+<a name="14.1.4">
+
+<p>
+The <var>locate</var> instruction is used to get the reference of an object by
+specifying some unique property of the object.  In the case of turfs, the
+map coordinates may be given.  The object type, tag name, and <code>\ref</code>
+value may also be used to identify the desired object.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>locate</var> </td>
+<td> (x,y,z) </td>
+</tr>
+<tr><td>
+<var>locate</var> </td>
+<td> (Type) in Container </td>
+</tr>
+<tr><td>
+<var>locate</var> </td>
+<td> (Tag) in Container </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>x,y,z</code> are turf coordinates. </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>Type</code> is the object type. </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>Tag</code> is a unique text string identifier. </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>Container</code> is the optional location or list. </td>
+</tr>
+<tr><td>
+                </td>
+<td> Returns the object or <var>null</var> if none.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Using <var>locate()</var> one could place new players on the map at a specific
+coordinate.  The following example moves them to the middle of the map
+rather than the default position at (1,1,1).
+</p><p>
+
+</p><pre>mob/Login()
+   if(!loc) //new player
+      loc = locate(world.maxx/2,world.maxy/2,1)
+</pre>
+<p>
+This is just one of many cases in which <var>locate()</var> is used to access
+an object in the code that was created on the map using the map editor.
+Rather than specify a coordinate, it is usually more convenient to use the
+<var>tag</var> variable of the object.  This can be assigned to a special value
+and used to find the object at run-time.
+</p><p>
+The following example moves new players to a specially tagged location.
+</p><p>
+
+</p><pre>mob/Login()
+   if(!loc)
+      loc = locate("start")
+</pre>
+</a><p><a name="14.1.4">
+A turf would have to be tagged "start" for this to work.  Editing the tag
+variable, as well as other properties of objects, in the map editor will be
+discussed in section </a><a href="#Mapper">14.3</a>.
+</p>
+<p>
+<a name="14.1.5">
+</a></p>
+<h4><a name="14.1.5">1.5 <var>block</var> instruction</a></h4>
+<a name="14.1.5">
+
+<p>
+The <var>block</var> instruction generates a list of all turfs in a
+rectangular section on the map.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>block</var> </td>
+<td> (SW,NE) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>SW</code> is the south-west turf. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>NE</code> is the north-east turf. </td>
+</tr>
+<tr><td>
+               </td>
+<td> Returns a list of turfs in the block.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example uses this to find a particular turf in a region of the
+map.
+</p><p>
+
+</p><pre>proc/LocateInLevel(Type,zLevel)
+   var/SW = locate(1,1,zLevel)
+   var/NE = locate(world.maxx,world.maxy,zLevel)
+   return locate(Type) in block(SW,NE)
+</pre>
+<p>
+This procedure could be used to connect z-levels of the map.  If each level
+had one up-stairs and one down-stairs turf, these could be connected in the
+following manner.
+</p><p>
+
+</p><pre>turf/downstairs
+   verb/use()
+      var/dest = LocateInLevel(/turf/upstairs,z+1)
+      usr.Move(dest)
+turf/upstairs
+   verb/use()
+      var/dest = LocateInLevel(/turf/downstairs,z-1)
+      usr.Move(dest)
+</pre>
+<p>
+There are many other ways of making turfs which transport the user from one
+location to another.  The destination could be in some fixed position
+relative to the original turf (for example z+1 or z-1).  Another useful
+method is to mark the destination with a special tag.
+</p></a><p><a name="14.1.5">
+</a><a name="14.1.6">
+</a></p>
+<h4><a name="14.1.6">1.6 <var>get_dist</var> instruction</a></h4>
+<a name="14.1.6">
+
+<p>
+The <var>get_dist</var> instruction determines the distance between two
+locations.  The distance is the same as the range parameter to
+<var>view()</var>.  If the objects are in the same place, it is 0.  If they
+are in neighboring positions, it is 1, and so on.  <small>(Note that
+<var>get_dist</var> does not compute the geometric Euclidean distance.  It
+treats diagonal movements as equal to straight ones.)</small>  
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>get_dist</var> </td>
+<td> (Loc1,Loc2) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Loc1</code> is the first location. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Loc2</code> is the second location. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> Returns the separating distance.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This could be used to determine if the target of an action is within range
+as in the following example.
+</p><p>
+
+</p><pre>mob
+   var/mob/enemy
+   proc/Swing()
+      if(get_dist(src,enemy) &gt; 1) return
+      //do the damage...
+</pre>
+</a><p><a name="14.1.6">
+In this case, mobs can only strike targets in neighboring positions.  The
+details of the rest of the procedure have been omitted.  A typical combat
+system requires some randomness, which you will see how to do in chapter
+</a><a href="../../C%3A/Users/trist/Desktop/chap16.html#MathChapter">16</a>.
+</p>
+<p>
+<a name="14.2">
+</a></p>
+<h3><a name="14.2">2. Movement</a></h3>
+<a name="14.2">
+</a><a name="MovementInstructions">
+
+</a><p><a name="MovementInstructions">
+There are a number of instructions relating to movement of objects on the
+map.  They are listed in figure </a><a href="#MovementList">14.25</a>.
+</p>
+<p>
+
+</p>
+<center><h3>Figure 14.25: Movement Instructions</h3></center>
+<a name="MovementList">
+
+<table border="0" align="center">
+<tbody><tr><td>
+<p>
+
+walk </p>
+</td>
+</tr>
+<tr><td>
+walk_towards </td>
+</tr>
+<tr><td>
+walk_to </td>
+</tr>
+<tr><td>
+walk_away </td>
+</tr>
+<tr><td>
+walk_rand </td>
+</tr>
+<tr><td>
+<p>
+
+step </p>
+</td>
+</tr>
+<tr><td>
+step_towards </td>
+</tr>
+<tr><td>
+step_to </td>
+</tr>
+<tr><td>
+step_away </td>
+</tr>
+<tr><td>
+step_rand </td>
+</tr>
+<tr><td>
+<p>
+
+get_step </p>
+</td>
+</tr>
+<tr><td>
+get_step_towards </td>
+</tr>
+<tr><td>
+get_step_to </td>
+</tr>
+<tr><td>
+get_step_away </td>
+</tr>
+<tr><td>
+get_step_rand </td>
+</tr>
+<tr><td>
+
+<p>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+The three main groups are <var>walk</var>, <var>step</var>, and
+<var>get_step</var>.  These each perform the same computation but differ in
+how they apply the result.  The <var>walk</var> instructions continually move
+an object, taking multiple steps if necessary.  The <var>step</var>
+instructions do the same except only a single step is taken.  The
+<var>get_step</var> instructions do not move any objects, but return the next
+location that would be stepped to according to the given walking algorithm.
+</p><p>
+Which group of movement instructions you would want to use depends on how
+much control you need to take over the process of moving an object.  The
+<var>walk</var> group of instructions completely automates the movement,
+whereas <var>step</var> allows you to control the timing yourself.  For
+complete control, you can use <var>get_step</var> so that even the decision
+about whether to move the object or not is left up to you.
+</p><p>
+The available walking algorithms are described in the following sections.
+When a ready-made algorithm does not exist to suit your purpose, you may
+still be able to use one of these in conjunction with your own additions.
+</p></a><p><a name="MovementList">
+</a><a name="14.2.1">
+</a></p>
+<h4><a name="14.2.1">2.1 <var>walk</var> instruction</a></h4>
+<a name="14.2.1">
+
+<p>
+The <var>walk</var>, <var>step</var>, and <var>get_step</var> instructions are for
+movement in a fixed direction.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>walk</var> (Obj,Dir,Lag=0) </td>
+</tr>
+<tr><td>
+<var>step</var> (Obj,Dir) </td>
+</tr>
+<tr><td>
+<var>get_step</var> </td>
+<td> (Obj,Dir) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Obj</code> is the object to move. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Dir</code> is the direction to move. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Lag</code> is the delay between steps in 10$^th$s of seconds.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The direction argument takes one of the constants <var>NORTH</var>,
+<var>SOUTH</var>, <var>EAST</var>, <var>WEST</var>, <var>NORTHEAST</var>,
+<var>NORTHWEST</var>, <var>SOUTHEAST</var>, or <var>SOUTHWEST</var>.  These are
+the same values used to indicate the direction an object is facing with the
+<var>dir</var> variable.
+</p><p>
+The <var>step</var> instruction returns 1 on success and 0 on failure and
+<var>get_step</var> returns the next turf in the given direction.  The
+<var>walk</var> instruction returns immediately and continues to operate in
+the background since it sleeps before each step.
+</p><p>
+Only one walking operation may be in effect at one time on a particular
+object.  That means that when <var>walk</var> is invoked, any previous walking
+operation on that object is aborted.  To clear any existing walking
+operations, one can therefore specify no direction at all:
+<code>walk(Obj,0)</code>.
+</p><p>
+There are a couple of related instructions for dealing with directions.
+These are described next.
+</p></a><p><a name="14.2.1">
+</a><a name="14.2.1.1">
+</a></p>
+<h5><a name="14.2.1.1">2.1.1 <var>get_dir</var> instruction</a></h5>
+<a name="14.2.1.1">
+
+<p>
+The <var>get_dir</var> instruction computes the direction from one location to
+another.  If the true direction is not exactly equal to one of the eight
+standard directions (<var>NORTH</var>, <var>SOUTH</var>, and so on), the closest
+one will be chosen.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>get_dir</var> </td>
+<td> (Loc1,Loc2) </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>Loc1</code> is the first location. </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>Loc2</code> is the second location. </td>
+</tr>
+<tr><td>
+                 </td>
+<td> Returns the direction from <code>Loc1</code> to <code>Loc2</code>.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="14.2.1.1">
+</a><a name="14.2.1.2">
+</a></p>
+<h5><a name="14.2.1.2">2.1.2 <var>turn</var> instruction</a></h5>
+<a name="14.2.1.2">
+
+<p>
+The <var>turn</var> instruction rotates a direction by the specified amount.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>turn</var> </td>
+<td> (Dir,Angle) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Dir</code> is the initial direction. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Angle</code> is the angle to rotate. </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns the new direction.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The angle is specified in degrees.  For example, <code>turn(NORTH,90)</code>
+yields <var>WEST</var>, a 90 degrees rotation in the counter-clockwise
+direction.  Negative angles may be specified to achieve clockwise rotations as
+well.
+</p><p>
+The following example defines a guard mob who paces back and forth
+continuously.
+</p><p>
+
+</p><pre>mob/guard/New()
+   ..()
+   spawn for()  //spawn an infinite loop
+      if(!step(src,dir)) dir = turn(dir,180)
+      sleep(30) //three seconds
+</pre>
+<p>
+By changing the initial direction the guard is facing, he can be made to
+pace in the desired line.  This example shows how you can use the existing
+walking algorithms for your own purpose--in this case a linear pacing
+algorithm.  Rotating by 90 degrees or 45 degrees instead would produce
+motion in two dimensions instead of just one.  Of course then the guard
+might wander off and neglect his duties!
+</p></a><p><a name="14.2.1.2">
+</a><a name="14.2.2">
+</a></p>
+<h4><a name="14.2.2">2.2 <var>walk_towards</var></a></h4>
+<a name="14.2.2">
+
+<p>
+The <var>walk_towards</var>, <var>step_towards</var>, and
+<var>get_step_towards</var> instructions move in the direction of another
+object.  If the target object changes position, the walking algorithm
+automatically adjusts the direction of motion accordingly.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>walk_towards</var> (Obj,Targ,Lag=0) </td>
+</tr>
+<tr><td>
+<var>step_towards</var> (Obj,Targ) </td>
+</tr>
+<tr><td>
+<var>get_step_towards</var> </td>
+<td> (Obj,Targ) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Obj</code> is the object to be moved. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Targ</code> is the destination. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Lag</code> is the delay between steps in 10$^th$s of seconds.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The return values of these are the same as the fixed-direction movement
+instructions that have already been described.  In fact, all movement
+instructions behave the same except for the specific stepping algorithm
+that is employed.
+</p></a><p><a name="14.2.2">
+</a><a name="14.2.3">
+</a></p>
+<h4><a name="14.2.3">2.3 <var>walk_to</var> instruction</a></h4>
+<a name="14.2.3">
+
+<p>
+The <var>walk_to</var>, <var>step_to</var>, and <var>get_step_to</var>
+instructions move to another target object, taking intervening objects into
+account and attempting to intelligently maneuver around them if possible.
+If the target is too far away (more than the width of the map view), no
+action is taken.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>walk_to</var> (Obj,Targ,Dist=0,Lag=0) </td>
+</tr>
+<tr><td>
+<var>step_to</var> (Obj,Targ,Dist=0) </td>
+</tr>
+<tr><td>
+<var>get_step_to</var> </td>
+<td> (Obj,Targ,Dist=0) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Obj</code> is the object to be moved. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Targ</code> is the destination. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Dist</code> is the maximum desired distance. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Lag</code> is the delay between steps in 10$^th$s of seconds.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+One use for this would be a verb that allows a player to automatically
+follow another one.  That can save a lot of needless key presses, which may
+otherwise bog down the network.  Note that the command takes the player's
+current distance from the target as the desired range to maintain so that
+one can avoid crowding in on the leader.
+</p><p>
+
+</p><pre>mob/verb/follow(mob/M)
+   walk_to(src,M,get_dist(src,M),30)
+</pre>
+<p>
+As a convenience in situations like this, pressing any direction key will
+stop the automated walking algorithm.  This applies even to the center key,
+which merely calls <code>walk(src,0)</code> by default, allowing the player to
+stop in place.
+</p></a><p><a name="14.2.3">
+</a><a name="14.2.4">
+</a></p>
+<h4><a name="14.2.4">2.4 <var>walk_away</var> instruction</a></h4>
+<a name="14.2.4">
+
+<p>
+The <var>walk_away</var>, <var>step_away</var>, and <var>get_step_away</var>
+instructions move to another target object, taking intervening objects into
+account and attempting to intelligently maneuver around them if possible.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>walk_away</var> (Obj,Targ,Dist=world.view,Lag=0) </td>
+</tr>
+<tr><td>
+<var>step_away</var> (Obj,Targ,Dist=world.view) </td>
+</tr>
+<tr><td>
+<var>get_step_away</var> </td>
+<td> (Obj,Targ,Dist=world.view) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Obj</code> is the object to be moved. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Targ</code> is the destination. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Dist</code> is the minimum desired distance. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Lag</code> is the delay between steps in 10$^th$s of seconds.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+An example using this algorithm is a command to run away from someone.
+</p><p>
+
+</p><pre>mob/verb/flee(mob/M)
+   walk_away(src,M,5,30)
+</pre>
+</a><p><a name="14.2.4">
+</a><a name="14.2.5">
+</a></p>
+<h4><a name="14.2.5">2.5 <var>walk_rand</var> instruction</a></h4>
+<a name="14.2.5">
+
+<p>
+The <var>walk_rand</var>, <var>step_rand</var>, and <var>get_step_rand</var>
+instructions generate seemingly random motion.  The object being moved
+appears to wander aimlessly.  That is different from wandering
+<em>mindlessly</em>, which would be the result of random movement.  In fact,
+this algorithm is not very random but instead uses a technique known as
+<em>edge following</em> to create the effect of purposeful motion.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>walk_rand</var> (Obj,Lag=0) </td>
+</tr>
+<tr><td>
+<var>step_rand</var> (Obj) </td>
+</tr>
+<tr><td>
+<var>get_step_rand</var> </td>
+<td> (Obj) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Obj</code> is the object to be moved. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Lag</code> is the delay between steps in 10$^th$s of seconds.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example uses this walking algorithm to make certain mobs
+meander through the world.
+</p><p>
+
+</p><pre>mob
+   var/wander
+   New()
+      if(wander) walk_rand(src)
+      ..()
+</pre>
+<p>
+All you have to do to see this in action is define some mobs with the
+<code>wander</code> variable initialized to 1.  The algorithm works best with some
+edges to follow, so a maze-like map with many tunnels and rooms with walls
+is ideal.
+</p></a><p><a name="14.2.5">
+</a><a name="14.3">
+</a></p>
+<h3><a name="14.3">3. Programming for Map Design</a></h3>
+<a name="14.3">
+</a><a name="Mapper">
+<p>
+In the simplest scenario, designing the world map is merely a matter of
+selecting object types which were defined in the code and dropping them onto
+the map.  The individual objects on the map are called <em>instances</em> of
+the object types and as a group are referred to as the initial map population.
+</p><p>
+Depending on your preference, it is possible to do little or all of the map
+design from the code.  By creating turfs and other objects with
+<var>new()</var> part or all of the map could be generated at run-time.  Since
+this is a rather cumbersome method, it is usually reserved for cases where
+the map is laid out according to some algorithm.  For example, a maze-like
+map could be randomly generated so that it is different each time it is
+played.
+</p><p>
+Map generating algorithms are an interesting topic, but the techniques
+involved are fairly abstract and rely very little on the particulars of the
+DM language.  For an example, refer to the DM Code Library.  One of the
+useful items to be found there is the "Amazing Maze Generator," which can
+make seemingly infinite dungeons and the like.
+</p><p>
+
+In most situations, map design is done principally in the map editor.  It is
+even possible to go beyond simply using pre-defined object types.  Using the
+map editor's instance editing feature, you can modify individual objects to
+suit your own purposes.  This allows one to avoid cluttering up the code
+with object types which are really just minor variations of a more general
+type but which are required to make instances on the map.
+</p></a><p><a name="Mapper">
+Using the map editor to its fullest potential, one can write code which is
+fairly general and independent of the map.  This is especially convenient
+when the programmer and map designer are different people.  In fact, the
+code can be written once and used to design many different maps.  This
+process is referred to as writing a world <em>code base</em> which is then used
+to create an endless variety of world <em>instances</em>.  These could be
+networked together using techniques described in section </a><a href="../../C%3A/Users/trist/Desktop/chap12.html#World2World">12.6</a>.
+</p>
+<p>
+The map instance editor allows one to modify the object's variables.  For
+example, you can change the name of an object, its icon, its density, and so
+forth.  There is no limitation to built-in variables; those defined in the
+code may also be modified.  In this case you may wish to specify what sort
+of value may be given to the variable.  This prevents mistakes and also
+helps inform the map designer about a variable without requiring the poor
+fellow to read the code.
+</p>
+<p>
+<a name="14.3.1">
+</a></p>
+<h4><a name="14.3.1">3.1 Variable Input Parameters</a></h4>
+<a name="14.3.1">
+
+<p>
+Object variables may be declared in much the same way as verb arguments to
+provide extra information to the map editor.  Both the input type and a list
+of possible values may be specified.  Otherwise a variable simply defaults
+to accept any type of value.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>var</var>/VarName </td>
+<td> <var>as</var> Type <var>in</var> List </td>
+</tr>
+<tr><td>
+                     </td>
+<td> <code>VarName</code> is the variable being defined. </td>
+</tr>
+<tr><td>
+                     </td>
+<td> <code>Type</code> is the input type. </td>
+</tr>
+<tr><td>
+                     </td>
+<td> <code>List</code> is the list of possible values.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="14.3.1">
+The valid input types include all those which may be used in a verb argument
+definition.  These are described in section </a><a href="../../C%3A/Users/trist/Desktop/chap04.html#InputTypes">4.5.1</a>.  The list of
+possible values can be a list of constants or a range of integers.  The
+following example demonstrates both possibilities.
+</p>
+<p>
+
+</p>
+<pre>mob/var
+   wealth as num
+   strength in 1 to 100   //defaults to "as num"
+   alignment in list("good","bad","neutral")
+   background as text
+</pre>
+<p>
+</p>
+<hr/>
+<center><h3>Figure 14.26: Hands-free programming!</h3></center>
+<p>
+Dream Maker's instance editor is a powerful tool, if used appropriately.  It
+can allow you to quickly make unique entities without having to derive new
+classes for everything.  It is also quite simple to use, requiring no other
+coding knowledge than the ability to fill out forms.  Consider the previous
+code:
+</p>
+<p>
+
+</p>
+<pre>mob/var
+  wealth as num
+  strength in 1 to 100
+  alignment in list("good","bad","neutral")
+  background as text
+</pre>
+<p>
+Now suppose you have derived a monster type from this, say,
+<code>/mob/goblin</code>.  Using the instance editor, you can place a bunch of
+unique goblins on the map without having to modify the DM code one bit:
+</p>
+<p>
+</p>
+<ol>
+<p>
+</p>
+<li>Select the <code>goblin</code> type in the tree.
+<p>
+</p></li>
+<li>Click on the <b>Edit</b> button in the adjacent panel.  This will
+bring up a dialog with the properties of the goblin.
+<p>
+</p></li>
+<li>Modify these properties by changing the values in the form.  If you
+enter invalid values, the editor will correct you.  It does this by looking
+at the specified filters.  For instance, the <code>strength</code> property must be
+a value between 1 and 100.  If it is not in this range, it must be reset.  In
+this fashion, you can change names, descriptions, icons, and so on.  You can
+make a horde of goblins, each with unique identifications and traits.
+<p>
+</p></li>
+<li>One particular useful property is the <var>tag</var>.  This is just a text
+string that can be used to distinguish instances in the <var>locate()</var>
+instruction.  So if you want to make a "chief goblin" without deriving a
+new type, you might want to set the tag to "chief goblin" and set the other
+properties accordingly.  You can then locate this goblin later on by doing
+<code>locate("chief goblin")</code>.
+<p>
+</p></li>
+<li>After you are done editing the goblins, place them on the map by
+selecting the corresponding instance in the panel (they will be sorted by
+tag).  If you want to re-edit them later, you can use the <b>Look</b>
+option and proceed from there.
+<p>
+</p></li>
+</ol>
+<hr/>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 5</h1>
+ <h2 align="center">Variables</h2>
+
+
+<p>
+</p>
+<blockquote>  All your hours are wings that beat through space from self to
+  self.
+</blockquote>
+<center>--<i>Kahlil Gibran</i>, The Prophet</center>
+
+<p>
+A DM program is ultimately a black box that takes in and spits out
+information.  On the inside of this black box are a bunch of little
+compartments where it holds the information that it is working on.  These
+are called variables and each one has a little label on it carved in
+cuneiform script by the hand of an ancient Babylonian black box engineer.
+</p>
+<p>
+<a name="5.1">
+</a></p>
+<h3><a name="5.1">1. Global Variables</a></h3>
+<a name="5.1">
+
+<p>
+So far, you have seen object variables and argument variables.  There are
+two other places where variables may reside.  One is inside a procedure and
+the other is inside of nothing at all--a so-called global variable.
+</p><p>
+A global variable would generally be used to hold some information that is
+an attribute of the entire world.  For example, you could store the state of
+the weather there.
+</p><p>
+
+</p><pre>var/weather = "Looks like another beautiful day!"
+
+mob/verb/look_up()
+   usr &lt;&lt; weather
+
+mob/DM/verb/set_weather(txt as text)
+   weather = txt
+</pre>
+<p>
+This example has three parts: a global weather variable, a verb for players
+to check the weather, and a verb for the DM to set the weather.  The chief
+point of interest is the variable definition.  It goes under a <var>var</var>
+node at the root of the program (which is what makes it global).  In this
+example, the weather variable was assigned an initial value (so the DM
+doesn't have to remember to do it).  The initial value is an optional part
+of the variable definition.
+</p></a><p><a name="5.1">
+</a><a name="5.2">
+</a></p>
+<h3><a name="5.2">2. Object Variables</a></h3>
+<a name="5.2">
+
+<p>
+The position in which a variable is defined determines its scope.  A
+variable defined at the root (top level) of the code is therefore globally
+applicable.  <small>(Note that when we say <em>top level</em> of the code we
+mean the root of the code tree.  That doesn't mean it has to be at the top
+of your file (though global things often are).)</small>   A variable defined inside of
+an object definition only applies to that object and its descendants.
+</p></a><p><a name="5.2">
+</a><a name="5.2.1">
+</a></p>
+<h4><a name="5.2.1">2.1 Defining An Object Variable</a></h4>
+<a name="5.2.1">
+
+<p>
+You have already been using object variables like <var>name</var>, and
+<var>icon</var>, but they were already defined for you.  You can add your own
+variables for purposes not covered by the built-in ones.  For example, you
+could have a variable for the monetary value of an object.
+</p><p>
+
+</p><pre>obj
+   var/value
+   stone
+      value = 1
+   ruby
+      value = 50
+   diamond
+      value = 100
+</pre>
+<p>
+When the variable is first declared, it is put under a <var>var</var> node.
+After that, when its initial value is overridden, it is simply assigned
+without a re-declaration.  This is similar to the way verbs are declared and
+then overridden.  The syntax serves the same purpose of preventing mistakes
+from slipping past the compiler.
+</p></a><p><a name="5.2.1">
+</a><a name="5.2.2">
+</a></p>
+<h4><a name="5.2.2">2.2 Accessing An Object Variable</a></h4>
+<a name="5.2.2">
+<p>
+In a procedure, it is possible to access object variables.  We have already
+seen this for the case of verbs that modify properties of their source.  For
+example:
+</p><p>
+
+</p><pre>obj/verb/set_value(v as num)
+   set src in view()
+   value = v
+</pre>
+<p>
+However, what if we wanted only the DM to have the ability to set the
+value?  The verb just defined gives everyone the ability to do so.  Instead
+of attaching the verb to the obj, we really want it attached to the DM.
+However, then we would have to access the value of the obj from inside the
+DM's verb.  That requires defining a variable type.  Here is how it is done:
+</p><p>
+
+</p><pre>mob/DM/verb/set_value(obj/O,v as num)
+   O.value = v
+</pre>
+<p>
+
+</p><p>
+The first variable is declared as <code>obj/O</code>, which says that <code>O</code> is an
+obj and therefore has all of the variables of an obj.  To access the
+variable, the dot operator is used.  The variable <code>O</code> goes on the left
+and the name of <code>O</code>'s variable that we want to access goes on the
+right.  The dot operator allows us to access the object variables belonging
+to <code>O</code>.
+</p><p>
+Look again at the syntax for the first argument.  We could have written it
+<code>obj/O as obj in view()</code>, but since the variable is declared to be of
+type obj, the rest is assumed by default.  The long version is good to
+understand, though.  The first obj in it is a variable type.  The second obj
+is an input type.  The DM language does not require that these be
+identical.  In the future you will see how that can be used to your
+advantage; most of the time, however, it is convenient that the input type
+defaults to match the variable type.
+</p></a><p><a name="5.2.2">
+</a><a name="5.2.2.1">
+</a></p>
+<h5><a name="5.2.2.1">2.2.1 Declaring Variable Types</a></h5>
+<a name="5.2.2.1">
+
+<p>
+In DM, a variable you define can be assigned any type of value.  The same
+variable could hold a text string, a number, or some type of object.  If it
+is an object, and if the programmer needs to access that object's variables,
+only then is it necessary to inform the compiler what type of object the
+variable represents.
+</p><p>
+This is accomplished in the definition by placing the type path in front of
+the variable name.  It could be <tt>obj/O</tt> or something longer like
+<tt>obj/scroll/O</tt>.  In general, one would specify as much of the type as
+necessary to get down to the level of the desired variables.  For example,
+<tt>obj/O</tt> would allow one to access <code>O.name</code>, <code>O.icon</code>,
+and any other basic obj variables.  A variable defined only for scrolls, say
+<code>O.duration</code>, would require a more specific type definition like
+<tt>obj/scroll/O</tt>.
+</p></a><p><a name="5.2.2.1">
+</a><a name="5.2.3">
+</a></p>
+<h4><a name="5.2.3">2.3 The <var>usr</var> and <var>src</var> Variables</a></h4>
+<a name="5.2.3">
+</a><a name="UsrSrcVars">
+
+<p>
+Two variables that you have already seen can be used with the dot operator
+because their type is automatically defined for you.  The variable
+<var>usr</var> is declared as <code>var/mob/usr</code> since it always refers to the
+mob who is executing a verb.  The variable <var>src</var> has the same type as
+the object containing the verb (obviously).
+</p><p>
+Since accessing the variables of src is such a common task, you can do it
+directly without the dot operator.  We have been doing that all along.  For
+example, you can just use <code>value</code> in place of <code>src.value</code>.
+The two are equivalent.  <small>(C/C++ and Java programmers will recognize
+that <em>src</em> is similar to what they know of as <em>this</em>.)</small>  
+</p><p>
+The <var>usr</var> variable, on the other hand, is useful when the <var>src</var>
+and <var>usr</var> are different objects.  For example, one could make a
+disguise object that changes the wearer's appearance.
+</p><p>
+
+</p><pre>obj/disguise
+   verb/wear()
+      usr.icon = icon  //zing!
+</pre>
+<p>
+To allow the user to remove the disguise, you would need to store the
+original icon in a variable.  You could do it like this:
+</p><p>
+
+</p><pre>obj/disguise
+   var/old_icon
+   verb
+      wear()
+         old_icon = usr.icon
+         usr.icon = icon
+      remove()
+         usr.icon = old_icon
+</pre>
+<p>
+Here is an interesting thought.  What if somebody finds a discarded
+disguise and <em>removes</em> it without wearing it?!  That is the kind of
+freaky stuff players like to try.  Never trust them!  Wait until the next
+chapter for the tools to stop such funny business.
+</p></a><p><a name="UsrSrcVars">
+</a><a name="5.3">
+</a></p>
+<h3><a name="5.3">3. Procedure Variables</a></h3>
+<a name="5.3">
+
+<p>
+Verb arguments are a special type of procedure-level variable.  The built-in
+variables <var>usr</var> and <var>src</var> also exist at that level.  You can
+define your own variables inside of a procedure using the same syntax for
+defining variables as elsewhere.
+</p><p>
+Suppose you wanted two objects to exchange appearances--a slightly different
+effect from the disguise object.  In this example, possession of the magic
+scroll gives one the ability to pose as the scroll while it appears like
+you.  (Don't try this in the lavatory or somebody is bound to make a
+terrible mistake.)
+</p><p>
+
+</p><pre>obj/mirror_scroll
+   verb/cast()
+      var/usr_icon = usr.icon
+      usr.icon = icon
+      icon = usr_icon
+</pre>
+<p>
+
+</p><p>
+The intermediate variable <code>usr_icon</code> accomplishes the exchange of
+images.  We could have assigned it in a separate statement, but initializing
+it in the variable definition was easier.
+</p></a><p><a name="5.3">
+</a><a name="5.4">
+</a></p>
+<h3><a name="5.4">4. The Life of a Variable</a></h3>
+<a name="5.4">
+
+<p>
+Variables can be defined at the top level, inside an object, and inside a
+procedure.  These three different locations (or scopes) determine the range
+of access and life span of a variable.
+</p><p>
+Global variables are initialized at the beginning of time and exist until
+the end of it (for their world that is).  Object variables are initialized
+when an object is created and exist until it is destroyed.  Every object has
+its own copy of each variable.  That is different from global variables
+which exist once and for all.  At the very lowest level, procedure variables
+come into existence when the procedure is executed and cease to exist when
+it stops.  These are often called local variables.
+</p><p>
+The scope of a variable determines its order of precedence.  Consider, as an
+example, a case in which a procedure variable has the same name as an object
+variable.
+</p><p>
+
+</p><pre>mob/verb/call_me(name as text)
+   name = name     //obviously not what you want
+   src.name = name //this is what you want
+</pre>
+<p>
+We defined a procedure variable (actually an argument) called <code>name</code>,
+which is the same as a mob variable.  The procedure level variable takes
+precedence over the object variable.  In order to access the object
+variable, we had to explicitly use <code>src.name</code> rather than just
+<code>name</code>.
+</p><p>
+Similarly, global variables take a lower order of precedence than object or
+local variables.  In this case, a conflict can be resolved by using
+<code>global.name</code>.  It is safest, however, to avoid such name conflicts
+altogether since mistakes made in these cases can be difficult to see.
+</p><p>
+In the interests of avoiding name conflicts, it is sometimes desirable to
+have something that behaves like a global variable but which is defined at a
+lower level.  For example, the variable may only be of interest to a small
+portion of the code but one may still want there to be a single permanent
+copy of it.  The best thing to do in this case is to flag the variable as
+global but define it at the level where it is applicable.  <small>(Many
+languages use the term `static' instead of `global' to define a variable
+with limited scope but global existence.  It is the same thing.)</small>  
+</p><p>
+As an example, you could make some magic papers such that when you write on
+one of them, the same writing appears on all the others.
+</p><p>
+
+</p><pre>obj/magic_paper
+   var/global/msg
+
+   verb
+      write(txt as text)
+         msg = txt
+      read()
+         usr &lt;&lt; "[src] says, '[msg]'"
+</pre>
+<p>
+By defining the message variable inside <code>magic_paper</code>, we avoided cluttering
+up the global name space with something that only applied to the code in
+this object.  The <var>global</var> flag is simply inserted after <var>var</var>
+in the variable definition.  This prevents each piece of magic paper from
+having a separate, independent copy of the variable holding the message.  It
+also frees up the variable name <code>msg</code> to be used elsewhere in the code
+without conflicting with this one.
+</p></a><p><a name="5.4">
+</a><a name="5.5">
+</a></p>
+<h3><a name="5.5">5. Constants</a></h3>
+<a name="5.5">
+
+<p>
+Another flag that can be applied to a variable is <var>const</var>.  This marks
+the variable as one that can be initialized but never modified.  We call
+this a constant variable (which is a bit of an oxymoron).
+</p><p>
+The purpose of <var>const</var> is to keep your code from getting too cluttered
+with so-called magic numbers and other such values that are used repeatedly
+and which may need to be adjusted in the future.  You have already seen
+another way to handle global constants using <var>#define</var> macros.
+However, the advantage of using a constant variable instead is that it does
+not necessarily have to be global in scope.  It is best to reserve the
+<var>#define</var> command for situations which cannot be handled with
+<var>const</var>.
+</p><p>
+For example, you could make a sort of doppelganger object--the reverse of a
+disguise.
+</p><p>
+
+</p><pre>obj/doppelganger
+   var/const/init_icon = 'doppel.dmi'
+   icon = init_icon
+
+   verb
+      clone()
+         set src in view()
+         icon = usr.icon
+      revert()
+         set src in view()
+         icon = init_icon
+</pre>
+<p>
+Of course we could have just used <code>'doppel.dmi'</code> everywhere in place of
+<code>init_icon</code>, but then if we decided to use a different icon file at some
+point in the future, it would be more complicated to do (and more likely to
+get messed up).  <small>(In this particular example, it
+would also be possible to use the expression <code>initial(icon)</code> for
+finding the original compile-time value of a variable.)</small>  
+</p></a><p><a name="5.5">
+</a><a name="5.6">
+</a></p>
+<h3><a name="5.6">6. Memory and Variables</a></h3>
+<a name="5.6">
+</a><a name="References">
+
+<p>
+While on the subject of memory, some of you may be curious about how
+information is actually stored by a DM program.  For example, when we assign
+icons around from one variable to another, is the actual data of the icon
+file getting copied and duplicated?  Fortunately, the answer is no, or many
+operations would be a lot less efficient.
+</p><p>
+In DM, variables actually only contain two types of data: numbers and
+references.  Numbers are simple.  When you assign a number to a variable, a
+copy of the number gets put in the variable.  If you modify that variable,
+nothing else changes--just the number inside it gets altered.
+</p><p>
+All other types of data are handled through references, which point to where
+the data is actually stored.  <small>(C programmers will recognize that DM
+references are pointers.)</small>   In that way, several variables can contain
+references to the same piece of data, be it an icon, a mob, a text string,
+or anything else.  When the contents of such variables are copied from one
+to another, only the reference is copied.  The data itself is independent of
+such operations.
+</p><p>
+Programmers who are used to managing memory allocation for data like text
+strings will appreciate the fact that DM takes care of garbage collection.
+That means when a piece of data (like a message entered into the `say' verb)
+is no longer referenced by any variables, it is automatically deleted from
+memory to make room for new data.  This makes working in a multi-media
+environment with text, icons, sounds, and so forth a lot easier.  You simply
+don't have to worry about it.
+
+</p></a>
+</body>
+</html>

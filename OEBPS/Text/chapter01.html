@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 1</h1>
+ <h2 align="center">Meet the Dream Maker</h2>
+
+<p>
+</p>
+<blockquote>  The first step to mastery in the lands of sleep is the realization,
+  without waking, that one dreams.  In the day worlds, mastery begins by
+  forgetting, without dreaming, that one is awake.
+</blockquote>
+<center>--<i>DoD</i></center>
+
+<p>
+DM is a programming language for the creation of multi-user worlds.  By
+`world' I mean a virtual multi-media environment where people assume personae
+through which they interact with one another and computer-controlled
+objects.  This could take the form of a competitive game, a role-playing
+adventure, a discussion board, or something we haven't even imagined.
+</p>
+<p>
+
+</p>
+<p>
+Frequently, the terminology of a role-playing game is most suitable: humans
+are PCs (playing characters) and computer-controlled personalities are NPCs
+(non-playing characters).  The virtual embodiment of a player is often
+called an <em>avatar</em>.  The game rules are written in DM and faithfully
+carried out by the computer.  These define what actions players may instruct
+their avatar to perform, what effect these will have in the game, and any
+other events that may happen as time progresses.
+</p>
+<p>
+
+
+</p>
+<p>
+To understand the mechanics of the system fully, it is helpful to know a few
+simple terms.  Computer programs that operate over a network are often
+divided into two parts: a client and a server.  In this case, the client is
+the program that players use to enter commands and see what happens as a
+result.  In other words, the client handles input and output.  The server is
+the program that runs the game, carrying out the rules defined in the DM
+language.  The game designer writes these rules in a third program called
+the compiler.  This reads the DM program (known as the <em>source code</em> by
+programmers), checks it for grammatical errors, and generates a more compact,
+computer friendly, file known as the <em>byte code</em> or <em>binary</em>.  It
+is this file which the server reads to see how to run the game.
+</p>
+<p>
+
+</p>
+<p>
+So there are three main programs: the client, server, and compiler.  We call
+these Dream Seeker, Dream Daemon, and Dream Maker, respectively.  <small>(The word <em>daemon</em> is just another (more fantastical) word for server.)</small>  
+As a whole, we refer to this collection of software as BYOND, which stands
+for Build Your Own Net Dream--an apt description of its purpose and also of
+how far it has wandered <em>beyond</em> our original plans.  But that is
+another story!
+</p>
+<p>
+Every introduction to a programming language must begin with the same
+example.  Call it destiny, inevitability, or pure chance; it is rather
+uncanny that the name of the universal introductory example is <em>hello
+world</em>.  Spooky, no?  That's exactly what happens in this example--we say
+hello to the world.
+</p>
+<p>
+In DM you write it like this:
+</p>
+<p>
+
+</p>
+<pre>mob
+   Login()
+      world &lt;&lt; "Hello, world!"
+</pre>
+<p>
+
+</p>
+<p>
+If you have any prior programming experience, the last line probably looks
+vaguely sensible.  It outputs the text inside the double quotes to the
+whole world.  But what on earth is a <em>mob</em> and why is each line indented
+like stair-steps?  All in good time.  For now, simply understand that the
+player's avatar in the game is a <em>mob</em>.  When a player logs in, the
+server is instructed to output the message "Hello, world" to everybody.
+</p>
+<p>
+Compile and run this program (see figure <a href="#HelloInterlude">1.1</a>).  If all goes
+according to plan, you should see the words, "Hello, world" magically
+appear on Dream Seeker's output screen.  Voila!  You have created your first
+BYOND world.
+</p>
+<p>
+Now you know the basic steps for designing worlds.  You write some DM code,
+compile it, and run it.  But this world didn't have anything for the player
+to do.  That's next.
+</p>
+<p>
+</p>
+<hr/>
+<center><h3>Figure 1.1: Hello World!</h3></center>
+<a name="HelloInterlude">
+<p>
+This first world serves not only as an introduction to the DM language,
+but to the Dream Maker editor/compiler as well.  Fortunately, the system
+has been designed to be quite simple to use, and with just a few steps you
+should be on your way to BYOND programming wizardry!
+</p><p>
+Dream Maker refers to the collection of files comprising the project as the
+world <em>environment</em>.  When you make a new project, you create a single
+environment file, which has the name "<tt>[worldname].dme</tt>".  This
+file may contain source code, but in general it will only be comprised of
+automatically generated references to other files in the project.  This is
+best seen by example, so let's stop talking, and get coding!
+</p><p>
+</p><ol>
+<p>
+</p>
+<li>Create the "hello" project by selecting <b>New Environment...</b>
+from the <b>File</b> menu.  This prompts for a directory in which your
+project will be stored.  Enter "<tt>hello</tt>" as the desired
+directory.  This creates a new directory called "<tt>hello</tt>",
+which now contains the <tt>hello.dme</tt> environment file.  Notice that
+<tt>hello.dme</tt> also appears in the file tree displayed on the left side
+of the screen.  All files in the environment directory are listed there.
+<p>
+</p></li>
+<li>Let's put the code for this project in a separate file.  Select
+<b>New File...</b> from the <b>File</b> menu.  Choose <b>Code File</b>
+for the type, and enter "<tt>hello</tt>" for the name.  This creates a file
+called "<tt>hello.dm</tt>" in the environment directory, and a
+corresponding listing in the file tree.  The checkbox next to it indicates
+that the code in <tt>hello.dm</tt> will be included in this project.
+<p>
+</p></li>
+<li>The <tt>hello.dm</tt> file is now ready for editing.  Type the
+following code.  (Make sure the first line is not indented, the second is
+indented once, and the third is indented twice.  It is easiest to use tabs
+for the purpose.)
+<p>
+
+</p><pre>mob
+  Login()
+    world &lt;&lt; "Hello, world!"
+</pre>
+<p>
+</p></li>
+<li>Compile the code by selecting <b>Compile</b> from the <b>Build</b>
+menu.  If there are problems, they will appear in the output box at the
+bottom of the screen.  But unless you indented incorrectly, all should
+proceed smoothly.
+<p>
+</p></li>
+<li>Run the compiled world by selecting <b>Run</b> from the
+<b>Build</b> menu.  This launches Dream Seeker, which should subsequently
+welcome the world!
+<p>
+</p></li>
+</ol>
+<hr/>
+<p>
+Consider the Hello World example again.  The DM code says that when a player
+logs in, a message should be displayed.  We can do a similar thing for other
+types of actions.  For example, if the player types a command, a message
+could be displayed.
+</p><p>
+
+</p><p>
+In DM, commands are called <em>verbs</em>.  A verb is defined in the following
+example:
+</p><p>
+
+</p><pre>mob
+   verb
+      smile()
+         world &lt;&lt; "[usr] grins."
+</pre>
+<p>
+Notice the funny stair-step indentation again!  That will be explained in a
+little bit.  For now, read this example from top to bottom.  Once again we
+are defining a property of a <em>mob</em> (the player's avatar).  In this case
+we are adding a <em>verb</em>, an action that the player can instruct the mob
+to perform.  The name of the verb is <em>smile</em>.  The final line displays a
+message when the mob smiles.  Notice the <code>[usr]</code> in the message; as you
+may have guessed, that is not displayed literally but is replaced by the
+name of the user, the player who initiates the command.
+</p><p>
+Run this example.  Once you have logged in, try typing <em>smile</em> and
+pressing enter.  You should see the grinning message with your login name
+substituted into it.  Amazing!  Fantastic!  But playing god is a serious
+business.  Don't let anyone catch you grinning.
+</p><p>
+For variety, you could add some more verbs.  Here are a few:
+</p><p>
+
+</p><pre>mob
+   verb
+      smile()
+         world &lt;&lt; "[usr] grins."
+      giggle()
+         world &lt;&lt; "[usr] giggles."
+      cry()
+         world &lt;&lt; "[usr] cries \his heart out."
+</pre>
+<p>
+
+</p><p>
+Now the stair-step pattern has been broken because all three verbs
+<em>smile</em>, <em>giggle</em>, and <em>cry</em> are at the same level of
+indentation.  In DM, indentation at the beginning of a line serves to group
+things together.  Here, <em>smile</em>, <em>giggle</em>, and <em>cry</em> are
+all grouped together as verbs belonging to <em>mob</em>.  Each of these verbs
+has it's own contents indented beneath it.
+</p><p>
+
+</p><p>
+Notice the use of <code>\his</code> in the <em>cry</em> verb.  This
+macro is replaced by the appropriate possessive pronoun.  It could be
+<em>his</em>, <em>her</em>, <em>its</em>, or <em>their</em>, depending on the
+gender.  DM provides a few other useful macros like this one to make life
+easy.
+</p><p>
+
+</p><p>
+So far nothing has been said (because you never asked) about the empty
+parentheses after the verb names in the above examples.  They were in the
+first example after <var>Login</var> too.  These are the mark of a procedure
+definition.  The verbs and <var>Login</var> are all examples of procedures,
+which are a sequence of instructions to be carried out.  In the examples so
+far each procedure consisted of only one line--an instruction to display
+some text.  They can, of course, become much more complicated than that.
+</p><p>
+
+</p><p>
+There are two general categories of procedures: those that show up as player
+commands and those that do not.  These are called <em>verbs</em> and
+<em>procs</em> respectively.  By that definition, <var>Login</var> in the
+<em>Hello World</em> example was a proc.
+</p><p>
+
+</p><p>
+The parentheses after a procedure name are more than decorative.  They can
+be used to define procedure parameters.  This allows for providing additional
+information to the procedure.  The information is stored in a variable, that
+is, a piece of memory with a name.  To confuse matters, a programmer will
+often call such variables, which serve as the parameters to procedures,
+<em>arguments</em>.  Why?  Well, just for the sake of argument.
+</p><p>
+Here is an example of a verb that takes a parameter--in this case a short
+message to be broadcast to the world.
+</p><p>
+
+</p><pre>mob
+   verb
+      say(msg as text)
+         world &lt;&lt; "[usr] says, [msg]"
+</pre>
+<p>
+In these few short lines are the bare bones of a chat world.  Users can log
+in and start gabbing using the <em>say</em> verb.  Try it out.  Your session
+might look something like the following:
+</p><p>
+
+</p><pre>say "hello world!"
+Dan says, hello world!
+</pre>
+<p>
+The main point of interest in the DM code is inside the parentheses where
+the parameter <code>msg</code> is defined.  It could have been called anything; the
+variable name is arbitrary.  The statement <code>as text</code> indicates that a
+short message supplied by the user will be stored in the variable.  This
+message is then inserted into the final output at the position marked by the
+expression <code>[msg]</code>.
+</p><p>
+So far I have casually introduced mobs, verbs, procs, and arguments.  Now
+it is time for a formal (tediously exciting) description of the DM syntax.
+It may take several multi-clausal sentences to get through this, so don't
+hold your breath.
+</p><p>
+
+</p><p>
+DM code is structured like a tree.  The top of the tree is called the root.
+The various types of virtual objects (mobs being one) branch off of the root
+and may in turn give rise to additional strains that branch down from them.
+</p><p>
+If you haven't noticed, the code tree terminology is upside down.  Of
+course, so is the file-system on your hard-drive, and every other
+informational tree in existence.  It is quite possible that the vast
+majority of computer scientists have never actually seen a real tree.  The
+sheer weight of their ignorance keeps the jargon from flipping right side
+up, and we are stuck with trees having a root at the top and leaf nodules at
+the bottom.  Or it might just be standard obfuscation.  That's why I do it.
+</p><p>
+It is time for an example.  One particularly interesting type of virtual
+object is a <var>turf</var>.  It is a building block used to make graphical
+maps that players can walk around on.  Suppose we wanted to make a maze.
+That would require two types of turfs: floors and walls.  Here's how you
+would define them:
+</p><p>
+
+</p><pre>turf
+   floor
+   wall
+</pre>
+<p>
+
+</p><p>
+All we did was branch two new types of objects off of the basic turf.  One
+is called <code>floor</code> and the other <code>wall</code>.  The terminology of a family
+tree is often used to describe the relationship of the various objects
+defined here.  Turf is the parent of floor and wall.  The two children are
+siblings of each other.  A child inherits all the properties of its parent
+and adds some of its own to distinguish it from its siblings.  Both floor
+and wall are turfs because they are derived from the turf object type.
+</p><p>
+To make a maze, we need to specify a few properties of floors and walls:
+what they look like and whether you can walk through them.  While we're at
+it, the appearance of a player should be defined too.  This is how it is
+done:
+</p><p>
+
+</p><pre>turf
+   floor
+      icon = 'floor.dmi'
+   wall
+      icon = 'wall.dmi'
+      density = 1
+mob
+   icon = 'player.dmi'
+</pre>
+<p>
+
+
+</p><p>
+Several assignments have been made.  These take the form of a variable on
+the left-hand side and a value on the right.  In the case of the icons, the
+value is the name of an icon file inside single quotes.  In the case of
+density, the value should be 1 or 0 to indicate if it is dense or not.  A
+dense turf will not allow other dense objects (like mobs) to walk through
+them.
+</p><p>
+</p><hr/>
+<center><h3>Figure 1.2: The Amazing Mapper</h3></center>
+</a><a name="MazeInterlude">
+<p>
+For most programs, adding graphic support is a massive chore.  The
+facilities in Dream Maker, however, make this task quite simple.  For our
+example, we'll just draw a couple of icons and put them on a map.
+</p><p>
+</p><ol>
+<p>
+</p>
+<li>Create a project called <tt>maze</tt> through the <b>New
+Environment...</b> option.
+<p>
+</p></li>
+<li>Create the main <tt>maze.dm</tt> file, and enter the following code:
+<p>
+
+</p><pre>turf
+  floor
+    icon = 'floor.dmi' 
+  wall
+    icon = 'wall.dmi'
+    density = 1
+mob
+  icon = 'player.dmi'
+</pre>
+<p>
+</p></li>
+<li>Build the <tt>floor.dmi</tt> icon.  Do this by selecting <b>New
+File...</b> and choosing <b>Icon File</b> for the type.  This will bring up a
+new window, with the option to build pixmaps (static, directionless, icons)
+and movies (animated or directional icons).  Choose <b>New Pixmap...</b>
+from the <b>Graphic</b> menu and show off your artistic flair by drawing a
+picture of a floor.  Repeat this step for the <tt>wall.dmi</tt> and
+<tt>player.dmi</tt> icons.
+<p>
+</p></li>
+<li>With the three icons in place, the project should compile.  Test this
+by selecting the <b>Compile</b> option.  If it is successful, you should
+be able to see your icons in the object tree tab on the left-hand side of
+the screen.  This tree illustrates the objects defined in your world.
+<p>
+</p></li>
+<li>You can run the world now, but you won't see any icons because you
+haven't put any objects on the map yet.  To build a map, again select
+<b>New File...</b> and choose <b>Map File</b>.  You can name it whatever
+you'd like; the <tt>.dmm</tt> extension will be appended, indicating that
+this file is a map.
+<p>
+</p></li>
+<li>Now for the fun part!  Create the map by selecting objects from the
+tree and placing them with the various functions.  For example, to add a row
+of walls, select the <b>Add</b> function on the map pane, click on the
+<code>wall</code> tile in the tree (it's underneath <code>turf</code>), and draw them on
+the map by left-clicking the mouse.  You can remove tiles by
+right-clicking.  The map editor has considerable functionality; you can
+learn about it by reading the included documentation.
+<p>
+</p></li>
+<li>Compile the new, graphical project and run it with Dream Seeker.  If
+all goes well, you should see your creation on screen.  Your avatar can roam
+the floors and bump into the walls.  Not too bad for a couple minutes of
+work!
+<p>
+</p></li>
+</ol>
+<hr/>
+<p>
+
+</p><p>
+The reason we did not have to set the density of the floor to 0 is that the
+default density of a turf is 0.  Since the floor is derived from a turf, it
+inherits all the default properties of one.  This sort of inheritance of
+characteristics is one of the important elements of object-oriented
+languages like DM.  Ultimately, it is just a compact way of describing
+closely related things.
+</p></a><p><a name="MazeInterlude">
+Before you test this example, you will need to design the icons and the maze
+itself.  Fortunately, this process is a natural part of Dream Maker's
+functionality (see figure </a><a href="#MazeInterlude">1.2</a>).
+</p>
+<p>
+When you are done making the map, you can compile and test the world.  When
+you log in, you should be able to walk around in the maze you designed by
+using the arrow keys.  Amazing!
+</p>
+<p>
+Of course there are always small details that one doesn't think about until
+after the fact.  For example, where is the starting point in the maze?  We
+never specified, so players are just dumped onto the map in the first
+available spot.  Here is one way to do it:
+</p>
+<p>
+
+</p>
+<pre>turf
+   floor
+      icon = 'floor.dmi'
+   start
+      icon = 'start.dmi'
+   wall
+      icon = 'wall.dmi'
+      density = 1
+mob
+   icon = 'player.dmi'
+   Login()
+      loc = locate(/turf/start)
+</pre>
+<p>
+You will have to make a new icon for the <code>start</code> turf and then edit the
+map to mark the starting position with it.
+</p>
+<p>
+
+</p>
+<p>
+The code that makes the initial placement of the mob is in the
+<var>Login</var> proc.  It sets the location of the mob (<var>loc</var>) to the
+position of the start turf.  This is done by using the <var>locate()</var>
+instruction--one of the many built-in procedures in DM (see figure
+<a href="#HelpInterlude">1.3</a>).  It computes the position of an object type (in this
+case, the <code>start</code> turf).
+</p>
+<p>
+
+</p>
+<p>
+Notice how the object type <code>/turf/start</code> is specified.  This notation is
+called a <em>type path</em> because of the way you specify the path (starting
+from the root) down to the specific type of object you want.
+</p>
+<p>
+
+</p>
+<p>
+Now suppose you forgot to put a start turf on the map.  What would happen?
+The <var>locate()</var> instruction would fail and the player would not get
+placed on the map and therefore wouldn't even be able to see the maze after
+logging in.  A total disaster!  Wouldn't it be nice to fall back on the
+default behavior of at least putting the mob somewhere on the map?  In other
+words, we have to somehow run the default <var>Login</var> proc as well as the
+one we defined, just in case there is no start turf.  Here is how to do it:
+</p>
+<p>
+
+</p>
+<pre>mob
+   Login()
+      loc = locate(/turf/start)
+      ..()
+</pre>
+<p>
+
+</p>
+<p>
+The final line does the job.  It invokes a procedure with a strange name:
+just two dots.  That is the name DM uses for the default procedure, more
+generally known as the parent or super procedure.  In the case of
+<var>Login</var>, the default proc checks to see if the mob is somewhere
+already.  If not, it finds a vacant spot on the map, which is just what we
+wanted.
+</p>
+<p>
+
+</p>
+<p>
+Now you can begin to see the general flavor of DM programming.  There are a
+number of events (<var>Login</var> being one) which are handled by
+procedures.  When necessary, you can override the default procedure with one
+of your own to make things work exactly how you want.
+</p>
+<p>
+
+</p>
+<p>
+This is another important component of object oriented programming.  Each
+type of object can respond to events differently.  The way in which they
+respond is inherited from their parents by default, but can be redefined
+and augmented as needed.
+</p>
+<p>
+This introduction has just scratched the surface of DM.  You should begin to
+see some interesting possibilities.  At the same time, you should have a lot
+of unanswered questions.  Keep both of those in mind; they will be your
+guide through the more detailed exploration of the language that follows.
+</p>
+<p>
+
+</p>
+<hr/>
+<center><h3>Figure 1.3: Help is on the way!</h3></center>
+<a name="HelpInterlude">
+<p>
+No programming environment is complete without a comprehensive, accessible
+reference.  Dream Maker provides this in the form of a searchable index of
+topics and built-in properties.  You may access this by selecting
+<b>Help On...</b> in the menu, or by hitting the <b>F1</b> key.  If the
+cursor is positioned on a word (such as "<var>locate</var>"), help will be
+found for that topic.
+</p><p>
+</p><hr/>
+<p>
+
+</p></a>
+</body>
+</html>

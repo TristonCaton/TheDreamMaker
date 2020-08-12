@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 2</h1>
+ <h2 align="center">Navigating the Code Tree</h2>
+
+
+<p>
+</p>
+<blockquote>  The real nature of this cosmic tree cannot be known here, nor its
+  beginning, nor end, nor foundation.
+</blockquote>
+<center>--Bhagavat Gita</center>
+
+<p>
+The previous chapter was a quick introduction to give you a taste for DM
+programming.  This and the next few chapters will cover the same basic ideas
+in greater detail.
+</p>
+<p>
+A DM program begins at the root of the tree and descends along multiple
+branches.  Each branching point (or node) is given a name to distinguish it
+from the other branches at the same level.  Names are case-sensitive (so
+apple and Apple are different).  They may be any length and may contain any
+combination of letters, numbers, and underscores as long as they do not
+start with a number.
+</p>
+<p>
+Consider the following code:
+</p>
+<p>
+
+</p>
+<pre>turf
+   trap
+      pit
+      quicksand
+      glue
+</pre>
+<p>
+Several types of traps are defined (though no instructions have been
+included to actually make them work).  Here, each type of object is on a
+line by itself and indentation is used to define the relationships between
+them.  The three siblings pit, quicksand, and glue are all children of trap,
+which is in turn derived from turf, the map terrain object.
+</p>
+<p>
+<a name="2.1">
+</a></p>
+<h3><a name="2.1">1. Formatting Code</a></h3>
+<a name="2.1">
+<p>
+
+</p><p>
+DM provides some flexibility in the way code is formatted.  For example,
+blank lines may be inserted between other lines without effect.  This may
+help code from getting too dense and unreadable.
+</p><p>
+To compress code that is overly spread out, a semicolon may be used in place
+of a newline.  In this way, several children may reside on the same line.
+To put a parent and child on the same line, a slash is used.  It is
+equivalent to a newline followed by an additional level of indentation.
+</p><p>
+The following code is equivalent to the previous example:
+</p><p>
+
+</p><pre>turf/trap
+   pit; quicksand; glue
+</pre>
+<p>
+
+</p><p>
+In addition, braces may be used to mark the beginning and ending of a node's
+children.  C, C++, and Java programmers may feel more at home using this
+style.  With the compiler checking both braces and indentation, it is hard
+for simple mistakes to slip through unnoticed.  Sometimes it is the simple
+spelling and typesetting errors which are the hardest to see.
+</p><p>
+Here is yet another encoding of the same objects, this time using braces:
+</p><p>
+
+</p><pre>turf/trap
+{
+   pit
+   quicksand
+   glue
+}
+</pre>
+<p>
+
+</p><p>
+You may use either tabs or spaces in any number to indent your code.  The
+only requirement is that you be consistent.  Each block of code must use the
+same type of indentation throughout.  In general, DM provides enough freedom
+to format your code the way you like without so much freedom that mistakes
+are likely to slip through unnoticed.
+</p></a><p><a name="2.1">
+</a><a name="2.2">
+</a></p>
+<h3><a name="2.2">2. Compilation Errors</a></h3>
+<a name="2.2">
+<p>
+
+</p><p>
+While we are on the subject of mistakes, you may as well make one now on
+purpose so you know what is going on later when it's not on purpose.  Remove
+one of the braces from the above code and try compiling it.  You should get
+a compilation error.  If you double-click on it, the cursor will jump to the
+line in the code where the compiler ran into trouble.  You can correct the
+problem and then try recompiling.
+</p><p>
+Often, you will need to think less like a human and more like a machine to
+see what is wrong.  Forget about what the code is trying to do and focus
+more on its form: the grammar, the spelling, and little fussy details that
+only a computer would care about.
+</p><p>
+The more frequently you compile your code, the less trouble you will have in
+locating problems.  Also realize that if there are many compilation errors,
+some of the later ones may just be confusion caused by earlier ones.  Try
+fixing the first few and recompiling if the rest don't make any sense.
+</p></a><p><a name="2.2">
+</a><a name="2.3">
+</a></p>
+<h3><a name="2.3">3. Paths in the Tree</a></h3>
+<a name="2.3">
+<p>
+
+</p><p>
+You have already seen how to use a slash to make code more compact.  It is
+used to separate a parent and a child node, for example <tt>turf/trap</tt>.
+This notation is known as a <em>path</em> because it tells the compiler how to
+get from the current position in the tree to some other point by enumerating
+the branches to take along the way.  If a given branch doesn't exist, it
+will be created.
+</p><p>
+Paths have several uses.  Sometimes indentation can get so deep that it
+becomes hard to read.  You can use paths instead to get deep down inside the
+tree without indenting so much to get there.  Another time to use a path is
+when you want to branch off of existing objects from somewhere else in the
+code.
+</p><p>
+The following example adds some variation to the basic pit that was already
+defined.
+</p><p>
+
+</p><pre>turf/trap/pit
+   tar
+   lava
+   bottomless
+</pre>
+</a><p><a name="2.3">
+You could place this code at the bottom (or even the top) of the same file or
+in another file.  (You will see how to use multiple files in chapter
+</a><a href="../../C%3A/Users/trist/Desktop/chap19.html#BigProjectChapter">19</a>.)
+</p>
+<p>
+Finally, there are a few rare cases in which you may want to use an absolute
+path--that is, a path starting with a slash.  This allows you to derive
+something from the root even if you are not currently at the root.  Now does
+not happen to be one of those rare cases; using an absolute path would only
+make the code more confusing.
+</p>
+<p>
+If you think you know how things work, take a look at this:
+</p>
+<p>
+
+</p>
+<pre>turf {
+   trap {pit; /turf/trap/quicksand}
+   /turf/trap/glue
+}
+</pre>
+<p>
+If you guessed that this is yet another encoding of the same three traps,
+you have passed obfuscation level one.
+</p>
+<p>
+<a name="2.4">
+</a></p>
+<h3><a name="2.4">4. Code Comments</a></h3>
+<a name="2.4">
+<p>
+
+</p><p>
+When you start writing code as confusing and tangled as the last example, it
+would be a good idea to leave a few clues behind.  Otherwise you may find it
+incomprehensible the next time you visit, a rather embarrassing situation.
+There are two ways to write comments in the code.  One is for multi-line
+comments and the other is for single line ones.  Example:
+</p><p>
+
+</p><pre>/*
+  This is a multi-line comment.
+  You can put whatever you want inside of it.
+  The compiler just skips right over.
+  Some of you may recognize it as a C style comment.
+*/
+
+//This is a single-line comment.
+//Some people know of it as the C++ style comment.
+</pre>
+<p>
+Comments can occur anywhere in the code--at the end of lines, on lines by
+themselves, or wherever.  They are often used to make statements of intent
+or purpose.  It frequently takes only a very short note to make code much
+easier to read.
+</p><p>
+
+</p></a>
+</body>
+</html>

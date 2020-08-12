@@ -1,0 +1,1987 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 11</h1>
+ <h2 align="center">User Input/Output</h2>
+
+<a name="InputOutputChapter">
+<p>
+</p><blockquote>  Technology is the camp fire around which we narrate our stories.
+</blockquote>
+<center>--<i>Laurie Anderson</i></center>
+
+<p>
+Interacting with the user is the ultimate purpose of any DM program.  This
+chapter describes the elements of the language which make it possible.  To
+come this far would have been impossible without a casual introduction to
+some of the input/output instructions, but even those have more power to
+offer.
+</p></a><p><a name="InputOutputChapter">
+</a><a name="11.1">
+</a></p>
+<h3><a name="11.1">1. Input</a></h3>
+<a name="11.1">
+<p>
+There are two basic ways of getting information from the player.  One is
+<em>client initiated</em> and the other is <em>server initiated</em> input.  The
+difference is in whether the player sends unsolicited input or whether the
+game asks for it.  These will be discussed in the following sections.
+</p></a><p><a name="11.1">
+</a><a name="11.1.1">
+</a></p>
+<h4><a name="11.1.1">1.1 Verbs</a></h4>
+<a name="11.1.1">
+<p>
+All user input seen so far has come at the initiative of the user.  The
+player may type a command, press a direction key, click an object, etc.
+These forms of input are all similar because they are ultimately handled by
+verbs.  In the case of the direction keys and mouse clicks, players
+don't need to actually type any command--the client does it all.
+However, from the programmer's point of view, these are all the same: The
+player calls a procedure and possibly passes some arguments to it.
+</p><p>
+The only pre-defined verbs are associated with the client data object.  They
+are the direction keys (e.g. <var>client.North()</var>), mouse clicks
+(<var>client.Click()</var> and <var>client.DblClick()</var>), and topic links
+(<var>client.Topic()</var>).  All other verbs are defined by the programmer.
+</p><p>
+The general format for defining a verb includes any number of arguments.
+Each one may have a default value, an input type, and a list of possible
+values.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+verb/<it>Name</it>
+(<it>Arg1</it>
+ <b>=</b> <it>Default</it>
+ <b>as</b> <it>input-type</it>
+ <b>in</b> <it>List</it>
+,...)
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="11.1.1">
+</a><a name="11.1.2">
+</a></p>
+<h4><a name="11.1.2">1.2 <var>input</var> instruction</a></h4>
+<a name="11.1.2">
+
+<p>
+The <var>input</var> instruction allows you to ask the player for
+information.  This is how DM provides server-initiated input.  It is similar
+to a single verb argument.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+&gt;input(User=usr,Message,Title,Default)
+<var>input</var> </td>
+<td> (User,Query,Title,Default) <var>as</var> input-type <var>in</var> List</td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>User</code> is the mob to input. </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>Query</code> is the input text. </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>Title</code> is the text to display in the titlebar. </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>Default</code> is the default value of the query. </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>input-type</code> is the type of input desired. </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>List</code> is a list of possible values. </td>
+</tr>
+<tr><td>
+                </td>
+<td> Returns value entered by player.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+All but the input text itself are optional parameters.  <code>User</code> defaults
+to the current <var>usr</var>, which is usually the desired target.  If no
+input type or possible value list is specified, the default input type is
+<var>text</var>.  Otherwise, the input type defaults to accept anything in the
+supplied list, which contains the only values the user is allowed to enter.
+</p></a><p><a name="11.1.2">
+Note that the <var>input</var> instruction does not return until the user has
+entered a value.  Since the entire multi-user system cannot halt while
+waiting for this to happen, only the current procedure waits.  More will be
+said on the subject of multi-tasking in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap13.html#RealtimeChapter">13</a>.
+</p>
+<p>
+One case in which the <var>input</var> instruction proves useful is when
+something happens in the game that the player needs to respond to.  A verb
+would be too open-ended for the task, making it difficult for the player to
+guess what to do next.
+</p>
+<p>
+The following code, for example, handles a rather sad event in the life of a
+player.
+</p>
+<p>
+
+</p>
+<pre>mob/proc/Die()
+   if(!key) //NPC
+      del src
+   else     //PC
+      loc = null  //vacate the scene
+      var/again = input("Play Again?") in list("yes","no")
+      if(again == "yes")
+         Login() //back to square one!
+      else
+         del src
+</pre>
+<p>
+When the <code>Die()</code> proc is called, players are asked if they would like to
+play again.  If they do, they are logged in again, presumably to start
+over.  Otherwise, they are deleted (and logged out).
+</p>
+<p>
+<a name="11.2">
+</a></p>
+<h3><a name="11.2">2. Output</a></h3>
+<a name="11.2">
+
+<p>
+All output is generated by the <b>&lt;&lt;</b> operator.  This
+sends the specified output to one or more players.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>Target</it>
+ <b>&lt;&lt;</b> <it>Output</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The target may be a single object or a list of objects.  Any non-mob target
+will be replaced by its contents.  This allows you to send output to a
+region on the map or to a room, and all the players inside will receive it.
+</p><p>
+There are several different types of output.  In many cases, the way the
+output should be handled is automatically detected from the type of data
+provided.  Several instructions for producing various types of output are
+listed in the following table.  In addition to these instructions are some
+which further clarify how the output should be treated when the type of data
+alone is not enough to determine this.
+</p><p>
+
+</p><center><h3>Figure 11.16: Output Methods</h3></center>
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+text() </p>
+</td>
+</tr>
+<tr><td>
+file() </td>
+</tr>
+<tr><td>
+image() </td>
+</tr>
+<tr><td>
+
+browse() </td>
+</tr>
+<tr><td>
+sound() </td>
+</tr>
+<tr><td>
+ftp() </td>
+</tr>
+<tr><td>
+run() </td>
+</tr>
+<tr><td>
+link() </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+<p>
+The first group of instructions produce various types of data for output or
+other purposes.  The second group are only meaningful for directly producing
+output.  All of these instructions are described individually in the
+following sections.  The general format for using them is the same.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>Target</it>
+ <b>&lt;&lt;</b> <var>Method</var>(<it>Output</it>
+)
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="11.2">
+</a><a name="11.2.1">
+</a></p>
+<h4><a name="11.2.1">2.1 <var>text</var> output</a></h4>
+<a name="11.2.1">
+
+<p>
+A text output value is displayed in the client's scrolling terminal window.
+The text value may be the result of any expression.  Frequently, it is a
+text string with embedded expressions inside it.  Although it is not
+necessary to use the <var>text</var> instruction for this purpose, one reason
+for doing so is to use trailing rather than directly embedded expressions.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>text</var> </td>
+<td> (Text,Arg1,Arg2,...) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Text</code> is the text string with expression markers. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Args</code> are the expressions to insert. </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns text with arguments substituted in.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The position in the text where a trailing argument will be inserted is
+marked with empty brackets <b>[ ]</b>.  The substitution arguments are then
+listed in the same order as the expression markers.
+</p><p>
+For substituting short expressions into the text, it is convenient to simply
+embed them directly.  However, many lengthy expressions embedded into a text
+string can make it difficult to read.  In that case, trailing expressions
+may be the better choice.  The two methods can be mixed as desired.
+</p><p>
+The following two versions of a <code>look</code> verb are equivalent.
+</p><p>
+
+</p><pre>mob
+   var/money = 2
+
+   verb/look1()
+      set src in view()
+      usr &lt;&lt; "[src] has [contents.len] items and [money] buffalo chips."
+
+   verb/look2()
+      set src in view()
+      usr &lt;&lt; text("[src] has [] items and [] buffalo chips.",
+                   contents.len,
+                   money)
+</pre>
+<p>
+Note that the <var>text</var> instruction is not limited to being used as an
+output method.  It may be used anywhere you wish to use trailing expressions
+with a text string.
+</p></a><p><a name="11.2.1">
+</a><a name="11.2.2">
+</a></p>
+<h4><a name="11.2.2">2.2 <var>browse</var> output</a></h4>
+<a name="11.2.2">
+
+<p>
+The <var>browse</var> output method displays text output in a pop-up window.
+This is intended for viewing longer text documents.  If treated as normal
+terminal output instead, the user might have to scroll back up to find the
+top of the message.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>browse</var> </td>
+<td> (Doc, Options) </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>Doc</code> is the message to display.
+                 </td>
+<td> <code>Options</code> are various window-specific options.  Consult the reference for specifics.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+By default, each message replaces any previous message being displayed but the user can
+move back to previous messages stored in the client's memory.  In many ways,
+the client terminal behaves like a telnet session and the browse window
+behaves like a web browser.  One displays output sequentially in a
+continuous stream.  The other displays it in discrete chunks--one document
+after another.  The two are each useful in different situations.
+</p><p>
+
+</p></a><p><a name="11.2.2">
+The document is often a text string.  However, it may be a file instead.
+The type of file will determine how it is handled.  Files may reside in the
+resource cache or in the file system.  As always, cached items may be
+specified by putting the file name in single quotes.  An external file, on
+the other hand, is indicated using the <var>file</var> instruction described
+in section </a><a href="#FileOutput">11.2.7</a>.
+</p>
+<p>
+The <var>browse</var> output method is often used in conjunction with the
+<var>message</var> input type.  One allows the composition of messages and the
+other displays them.
+</p>
+<p>
+The following example defines a message scroll.  Players can write poetry on
+it in moments of inspiration.
+</p>
+<p>
+
+</p>
+<pre>obj/scroll/verb
+   write(msg as message)
+      desc = msg
+   read()
+      usr &lt;&lt; browse(desc)
+</pre>
+<p>
+<a name="11.2.3">
+</a></p>
+<h4><a name="11.2.3">2.3 <var>sound</var> output</a></h4>
+<a name="11.2.3">
+
+<p>
+The <var>sound</var> output method plays a sound to the player.  Either wav
+or midi sound files may be used, usually for short noises and music
+respectively.  Such files are treated this way by default, but the
+<var>sound</var> instruction can be used to control how the sound is played.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>sound</var> </td>
+<td> (File,Repeat) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>File</code> is the sound file to play. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Repeat</code> is 1 to play sound repeatedly.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+A repeated sound is played in the background while other sounds are played
+in the foreground.  Only one background sound and one foreground sound may
+be played at a time, so subsequent output replaces any previous sound with
+the same repeat setting.  To stop a sound, specify <var>null</var> as the file.
+</p><p>
+Background music is often repeated while occasional noises play in the
+foreground.  The following example defines a background sound for each area.
+</p><p>
+
+</p><pre>area
+   var/music = 'default.midi'
+   Enter()
+      . = ..()
+      if(.) usr &lt;&lt; sound(music,1)
+</pre>
+<p>
+The line <code>. = ..()</code> is commonly used when you want to return the same
+value as the parent proc but you need to do something <em>after</em> finding
+out what that value is.  That way, if the user is refused access to the area
+for some reason, the music will not be played.
+</p></a><p><a name="11.2.3">
+</a><a name="11.2.4">
+</a></p>
+<h4><a name="11.2.4">2.4 <var>image</var> output</a></h4>
+<a name="11.2.4">
+
+<p>
+The <var>image</var> instruction is used to create a purely virtual object.
+It may appear at the specified location to selected players, but it
+corresponds to no real data object.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>image</var> </td>
+<td> (Icon,Loc) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Icon</code> is the icon or object type to use. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Loc</code> is the location of the image. </td>
+</tr>
+<tr><td>
+               </td>
+<td> Returns a reference to the image.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+If the location of the image is something movable like a mob, it will follow
+the object around.  The image icon is displayed in a layer above everything
+else, so it is best suited for special effects like a selection box, burst
+of fire, etc.
+</p><p>
+The <var>image</var> instruction may be used outside the context of the output
+instruction.  In this case it returns a reference to the image but does not
+actually display the image to any players.  This reference can be sent as
+output and may be deleted later to destroy the image.
+</p><p>
+The following example allows the player to select an enemy by clicking on
+it.  The currently selected enemy is outlined with an image.
+</p><p>
+
+</p><pre>mob/var
+   mob/enemy
+   enemy_marker
+
+client/Click(mob/M)
+   if(istype(M))
+      del usr.enemy_marker
+      usr.enemy = M
+      usr.enemy_marker = image('outline.dmi',M)
+      usr &lt;&lt; usr.enemy_marker
+</pre>
+<p>
+The code works by first deleting any old enemy marker.  A new one is then
+made and displayed to the user.  No one else will see the image--only the
+player who clicked on the enemy.
+</p></a><p><a name="11.2.4">
+</a><a name="11.2.5">
+</a></p>
+<h4><a name="11.2.5">2.5 <var>ftp</var> output</a></h4>
+<a name="11.2.5">
+
+<p>
+The <var>ftp</var> output method sends a file to the player.  This
+complements the <var>file</var> input type which allows the player to send a
+file to the server.  The terminology normally used is that a file is
+<em>uploaded</em> when it is input and <em>downloaded</em> when it is output.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>ftp</var> </td>
+<td> (File,Name) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>File</code> is the file to send. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Name</code> is the optional suggested file name.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The file to send may be either a resource file (in the cache) or a file in
+the file system.  The difference is whether the file is specified in single
+or double quotes.  A file in single quotes will be loaded into the resource
+cache at compile-time.  A file in double quotes will be accessed from the
+file system (i.e. hard-disk) at run-time.  The latter might be useful if you
+need to update the file periodically without recompiling.
+</p><p>
+The suggested file name defaults to the name of the file being sent.  This
+is used as the default name when the player chooses where to store the
+file.  If the player decides not to download the file, it is always possible
+to cancel at that point or during the transfer.
+</p><p>
+The following example sends a help file to players when they click on the
+appropriate topic.
+</p><p>
+
+</p></a><pre><a name="11.2.5">client/Topic(T)
+   if(T == "help")
+      usr &lt;&lt; ftp("help.txt")
+
+mob/Login()
+   ..()
+   usr &lt;&lt; "Download the </a><a href="#help"> help file </a> if you are new here."
+</pre>
+<p>
+For this to work, the file "help.txt" must exist in the current directory of
+the server.  This can be assured by putting it in the same place as the dmb
+file.  Since the file was specified in double quotes, it will be accessed at
+run-time rather than compile-time.  That means you are free to edit it at a
+later date.
+</p>
+<p>
+The HTML tag &lt;A HREF...&gt; is used to embed a hyperlink in some
+output text.  It will be described in section <a href="#Hyperlink">11.4.3</a>.
+</p>
+<p>
+<a name="11.2.6">
+</a></p>
+<h4><a name="11.2.6">2.6 <var>run</var> file output</a></h4>
+<a name="11.2.6">
+
+<p>
+The <var>run</var> output method is like <var>ftp</var> except it displays
+or executes the specified file rather than saving it to disk.  The action
+taken depends on the type of file.  For example, HTML and jpeg files might
+be shown in the player's web browser.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>run</var>(File)
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+
+</p><p>
+Obviously it would be a severe security risk to players if executable files
+could be run without their authorization.  Viruses and other malicious
+programs could be released onto their computer just by connecting to a
+game.  For this reason, players are asked before executing any potentially
+dangerous file.  That is the default behavior.  The player can configure the
+client to always or never run files if they choose.  A similar choice can be
+made about downloading files.
+</p><p>
+The previous example which gave the player a help file could easily be
+changed to instead display the file.  If the player wishes, it would still
+be possible to save the file to disk.
+</p><p>
+
+</p><pre>client/Topic(T)
+   if(T == "help")
+      usr &lt;&lt; run("help.txt")
+</pre>
+</a><p><a name="11.2.6">
+</a><a name="11.2.7">
+</a></p>
+<h4><a name="11.2.7">2.7 <var>file</var> output</a></h4>
+<a name="11.2.7">
+</a><a name="FileOutput">
+
+<p>
+The <var>file</var> instruction returns a reference to a file object.  It
+takes the file's path (in a text string) as an argument.  The output methods
+<var>browse</var>, <var>ftp</var>, and <var>run</var> can all take a file
+reference as an argument.  In the case of <var>browse</var> it is necessary to
+use <var>file</var> to distinguish between a text message and a file name.  In
+the case of <var>ftp</var> and <var>run</var> it is not necessary to use
+<var>file</var> because the name of the file may simply be used directly.  If
+no output method is specified for a file, it is implicitly handled by
+<var>run</var>.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>file</var> </td>
+<td> (Path) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Path</code> is the name of the file.</td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns a reference to the file.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="FileOutput">
+The path may be absolute or relative to the server's working directory,
+which is the same directory that contains the world <tt>.dmb</tt> file.
+Since this is evaluated at run-time, the file need not exist until the
+statement is actually executed.  This is different from cache file
+references (in single quotes) which are evaluated at compile-time.  For more
+uses of the file object, see section </a><a href="../../C%3A/Users/trist/Desktop/chap17.html#FileObject">17.6</a>.
+</p>
+<p>
+<a name="11.2.8">
+</a></p>
+<h4><a name="11.2.8">2.8 <var>link</var> output</a></h4>
+<a name="11.2.8">
+</a><a name="Link">
+
+<p>
+The <var>link</var> output method is like <var>run</var> except it executes a
+URL rather than a file.  The URL could be a web address, a BYOND address, or
+a topic link.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>link</var> </td>
+<td> (url) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>url</code> is the URL to execute.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The beginning of the URL specifies the communication protocol.  If the URL
+begins with "<tt>byond://</tt>" then it is treated as a BYOND address.
+This is the default protocol if none is specified.  A URL beginning with
+"<tt>#</tt>" is a topic link.  Other protocols (like "<tt>http://</tt>"
+are handled by the player's web browser.
+</p><p>
+A BYOND link causes the player's client to reconnect to the specified
+address.  Topic links merely cause the specified topic to be accessed in the
+current world (by calling <code>client.Topic()</code>).  A web link causes the
+web browser to switch to the specified URL.
+</p><p>
+The general format for a BYOND address includes a server address and topic.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>byond://</var><it>server</it>
+<b>#</b><it>topic</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The topic is optional and is only used in rare cases like servers with
+multiple entry points.  The server address may be either the name of a
+registered server or the network address in the form <code>ip:port</code>.  The
+IP address would either be raw network numbers (e.g. 123.456.789.123) or the
+corresponding machine name (e.g. dantom.com).  The port number is the network
+port on which the server is running.  This is reported when the server
+starts up.
+</p><p>
+By default, players are asked whether they accept links activated in this
+manner.  They can, however, configure the client to always or never accept
+them.
+</p><p>
+The <var>link</var> output method is very similar to the hyperlink text tag
+which has already been introduced.  They both can take the same types of
+URLs and act upon them in the same manner.  Hyperlinks embedded in text are
+normally used to provide access to optional information.  The <var>link</var>
+output method, on the other hand, is useful when the player's action has
+already indicated desire to follow the link.
+</p><p>
+For example, a link from one world to another could be activated by entrance
+into a special turf.
+</p><p>
+
+</p><pre>turf/wormhole/Enter()
+   usr &lt;&lt; link("byond://WormWorld")
+   return 1
+</pre>
+</a><p><a name="Link">
+This example assumes the existence of a world registered under the name
+"WormWorld".  Running and registering a networked world will be discussed
+in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap12.html#SavefileChapter">12</a>.
+</p>
+<p>
+<a name="11.3">
+</a></p>
+<h3><a name="11.3">3. Text Macros</a></h3>
+<a name="11.3">
+</a><a name="TextMacros">
+
+
+<p>
+Both input and output text may contain special codes that are not displayed
+literally but which are replaced by some other text.  These are called
+<em>text macros</em> and begin with a backslash <b>\</b> and may
+end with a space (which is ignored).  They are summarized in the following
+sections.
+</p></a><p><a name="TextMacros">
+</a><a name="11.3.1">
+</a></p>
+<h4><a name="11.3.1">3.1 Expression Modifiers</a></h4>
+<a name="11.3.1">
+<p>
+
+</p><center><h3>Figure 11.17: Text Macros for use with Expressions</h3></center>
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+<code>\the</code>, <code>\The</code>                          </p>
+</td>
+<td> definite article if needed</td>
+</tr>
+<tr><td>
+<code>\a</code>, <code>\an</code>, <code>\A</code>, <code>\An</code>      </td>
+<td> indefinite article if needed</td>
+</tr>
+<tr><td>
+<code>\he</code>, <code>\He</code>, <code>\she</code>, <code>\She</code>  </td>
+<td> <em>he</em>, <em>she</em>, <em>they</em>, <em>it</em></td>
+</tr>
+<tr><td>
+<code>\his</code>, <code>\His</code>                          </td>
+<td> <em>his</em>, <em>her</em>, <em>their</em>, <em>its</em></td>
+</tr>
+<tr><td>
+<code>\hers</code>                                      </td>
+<td> <em>his</em>, <em>hers</em>, <em>theirs</em>, <em>its</em></td>
+</tr>
+<tr><td>
+<code>\him</code>                                       </td>
+<td> <em>him</em>, <em>her</em>, <em>them</em>, <em>it</em></td>
+</tr>
+<tr><td>
+<code>\himself</code>, <code>\herself</code>                  </td>
+<td> <em>himself</em>, <em>herself</em>, <em>themself</em>, <em>itself</em></td>
+</tr>
+<tr><td>
+<code>\th</code>                                        </td>
+<td> 1st, 2nd, 3rd, ...</td>
+</tr>
+<tr><td>
+<code>\s</code>                                         </td>
+<td> 1 dog, 2 dogs, ...</td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+<p>
+The first group of text macros work in conjunction with an embedded
+expression.  The article macros precede the expression and the others follow
+it.  Any amount of text and even inapplicable expressions may exist between
+the macro and its associated expression.
+</p><p>
+The articles and various pronouns work with object or text expressions.  The
+plural and ordinal macros <code>\s</code> and <code>\th</code>
+are used with numerical expressions.  If no expression of the appropriate
+type is found, these macros do nothing.
+</p><p>
+An embedded object is replaced by a definite article and its name.  In other
+words, the following two are equivalent:
+</p><p>
+</p><ol>
+<li><code>"[usr] smiles."</code>
+</li>
+<li><code>"\The [usr] smiles."</code>
+</li>
+</ol>
+<p>
+These could produce "Andrew smiles." or "The cat smiles." depending on
+the name of the user.
+</p><p>
+Note that the articles may be supplied in either capitalized or lowercase
+form.  The implicit definite article is automatically chosen in capital form
+if preceded by a period.  If that is incorrect, you can specify the desired
+form explicitly.
+</p><p>
+If an indefinite article is desired instead of the default definite one, it
+must be explicitly specified.  If no article at all is desired, the name can
+be embedded directly in place of the object.
+</p><p>
+The following example uses an indefinite article instead of a definite one
+when a mob picks up an object.
+</p><p>
+
+</p><pre>obj/verb/get()
+   set src in view(0)
+   view() &lt;&lt; "[usr] picks up \a [src]."
+   Move(usr)
+</pre>
+<p>
+It doesn't matter whether you use "a" or "an" in the macro.  The
+appropriate one will be chosen for the word that follows.  It is common to
+use whichever one makes the code more readable.
+</p></a><p><a name="11.3.1">
+</a><a name="11.3.1.1">
+</a></p>
+<h5><a name="11.3.1.1">3.1.1 Proper Nouns</a></h5>
+<a name="11.3.1.1">
+<p>
+There are two special text macros for controlling whether the name of an
+object is considered to be a proper noun or not.  These are <code>\proper</code>
+and <code>\improper</code>.  By default, if the object name is capitalized, it is
+assumed to be proper, and otherwise it is assumed to be improper.  To
+override this, you can put <code>\proper</code> or <code>\improper</code> at the
+beginning of the object's name.
+</p><p>
+As you have seen in the preceding section, the difference between proper and
+improper nouns is that articles are suppressed in front of proper nouns.
+For example, if you had something called a "BYOND dime," you would need to
+use the <code>\improper</code> macro as follows:
+</p><p>
+
+</p><pre>obj/BD
+   name = "\improper BYOND dime"
+mob/verb/get(obj/O in view(0))
+   usr &lt;&lt; "You pick up \an [O]."
+   O.Move(usr)
+</pre>
+<p>
+Since we used <code>\improper</code> in this example, somebody picking up a BYOND
+dime would see, "You pick up a BYOND dime." rather than "You pick up
+BYOND dime."
+</p></a><p><a name="11.3.1.1">
+</a><a name="11.3.1.2">
+</a></p>
+<h5><a name="11.3.1.2">3.1.2 Numerical Expressions</a></h5>
+<a name="11.3.1.2">
+
+<p>
+There are macros which depend upon the preceding numerical expression.  The
+<code>\th</code> macro produces the ordinal ending for the supplied
+number.  For the number 1, it produces "<code>st</code>" to make
+"<code>1st</code>", for the number 2, "<code>nd</code>" and so on.  From 4 and
+on it produces "<code>th</code>", which is where it gets its name.
+</p><p>
+The <code>\s</code> macro produces "<code>s</code>" if the preceding numerical
+expression is not equal to 1 and nothing otherwise.  This is useful for
+making plurals like <code>"You have [count] coin\s."</code>.
+</p></a><p><a name="11.3.1.2">
+</a><a name="11.3.2">
+</a></p>
+<h4><a name="11.3.2">3.2 Special Characters</a></h4>
+<a name="11.3.2">
+</a><a name="Escaping">
+<p>
+
+</p><center><h3>Figure 11.18: Special Character Macros</h3></center>
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+<code>\<tt>"</tt></code>            </p>
+</td>
+<td> double quote</td>
+</tr>
+<tr><td>
+<code>\\</code>         </td>
+<td> backslash</td>
+</tr>
+<tr><td>
+<code>\&lt;</code>              </td>
+<td> less than</td>
+</tr>
+<tr><td>
+<code>\&gt;</code>           </td>
+<td> greater than</td>
+</tr>
+<tr><td>
+<code>\&amp;</code>                     </td>
+<td> ampersand</td>
+</tr>
+<tr><td>
+<code>\n</code>                      </td>
+<td> newline</td>
+</tr>
+<tr><td>
+<code>\...</code>                    </td>
+<td> suppress newline at end</td>
+</tr>
+<tr><td>
+<code>\<tt>(space)</tt></code>       </td>
+<td> skip a space</td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+<p>
+
+</p><p>
+There are a few special characters that may not be directly entered into a
+text string.  These must be <em>escaped</em> by preceding them with a
+backslash.  This forces the special meaning to be ignored and the literal
+character to be inserted instead.
+</p><p>
+The double quote, for example, must be escaped or it would prematurely end
+the text string.
+</p><p>
+
+</p><pre>mob/verb/say(msg as text)
+   view() &lt;&lt; "[usr] says, \"[msg]\""
+</pre>
+</a><p><a name="Escaping">
+</a><a name="11.3.2.1">
+</a></p>
+<h5><a name="11.3.2.1">3.2.1 Newlines</a></h5>
+<a name="11.3.2.1">
+
+<p>
+A newline may be inserted with the <code>\n</code> macro.  The compiler does not
+allow direct insertion of newlines in a text string because this is often a
+mistake resulting from a missing end quote.  You can continue a lengthy text
+string onto the next line by escaping the newline, but then the newline is
+entirely ignored.
+</p><p>
+There is an implicit newline inserted at the end of all output text.  This
+means that instead of using the <code>\n</code> macro directly, the
+text can simply be broken up into individual lines which are output one at a
+time.
+</p><p>
+In some cases, you may want to suppress the implicit newline at the end of
+the text.  This can be done with the <code>\...</code> macro.  By
+putting it at the end of the text, subsequent output will start on the same
+line where the previous one left off.
+</p><p>
+A newline is actually an end-of-paragraph marker.  It should not be used
+inside the paragraph to make lines fit the screen because not everyone's
+terminal will be the same width.  It is best to let the terminal
+automatically handle word-wrap within paragraphs and reserve the newline for
+marking the end of it.
+</p></a><p><a name="11.3.2.1">
+</a><a name="11.4">
+</a></p>
+<h3><a name="11.4">4. Text Formatting Tags</a></h3>
+<a name="11.4">
+</a><a name="HTMLTags">
+
+<p>
+Text may be formatted by inserting HTML elements, more commonly known as
+<em>tags</em>, that control its appearance.  DM understands a subset of HTML
+tags, consisting of the most commonly used elements.
+</p><p>
+A tag is surrounded by <b>&lt; &gt;</b> angle brackets.  The
+first thing inside the brackets is the name of the tag.  Many tags come in
+pairs--one to start an effect and another to end it.  The end tag has the
+same name as the start tag except it starts with `<b>/</b>'.  Tag names are
+not case sensitive.
+</p><p>
+The following example displays some text in bold.
+</p><p>
+
+</p><pre>"I am <b>very</b> mad!"
+</pre>
+</a><p><a name="HTMLTags">
+The start tag &lt;B&gt; turns on bold lettering and &lt;/B&gt; turns it
+off.  For a complete list of tags understood by DM, see page
+</a><a href="../../C%3A/Users/trist/Desktop/app3.html#HtmlAppendix">3</a> in the appendix.  The most commonly used ones are listed
+in figure <a href="#CommonTags">11.19</a> for easy reference.
+</p>
+<p>
+
+</p>
+<center><h3>Figure 11.19: Common text tags</h3></center>
+<a name="CommonTags">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+&lt;A&gt;&lt;/A&gt;         </p>
+</td>
+<td> anchor (for hyperlinks) </td>
+</tr>
+<tr><td>
+&lt;B&gt;&lt;/B&gt;         </td>
+<td> bold </td>
+</tr>
+<tr><td>
+&lt;BIG&gt;&lt;/BIG&gt;     </td>
+<td> bigger text </td>
+</tr>
+<tr><td>
+&lt;BR&gt;                  </td>
+<td> line break </td>
+</tr>
+<tr><td>
+&lt;FONT&gt;&lt;/FONT&gt;   </td>
+<td> font face, size, and color </td>
+</tr>
+<tr><td>
+&lt;I&gt;&lt;/I&gt;         </td>
+<td> italic </td>
+</tr>
+<tr><td>
+&lt;P&gt;&lt;/P&gt;         </td>
+<td> paragraph </td>
+</tr>
+<tr><td>
+&lt;S&gt;&lt;/S&gt;         </td>
+<td> overstrike </td>
+</tr>
+<tr><td>
+&lt;SMALL&gt;&lt;/SMALL&gt; </td>
+<td> smaller text </td>
+</tr>
+<tr><td>
+&lt;TT&gt;&lt;/TT&gt;       </td>
+<td> typewriter style </td>
+</tr>
+<tr><td>
+&lt;U&gt;&lt;/U&gt;         </td>
+<td> underline </td>
+</tr>
+<tr><td>
+&lt;PRE&gt;&lt;/PRE&gt;     </td>
+<td> preformatted whitespace </td>
+</tr>
+<tr><td>
+&lt;XMP&gt;&lt;/XMP&gt;     </td>
+<td> literally preformatted text </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+<p>
+&lt;BEEP&gt;                </p>
+</td>
+<td> make a beeping sound </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+</a><p><a name="CommonTags">
+</a><a name="11.4.1">
+</a></p>
+<h4><a name="11.4.1">4.1 Whitespace</a></h4>
+<a name="11.4.1">
+
+<p>
+Whitespace refers to any spaces, tabs, or newlines.  In standard HTML,
+whitespace serves merely to delimit words.  The amount of space and whether
+it is a tab, space, or newline is irrelevant.
+</p><p>
+DM processes whitespace like standard HTML when it is inside of a pair of
+start and end tags.  So, for example, inside of &lt;P&gt; and &lt;/P&gt;,
+the paragraph markers, standard HTML rules are in effect; newlines, spaces,
+and tabs serve merely to delimit words.  Note that an entire document could
+be surrounded by &lt;HTML&gt; and &lt;/HTML&gt; to mark the whole thing as
+standard HTML.
+</p><p>
+Outside of all HTML tags, DM handles whitespace a little differently.
+Spaces still delimit words, but newlines (embedded with <code>\n</code>) mark the
+end of lines.  In other words, the newline is automatically converted to
+&lt;BR&gt;, the linebreak tag.  That is convenient for use in messages
+composed by players when it would be annoying to write formal HTML with
+paragraph tags and so forth.
+</p></a><p><a name="11.4.1">
+</a><a name="11.4.2">
+</a></p>
+<h4><a name="11.4.2">4.2 Fonts</a></h4>
+<a name="11.4.2">
+
+<p>
+The &lt;FONT&gt; tag is used to control various characteristics of the font
+being used.  It takes additional arguments in the form of attributes.
+</p><p>
+For example, to make the font much bigger, you could use the start tag
+&lt;FONT SIZE=+3&gt;.  The name of the attribute in this case is
+<var>SIZE</var>, and its value is <code>+3</code>, which makes the font three
+sizes bigger.  You can put quotes around the attribute value if it contains
+any spaces.  In this case there was no need.
+</p><p>
+The attributes of &lt;FONT&gt; are <var>FACE</var>, <var>SIZE</var>, and
+<var>COLOR</var>.  You can use as many of these attributes in one tag as you
+like.  Just separate each attribute assignment by some space like this:
+&lt;FONT SIZE=+3 COLOR=red&gt;.  The nuances of these three tags are
+discussed in the following individual sections.
+</p></a><p><a name="11.4.2">
+</a><a name="11.4.2.1">
+</a></p>
+<h5><a name="11.4.2.1">4.2.1 <var>FACE</var> attribute</a></h5>
+<a name="11.4.2.1">
+
+<p>
+The <var>FACE</var> attribute selects the name of the font you wish to use.
+It may be a single font (such as <tt>Arial</tt>) or a comma-separated list
+(such as <tt>Arial</tt>,<tt>Helvetica</tt>).  If the user doesn't have a
+font with the same name on their system, the next font will be tried.
+Remember to put quotes around the attribute value if it contains any spaces.
+</p></a><p><a name="11.4.2.1">
+</a><a name="11.4.2.2">
+</a></p>
+<h5><a name="11.4.2.2">4.2.2 <var>SIZE</var> attribute</a></h5>
+<a name="11.4.2.2">
+
+<p>
+The <var>SIZE</var> attribute changes the size of the text.  It can be a
+relative change, like <code>+3</code>, or an absolute size, such as <code>5</code>.
+Font sizes are numbered from 1 to 7, with 1 being the smallest and 7 being
+the largest.  Each increment is roughly 1.5 times the apparent size of the
+previous one.
+</p></a><p><a name="11.4.2.2">
+</a><a name="11.4.2.3">
+</a></p>
+<h5><a name="11.4.2.3">4.2.3 <var>COLOR</var> attribute</a></h5>
+<a name="11.4.2.3">
+
+<p>
+The <var>COLOR</var> attribute selects the foreground color of the text.  It
+may be either a color name or a hexadecimal RGB value.
+</p><p>
+RGB stands for red, green, and blue, the three primary colors from which all
+the others can be produced.  Hexadecimal is a base-16 number system commonly
+used by programmers for specifying binary values.  The hexadecimal digits
+are 0 to 9 and A to F, a full four bits of information.  Lowercase letters
+may be used as well.
+</p><p>
+Each primary color is given a range of eight bits.  Therefore it takes
+exactly two hexadecimal digits to specify a single component and six digits
+to specify a complete color value.  The first two digits are for red; the
+next two are for green; and the last two are for blue (hence RGB).  The
+color black is <code>000000</code>, which has all three colors turned off.  The
+color white is <code>FFFFFF</code> with all three colors at their maximum
+intensity.
+</p><p>
+The following two lines are identical:
+</p><p>
+
+</p><pre>"This is <font color="RED">red</font>."
+"This is <font color="#FF0000">red</font>."
+</pre>
+<p>
+Notice that a <b>#</b> symbol is placed in front of the numeric color value
+to indicate that it is a hexadecimal value.  Otherwise, a color name is
+expected.  If you can't find the color you want in the list of named colors,
+find the closest one and tweak the intensities to your satisfaction.
+</p><p>
+
+</p><center><h3>Figure 11.20: Named Colors</h3></center>
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+black  </p>
+</td>
+<td> <code>#000000</code> </td>
+</tr>
+<tr><td>
+silver </td>
+<td> <code>#C0C0C0</code> </td>
+</tr>
+<tr><td>
+grey   </td>
+<td> <code>#808080</code> </td>
+</tr>
+<tr><td>
+white  </td>
+<td> <code>#FFFFFF</code> </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+<p>
+maroon  </p>
+</td>
+<td> <code>#800000</code> </td>
+</tr>
+<tr><td>
+red     </td>
+<td> <code>#FF0000</code> </td>
+</tr>
+<tr><td>
+purple  </td>
+<td> <code>#800080</code> </td>
+</tr>
+<tr><td>
+fuchsia </td>
+<td> <code>#FF00FF</code> </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+<p>
+green   </p>
+</td>
+<td> <code>#00C000</code> </td>
+</tr>
+<tr><td>
+lime    </td>
+<td> <code>#00FF00</code> </td>
+</tr>
+<tr><td>
+olive   </td>
+<td> <code>#808000</code> </td>
+</tr>
+<tr><td>
+yellow  </td>
+<td> <code>#FFFF00</code> </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+<p>
+navy    </p>
+</td>
+<td> <code>#000080</code> </td>
+</tr>
+<tr><td>
+blue    </td>
+<td> <code>#0000FF</code> </td>
+</tr>
+<tr><td>
+teal    </td>
+<td> <code>#008080</code> </td>
+</tr>
+<tr><td>
+aqua    </td>
+<td> <code>#00FFFF</code> </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+<p>
+It is also possible to enter color components as 4 rather than 8 bit
+numbers.  In that case, only three hexadecimal digits are required rather
+than six.  Internally, the color is converted to full 8 bit notation by
+repeating each digit.  For example, black <code>#000</code> becomes
+<code>#000000</code>, white <code>#FFF</code> becomes <code>#FFFFFF</code>, and
+red <code>#F00</code> becomes <code>FF0000</code>.
+</p></a><p><a name="11.4.2.3">
+</a><a name="11.4.3">
+</a></p>
+<h4><a name="11.4.3">4.3 Hyperlinks</a></h4>
+<a name="11.4.3">
+</a><a name="Hyperlink">
+
+<p>
+The &lt;A&gt; tag is used to mark a particular spot (or <em>anchor</em>) in
+the text.  In DM, you use it to insert a clickable hyperlink.  To specify
+the destination URL of a link, use the <var>HREF</var> attribute.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+"&lt;A HREF='#topic'&gt; <u>click here</u> &lt;/A&gt; ..."
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="Hyperlink">
+The form of the URL is the same as the <var>link</var> output method
+described in section </a><a href="#Link">11.2.8</a>.  It may be either a BYOND address, a topic
+link, or a web address.
+</p>
+<p>
+The <var>TITLE</var> attribute may be assigned to a description of the link.
+It is made visible when the user holds the mouse over the link.
+</p>
+<p>
+<a name="11.5">
+</a></p>
+<h3><a name="11.5">5. Style Sheets</a></h3>
+<a name="11.5">
+</a><a name="StyleSheets">
+
+<p>
+HTML tags, such as &lt;FONT&gt; may be used to directly format output text.
+Another approach, however, is to use HTML tags to specify purely structural
+information and use a style sheet to define how various elements within that
+structure should be treated.  DM uses a subset of the Cascading Style Sheet
+(CSS) language, which was introduced for this purpose in HTML documents.
+</p><p>
+As an example of a style sheet, suppose one wanted combat and conversational
+messages to appear differently--perhaps using different colors.  Instead of
+using the &lt;FONT&gt; tag to color the text, you could use
+&lt;SPAN&gt; to mark the beginning and ending of the text and to specify
+what kind of message it is.  The result might be text such as the following:
+</p><p>
+
+</p><pre>"[usr] <span class="combat">spanks</span> [targ]!"
+"[usr] says, '<span class="chat">[msg]</span>'"
+</pre>
+<p>
+
+</p><p>
+The <var>CLASS</var> attribute may be used with any tag, but the generic
+containers <var>SPAN</var> and <var>DIV</var> are often convenient because they
+have no other side-effect.  &lt;SPAN&gt; is for text within a single
+paragraph and &lt;DIV&gt; is for whole paragraphs.  The way text belonging
+to a particular class is formatted may be controlled in a style sheet such
+as the following:
+</p><p>
+
+</p><pre><style>
+   .combat {color: red}
+   .chat {color: green}
+</style>
+</pre>
+<p>
+This says that text in the `combat' class should be colored red and text in
+the `chat' class should be colored green.  These classes are not pre-defined;
+they were just made up to suit the situation.  You can invent as many new
+classes as you like.
+</p></a><p><a name="StyleSheets">
+In order to make this style sheet take effect you have several options.  One
+is to put it in a text string (double quotes) and assign it to
+<var>client.script</var>.  This will load the style sheet when the player
+connects.  You could accomplish the same thing by putting the style sheet in
+a file and assigning the file (in single quotes) to <var>client.script</var>.
+It is also possible for a player to put the style sheet in a client-side
+script file and load it that way.  More will be said about DM Script, which
+encompasses more than just style sheets, in the appendix (page
+</a><a href="../../C%3A/Users/trist/Desktop/app4.html#DMScriptAppendix">[4]</a>).
+</p>
+<p>
+The advantage of using style sheets instead of direct formatting tags is
+that you can cleanly separate structural information (such as combat and
+conversational messages) from formatting information (such as red and green
+text).  By separating the two, you or the player can easily plug in
+different formatting schemes without changing any of the actual content.
+</p>
+<p>
+A style sheet is composed of a list of rules, such as the two rules in the
+preceding example.  Each rule contains one or more <em>selectors</em> followed
+by a body of attribute assignments (in braces).  The selector specifies the
+context of the rule and the body specifies the format.
+</p>
+<p>
+<a name="11.5.1">
+</a></p>
+<h4><a name="11.5.1">5.1 Context Selectors</a></h4>
+<a name="11.5.1">
+<p>
+A selector may specify a container tag (such as <var>SPAN</var>,
+<var>BODY</var>, or <var>P</var>) and a class.  The above example could
+have been written with a selector of <code>SPAN.chat</code>.  However, by
+leaving out the tag, it applies to any tag with <code>CLASS=chat</code>.  It
+is also possible to only specify the tag and not the class.  In that case,
+the selector applies to any matching tag, regardless of its class.
+</p><p>
+To specify a <em>nested</em> context, several simple selectors may be listed
+one after the other.  For example, emphasized text within a combat message
+could be enlarged with the following rule:
+</p><p>
+
+</p><pre>.combat EM {font-size: larger}
+</pre>
+<p>
+It is also possible to list several selectors separated by commas in order
+to make them all apply to the same body.  For example, this next rule is
+equivalent to the two following ones:
+</p><p>
+
+</p><pre>.combat EM, .chat EM {font-size: larger}
+
+.combat EM {font-size: larger}
+.chat EM {font-size: larger}
+</pre>
+</a><p><a name="11.5.1">
+</a><a name="11.5.2">
+</a></p>
+<h4><a name="11.5.2">5.2 Style Attributes</a></h4>
+<a name="11.5.2">
+</a><p><a name="11.5.2">
+The body of a style rule contains a list of attribute assignments, delimited
+by semicolons.  Each assignment takes the form of an attribute name, followed
+by a colon, followed by the value of the attribute.  Figure
+</a><a href="#StyleAttributes">11.21</a> summarizes the recognized attributes and sample values.
+</p>
+<p>
+
+</p>
+<center><h3>Figure 11.21: Style Attributes</h3></center>
+<a name="StyleAttributes">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+color            </p>
+</td>
+<td> #F00, #FF000, red </td>
+</tr>
+<tr><td>
+background       </td>
+<td> same as color </td>
+</tr>
+<tr><td>
+font-size        </td>
+<td> 10pt, 1.5em, 150% </td>
+</tr>
+<tr><td>
+font-style       </td>
+<td> normal or italic </td>
+</tr>
+<tr><td>
+font-weight      </td>
+<td> normal, bold, lighter, darker, or 100 to 900 </td>
+</tr>
+<tr><td>
+font-family      </td>
+<td> monospace, sans-serif, serif, cursive, ... </td>
+</tr>
+<tr><td>
+font             </td>
+<td> style weight size family </td>
+</tr>
+<tr><td>
+text-decoration  </td>
+<td> none or underline </td>
+</tr>
+<tr><td>
+text-align       </td>
+<td> left, right, or center </td>
+</tr>
+<tr><td>
+width            </td>
+<td> 16px, 32px, auto </td>
+</tr>
+<tr><td>
+height           </td>
+<td> 16px, 32px, auto </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+</a><p><a name="StyleAttributes">
+</a><a name="11.5.3">
+</a></p>
+<h4><a name="11.5.3">5.3 Fonts</a></h4>
+<a name="11.5.3">
+
+
+<p>
+The font family may be a specific font name or a more general category such
+as monospace or sans-serif.  Since not all users necessarily have the same
+fonts installed, it is a good idea to list alternate fonts.  The desired
+font is placed first, followed by other possible fall-backs, each separated
+by a comma.  Usually a general family such as monospace is listed last of
+all.  Any font names containing a space should be enclosed in quotes.
+</p><p>
+The <var>font</var> attribute is a special short-hand for assigning
+<var>font-size</var>, <var>font-style</var>, <var>font-weight</var>, and
+<var>font-family</var> in one statement.  Any properties that are not
+specified in the <var>font</var> statement are assigned to their default
+values.
+</p><p>
+The following example sets the font for the &lt;BODY&gt; tag.  Even if you
+don't explicitly use &lt;BODY&gt; in output text, it is applied implicitly.
+</p><p>
+
+</p><pre>BODY {font: 12pt 'Times New Roman', sans-serif}
+</pre>
+<p>
+This sets the font to 12 point and selects <code>Times New Roman</code> if
+it is available and otherwise falls back on a system-determined sans-serif
+font.  This command also implicitly specifies not to use italics and normal
+font weight (not bold).
+</p><p>
+
+
+
+</p><p>
+Font sizes may be specified in points (1pt = 1/72 of an inch), picas (1pc =
+12pt), pixels (px), inches (in), centimeters (cm), and millimeters (mm).
+There are also various levels corresponding to the traditional 1 to 7 HTML
+scale.  These are <var>xx-small</var>, <var>x-small</var>, <var>small</var>,
+<var>medium</var>, <var>large</var>, <var>x-large</var>, and <var>xx-large</var>.
+In addition to these absolute font sizes, it is possible to use a relative
+size, such as 150% or equivalently 1.5em.  This scales the font relative to
+the currently active font setting.
+</p></a><p><a name="11.5.3">
+</a><a name="11.5.4">
+</a></p>
+<h4><a name="11.5.4">5.4 Hyperlink Pseudo-Classes</a></h4>
+<a name="11.5.4">
+
+<p>
+In addition to regular stylistic classes, there are special pseudo-classes
+for handling embedded hyperlinks.  These are specified in the selector with
+the class starting with a colon rather than a dot.  They are
+<var>:link</var>, <var>:visited</var>, and <var>:active</var>.  These only apply
+to the &lt;A&gt; tag.  The <var>:link</var> class applies to hyperlinks in
+their normal state.  Once a link has been clicked, it belongs instead to the
+<var>:visited</var> class.  When the user holds the mouse over a link, it
+temporarily belongs to the <var>:active</var> class.  The only attribute that
+may change in an active or visited link is the text color.
+</p></a><p><a name="11.5.4">
+</a><a name="11.5.5">
+</a></p>
+<h4><a name="11.5.5">5.5 Canvas Background Color</a></h4>
+<a name="11.5.5">
+
+</a><p><a name="11.5.5">
+The background attribute is only relevant to the &lt;BODY&gt; context.  It
+causes the entire terminal background to change color.  When doing this, it
+is usually necessary to change the foreground colors of text or it may become
+unreadable.  The various standard classes of output generated by Dream Seeker
+are presented in figure </a><a href="#SystemColors">11.22</a>.
+</p>
+<p>
+
+</p>
+<center><h3>Figure 11.22: System Colors</h3></center>
+<a name="SystemColors">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+<p>
+system notice             </p>
+</td>
+<td> general notices from the client </td>
+</tr>
+<tr><td>
+system command echo       </td>
+<td> command echoing </td>
+</tr>
+<tr><td>
+system command expansion  </td>
+<td> command-line expansion list </td>
+</tr>
+<tr><td>
+system pager              </td>
+<td> pager messages </td>
+</tr>
+<tr><td>
+system irc                </td>
+<td> IRC command prefix </td>
+</tr>
+<tr><td>
+<p>
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+</center>
+
+<p>
+
+</p><p>
+The value of the <var>CLASS</var> attribute may contain a list of classes
+separated by spaces.  This permits client output to be in the `system' class
+as well as more specific ones.  That allows you to change all of these
+colors in one shot if you are too lazy to change them each individually.
+For example, if you define a style sheet that changes the background color,
+you might need to redefine the various foreground colors like this:
+</p><p>
+
+</p><pre>BODY {background: aqua; color: black}
+.system {color: red; font-weight: bold}
+.command {color: green}
+</pre>
+<p>
+In this example, the background color of the terminal will be aqua, normal
+text from the server will be black, and all output from the client will be
+bold and red, except echoed commands and expansion lists, which will be bold
+and green.  The more specific <code>.command</code> rule is placed after the
+general <code>.system</code> rule so that its color takes precedence.  This is
+how style sheets are composed--you write general rules first followed by any
+exceptions.
+</p></a><p><a name="SystemColors">
+</a><a name="11.5.6">
+</a></p>
+<h4><a name="11.5.6">5.6 Style Rule Precedence</a></h4>
+<a name="11.5.6">
+<p>
+The order in which rules are specified is one of the factors that determines
+precedence of style sheet commands.  The language is known as Cascading Style
+Sheets because of its ability to handle several layers of stylistic rules,
+intermingling the configurations of the user and the designer in an ordered
+fashion.
+</p><p>
+Rules are selected by first finding all matching candidates for a given
+attribute in the current HTML tag being processed.  If there is more than
+one, rules from a higher level style sheet take precedence over lower level
+ones.  That means the basic user configurable settings in Dream Seeker are
+the lowest priority, followed by a style sheet in the user's
+<tt>.dms</tt> script file, followed by a style sheet from the designer's
+<var>client.script</var> setting, because that is the order in which these are
+read by the style sheet manager.
+</p><p>
+Rules from the same style sheet are ordered by specificity.  The selector
+<code>SPAN.chat</code> is more specific than <code>.chat</code> and
+<code>.chat EM</code> is more specific than <code>EM</code>.  In general, the more
+classes referenced by a selector, the more specific it is.  When that
+results in a tie, the selector with the greater number of tags takes
+precedence.
+</p><p>
+Finally, if two rules about the same attribute come from the same sheet and
+have the same specificity, the final one to be defined takes precedence.
+</p><p>
+In the rare event that a rule needs to break out of the normal order of
+precedence, it can be flagged as important.  In this case it will take
+precedence over all other "unimportant" rules.  However, if more than one
+rule is important, the normal rules of precedence will be used to resolve
+the conflict.
+</p><p>
+The important flag is applied after the attribute assignment like this:
+</p><p>
+
+</p><pre>BODY.background {
+   background: white ! important;
+   font: serif
+}
+</pre>
+<p>
+In the above example, only the background color is important, not the font
+specification.
+</p></a><p><a name="11.5.6">
+</a><a name="11.5.7">
+</a></p>
+<h4><a name="11.5.7">5.7 The <var>STYLE</var> attribute</a></h4>
+<a name="11.5.7">
+
+<p>
+Style commands may also be inserted directly in an HTML tag to control its
+appearance.  This does not have the advantages of independent style sheets,
+which separate content from presentation, but it does allow you to use the
+style sheet syntax when formatting text.
+</p><p>
+The following example uses the style attribute to color some text:
+</p><p>
+
+</p><pre>usr &lt;&lt; "That <span style='color: red'>HURT</span>!"
+</pre>
+<p>
+As you can see, the <var>STYLE</var> attribute of any tag can be
+assigned to a text string containing a list of attribute assignments.  Just
+the body of the style rule is given, since no selector is needed to match
+the current context.
+</p></a><p><a name="11.5.7">
+</a><a name="11.6">
+</a></p>
+<h3><a name="11.6">6. Inline Icons</a></h3>
+<a name="11.6">
+<p>
+The <code>\icon</code> text macro causes the following embedded expression to be
+interpreted as an icon rather than as text.  For example, an object would be
+replaced by its icon rather than by its name.
+</p><p>
+The following example prefixes conversational text with the speaker's icon,
+making it easier to associate the message with the appropriate object on the
+map.
+</p><p>
+
+</p><pre>mob/verb/say(Msg as text)
+   view() &lt;&lt; "\icon[usr] [usr] says, '[Msg]'"
+</pre>
+<p>
+The <code>\icon</code> text macro expands internally to an &lt;IMG&gt; tag.  The
+previous example, could be rewritten as follows:
+</p><p>
+
+</p><pre>mob/verb/say(Msg as text)
+   view() &lt;&lt; "<img class="icon" src="%5Cref%5Busr.icon%5D" \="" iconstate='[usr.icon_state]'/> \
+              [usr] says, '[Msg]'"
+</pre>
+<p>
+From this, you can see that the object's current icon state is used.  A
+reference to the icon itself is inserted using the <code>\ref</code> text macro,
+which generates a unique identifier corresponding to an object.
+</p><p>
+A final noteworthy point is that the image belongs to a style class called
+`icon'.  This can be used to configure global properties of icons in the
+text terminal.  For example, a full 32x32 pixel icon doesn't always fit in
+with surrounding text very well.  A single style sheet rule takes care of
+that:
+</p><p>
+
+</p><pre>IMG.icon {height: 16px; width: 16px}
+</pre>
+<p>
+This is, in fact, a built-in default rule, so you don't have to define it
+yourself.  You could override it to get full 32x32 icons.  You could even
+define special rules to allow icons in certain contexts to be different
+sizes.  The &lt;BIG&gt; and &lt;SMALL&gt; tags are ideal:
+</p><p>
+
+</p><pre>BIG IMG.icon {height: 32px; width: 32px}
+SMALL IMG.icon {height: 16px; width: 16px}
+</pre>
+<p>
+Using the &lt;BIG&gt; tag, you could then output a full-sized icon, even
+though the default is small.  The following example does that when the DM
+speaks in order to satisfy an inflated ego.
+</p><p>
+
+</p><pre>mob/DM/say(Msg as text)
+   view() &lt;&lt; "<big>\icon[usr]</big> [usr] says, '[Msg]'"
+</pre>
+</a><p><a name="11.6">
+</a><a name="11.7">
+</a></p>
+<h3><a name="11.7">7. Special Effects</a></h3>
+<a name="11.7">
+<p>
+There are a couple miscellaneous commands which create special output
+effects.  Like the <var>image</var> instruction, they produce a purely visual
+result.
+</p></a><p><a name="11.7">
+</a><a name="11.7.1">
+</a></p>
+<h4><a name="11.7.1">7.1 <var>missile</var> instruction</a></h4>
+<a name="11.7.1">
+
+<p>
+The <var>missile</var> instruction creates an image which moves from one
+location to another.  It is often used as a symbolic indicator of the source
+and target of a projectile.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>missile</var> </td>
+<td> (Icon,Start,End) </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>Icon</code> is the image icon or object type. </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>Start</code> is the missile source. </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>End</code> is the missile destination.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This could be used in a game of darts:
+</p><p>
+
+</p><pre>obj/dart
+   verb/throw(mob/M)
+      missile(src,usr,M)
+      del src
+</pre>
+<p>
+If more realism is desired, a check could be made first to determine if
+there is a straight unobstructed path between the attacker and target.
+  <small>(However, realism (in my opinion) is much overrated.  Don't let it
+spoil a good piece of code unless you really have to.  I am sure there are
+many cases in which our own universe too is unrealistic because God couldn't
+resist a simpler way of implementing things here and there.  The sky is a
+perfect example.  I mean, it looks a bit <em>fake</em> sometimes, doesn't it?)</small>  
+</p></a><p><a name="11.7.1">
+</a><a name="11.7.2">
+</a></p>
+<h4><a name="11.7.2">7.2 <var>flick</var> instruction</a></h4>
+<a name="11.7.2">
+
+<p>
+The <var>flick</var> instruction causes a temporary transition in the icon
+state of an object.  It lasts until all the frames in that particular state
+have been played and then reverts to the true icon state.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>flick</var> </td>
+<td> (State,Obj) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>State</code> is the icon or icon state to display. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Obj</code> is the target object.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Note that it is possible to specify an entirely different icon file.
+Normally, however, just the state of the existing icon file is specified.
+</p><p>
+The <var>flick</var> instruction is often used for temporary animation
+sequences (like smiling, writhing in pain, etc.).  These are different from
+changes of state which have a longer duration (like sleeping, flying,
+etc.).  In those cases, one would simply assign the <var>icon_state</var>
+variable directly.
+</p><p>
+Sometimes, however, a flick is used in the transition between two permanent
+states.  The following example defines a door turf which does exactly that.
+</p><p>
+
+</p><pre>turf/door
+   icon = 'door.dmi'
+   icon_state = "closed"
+   density = 1
+   opacity = 1
+   verb/open()
+      set src in view(1)
+      if(!density) return //already open
+      density = 0
+      opacity = 0
+      flick("opening",src)
+      icon_state = "open"
+   verb/close()
+      set src in view(1)
+      if(density) return //already closed
+      density = 1
+      opacity = 1
+      flick("closing",src)
+      icon_state = "closed"
+</pre>
+<p>
+The advantage of using icon states in this way is that the code remains very
+general.  All the map designer has to do is plug in different icons with the
+same states and a variety of doors can be made from the one basic definition.
+</p><p>
+If the icon state specified by the <var>flick</var> instruction does not exist,
+it has no effect.  In the above code, for example, a door icon could be
+used that did not have "opening" and "closing" states defined.  Everything
+would work--only the transition would not be animated.
+
+</p></a>
+</body>
+</html>

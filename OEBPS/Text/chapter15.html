@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 15</h1>
+ <h2 align="center">Text Manipulation</h2>
+
+<p>
+</p>
+<blockquote>  True magic is the study of the higher truths of Nature. 
+</blockquote>
+<center>--<i>Gustavus Miller</i>, What's in a Dream</center>
+
+<p>
+Text strings are an important part of almost any world.  You have already
+seen one powerful method for constructing text with embedded arguments and
+formatting macros.  There are a number of other elementary instructions for
+working with text.  These are described in the following sections.
+</p>
+<p>
+<a name="15.1">
+</a></p>
+<h3><a name="15.1">1. <var>findtext</var></a></h3>
+<a name="15.1">
+
+<p>
+The <var>findtext</var> instruction searches inside one text string for
+another.  This operation is not case-sensitive, but the <var>findText</var>
+instruction is.  There are several other instruction pairs that follow this
+pattern: the one containing an upper case letter is case sensitive.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>findtext</var> (T1,T2,Start=1,End=0) </td>
+</tr>
+<tr><td>
+<var>findText</var> </td>
+<td> (T1,T2,Start=1,End=0) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>T1</code> is the text in which to search. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>T2</code> is the text to find. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Start</code> is the starting position. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>End</code> is position at which to stop. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> Returns the first position found.
+<p>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Positions in a text string are just like an array: they range from 1 to the
+last character of the text string.  If the specified search text is not
+found, 0 is returned.  Notice that 0 is also used as the default value for
+the position at which to stop searching, indicating that there is no such
+position.  By default, therefore, the entire text string is searched.
+</p><p>
+One example of a use for <var>findtext()</var> is to scan conversational text
+for keywords.
+</p><p>
+
+</p><pre>mob/rat
+   verb/tell(msg as text)
+      set src in oview()
+      if(findtext(msg,"cheese"))
+         view() &lt;&lt; "[src] looks at [usr] hopefully."
+         walk_to(src,usr)
+</pre>
+</a><p><a name="15.1">
+</a><a name="15.2">
+</a></p>
+<h3><a name="15.2">2. <var>copytext</var></a></h3>
+<a name="15.2">
+
+<p>
+The <var>copytext</var> instruction extracts a piece of another text string.
+This instruction, and the preceding <var>findtext</var>, are meant to mimic the
+`copy' and `find' operations of a standard text editor.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>copytext</var> </td>
+<td> (Txt,Start=1,End=0) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Txt</code> is the text string. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Start</code> is the starting position. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>End</code> is the position at which to stop. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> Returns the piece as a new text string.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="15.2">
+</a><a name="15.3">
+</a></p>
+<h3><a name="15.3">3. <var>addtext</var></a></h3>
+<a name="15.3">
+
+<p>
+The <var>addtext</var> instruction combines two or more text strings and
+returns the result.  This can also be done by embedding each text value one
+after the other in another text string, but when there are many such values
+to combine, it is sometimes easier to use <var>addtext()</var>.  Yet another
+method of concatenation is to use the <b>+</b> operator.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>addtext</var> </td>
+<td> (Txt1,Txt2,...) </td>
+</tr>
+<tr><td>
+                 </td>
+<td> Returns one combined text string.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="15.3">
+</a><a name="15.4">
+</a></p>
+<h3><a name="15.4">4. <var>lentext</var></a></h3>
+<a name="15.4">
+
+<p>
+The <var>lentext</var> instruction reports the number of characters in the
+text string.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>lentext</var> </td>
+<td> (Txt) </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>Txt</code> is the text to measure. </td>
+</tr>
+<tr><td>
+                 </td>
+<td> Returns the number of characters.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="15.4">
+</a><a name="15.5">
+</a></p>
+<h3><a name="15.5">5. Text Conversions</a></h3>
+<a name="15.5">
+<p>
+There are several instructions for converting text from one form to
+another.  These are described in the following sections.
+</p></a><p><a name="15.5">
+</a><a name="15.5.1">
+</a></p>
+<h4><a name="15.5.1">5.1 <var>uppertext</var></a></h4>
+<a name="15.5.1">
+
+<p>
+The <var>uppertext</var> instruction converts any lowercase characters to
+uppercase.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>uppertext</var> </td>
+<td> (Txt) </td>
+</tr>
+<tr><td>
+                   </td>
+<td> <code>Txt</code> is the text to convert. </td>
+</tr>
+<tr><td>
+                   </td>
+<td> Returns the new uppercase text string.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="15.5.1">
+</a><a name="15.5.2">
+</a></p>
+<h4><a name="15.5.2">5.2 <var>lowertext</var></a></h4>
+<a name="15.5.2">
+
+<p>
+The <var>lowertext</var> instruction converts any uppercase characters to
+lowercase.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>lowertext</var> </td>
+<td> (Txt) </td>
+</tr>
+<tr><td>
+                   </td>
+<td> <code>Txt</code> is the text to convert. </td>
+</tr>
+<tr><td>
+                   </td>
+<td> Returns the new lowercase text string.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="15.5.2">
+</a><a name="15.5.3">
+</a></p>
+<h4><a name="15.5.3">5.3 <var>text2num</var></a></h4>
+<a name="15.5.3">
+
+<p>
+The <var>text2num</var> instruction converts a text string to a numerical
+value.  If the text is not a number, <var>null</var> is returned.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>text2num</var> </td>
+<td> (Txt) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Txt</code> is the text to convert. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> Returns the corresponding number.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+It is important to realize that a text value is fundamentally different from
+a numerical value even though they may appear the same in output.  If you
+try to perform numerical operations on a text string, they will not work as
+expected because all text strings and other non-numerical objects are
+treated as 0 in this context.  The text must first be converted to a number
+with <var>text2num</var> before the value can be manipulated in this way.
+</p></a><p><a name="15.5.3">
+</a><a name="15.5.4">
+</a></p>
+<h4><a name="15.5.4">5.4 <var>num2text</var></a></h4>
+<a name="15.5.4">
+
+<p>
+The <var>num2text</var> instruction is the inverse of <var>text2num</var>.  It
+converts a numerical value to text.  This can also be done by embedding the
+numeric expression in a text string, but some additional control over how
+the number is formatted is provided by <var>num2text()</var>.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>num2text</var> </td>
+<td> (Num,SigDigs) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Num</code> is the number to convert. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>SigDigs</code> is the number of significant digits. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> Returns the new text string.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The number of significant digits determines when scientific notation will be
+used.  In embedded text expressions, numbers are given 6 significant digits
+by default, so scientific notation will only be used for numbers with more
+than nine digits.  If you want a different result, you can explicitly use
+<var>num2text()</var>.
+</p></a><p><a name="15.5.4">
+</a><a name="15.6">
+</a></p>
+<h3><a name="15.6">6. Comparing Text Strings</a></h3>
+<a name="15.6">
+<p>
+The simplest method for comparing two text values is to test for equality of
+the references to those data objects using the <b>==</b> operator.
+Identical text strings are always combined into one data object to conserve
+memory.  Exact comparison of text values is therefore simply a matter of
+comparing references.
+</p><p>
+There are several special instructions for comparing text strings when an
+exact comparison is not desired.  For example, you may not want case
+sensitivity in the comparison or you may want to know the alphabetical order
+of the text values.
+</p></a><p><a name="15.6">
+</a><a name="15.6.1">
+</a></p>
+<h4><a name="15.6.1">6.1 <var>cmptext</var></a></h4>
+<a name="15.6.1">
+
+<p>
+The <var>cmptext</var> instruction performs a case-insensitive comparison of
+text strings.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>cmptext</var> </td>
+<td> (Txt1,Txt2,...) </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>Txt1</code> is the first text string to compare. </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>Txt2</code> is the second text string to compare. </td>
+</tr>
+<tr><td>
+                 </td>
+<td> Returns 1 if equal and 0 if not.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="15.6.1">
+</a><a name="15.6.2">
+</a></p>
+<h4><a name="15.6.2">6.2 <var>sorttext</var></a></h4>
+<a name="15.6.2">
+
+<p>
+The <var>sorttext</var> instruction is used to determine the alphabetical
+order of text strings.  It is not case sensitive, but <var>sortText</var>
+provides the same functionality with case sensitivity.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>sorttext</var>    (Txt1,Txt2,...) </td>
+</tr>
+<tr><td>
+<var>sortText</var> </td>
+<td> (Txt1,Txt2,...) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Txt1</code> is the first text string to compare. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Txt2</code> is the second text string to compare. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> Returns 1 if in ascending order, -1 if descending, otherwise 0.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example displays an alphabetical list of players.
+</p><p>
+
+</p><pre>proc/SortTextList(lst[])
+   var/i
+   var/j
+   for(i=1,i&lt;=lst.len,i++)
+      for(j=i+1,j&lt;=lst.len,j++)
+         if(sorttext(lst[i],lst[j]) == -1) //swap positions
+            var/tmp = lst[i]
+            lst[i] = lst[j]
+            lst[j] = tmp
+
+mob/verb/who()
+   var/lst[0]
+   var/mob/M
+   var/N
+   for(M)
+      if(M.client) lst += M.name
+   SortTextList(lst)
+   for(N in lst) usr &lt;&lt; N
+</pre>
+</a><p><a name="15.6.2">
+</a><a name="15.7">
+</a></p>
+<h3><a name="15.7">7. Text Documents</a></h3>
+<a name="15.7">
+
+<p>
+A text string in DM is enclosed in single quotes.  This is intended for
+short items consisting of a few words.  Longer compositions may instead be
+entered as text documents.  These are the same as text strings except they
+begin with <b>{"} and end with <b>"<br/>
+html</b></b>.
+</p><p>
+Whereas both newlines and double quotes must be escaped in a text string,
+they may be directly inserted into a text document.  This may help produce
+more legible source code when generating multiple lines of output in a single
+statement.
+</p><p>
+The following example uses a text document to display a login banner.
+</p><p>
+
+</p><pre>mob/Login()
+   . = ..()
+   usr &lt;&lt; {"
+
+<center><big> The Great BYOND </big></center>
+
+Welcome, [usr].  I am glad you could join us.
+
+<span class="system">
+Please refrain from scribbling on the walls.
+</span>
+"}
+</pre>
+<p>
+Lengthy documents should usually be placed in a separate file.  However, as
+in this example, messages containing embedded expressions can be neatly
+handled with an inline text document.
+
+</p></a>
+</body>
+</html>

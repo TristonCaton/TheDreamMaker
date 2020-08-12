@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 9</h1>
+ <h2 align="center">The Client Data Object</h2>
+
+<a name="ClientChapter">
+
+<p>
+</p><blockquote>  And they said one to another, Behold, this dreamer cometh.  Come now
+  therefore, and let us slay him, and cast him into some pit, and we will
+  say, Some evil beast hath devoured him: and we shall see what will become
+  of his dreams. 
+</blockquote>
+<center>--Genesis 37.19-20</center>
+
+<p>
+A client object is created when a player logs in and gets destroyed when
+that player logs out.  Whereas a mob being used by a player and an NPC mob
+are treated identically by the computer, the client datum contains
+properties which are applicable only to players.
+</p><p>
+You may define verbs under the client data object.  These are treated just
+like private verbs attached to the player's mob: they are accessible only to
+the player and the source is implicit.  In addition to verbs, you may also
+define client variables and procs.  The pre-defined ones will be described
+in the sections that follow.
+</p></a><p><a name="ClientChapter">
+</a><a name="9.1">
+</a></p>
+<h3><a name="9.1">1. Client Variables</a></h3>
+<a name="9.1">
+</a><a name="ClientVars">
+<p>
+The client variables contain information about the player and the state of
+the player's display.  They are described in the following list:
+</p><p>
+
+</p><p>
+
+</p><li><b>key</b> is the name of the player's key.  This is used to connect the
+player to a mob.  If a new mob is created for the player, the mob's name
+will be set equal to the key.  By assigning this value to a mob's key, you
+can cause the player to switch to that mob.  Any previous mob will lose the
+key (by having its own key set to an empty text string).  The
+<var>Login()</var> and <var>Logout()</var> procedures are called automatically
+during this exchange.
+<p>
+
+</p></li><li><b>ckey</b> is the player's key in canonical form.  All punctuation is
+stripped and letters are converted to lowercase.  This can be used for the
+same purposes as <var>key</var> to cause players to switch mobs.  The primary
+purpose, however, is for marking saved information about the player.
+<p>
+
+</p></li><li><b>mob</b> is the player's mob.  It can be directly assigned to cause the
+player (and associated key) to get transferred to another mob.  This variable
+is the complement of <var>mob.client</var>, which is a reference to the client
+using the mob.
+<p>
+
+</p></li><li><b>eye</b> is the position at the center of the player's map.  By default it
+is equal to the player's mob.  You could, however, set it equal to some
+other object to control what the player sees.  Note, however, that
+<em>visibility is still calculated from the mob's point of view</em>.  This
+allows for effects like "lazy eye" which will be described next.
+<p>
+
+</p></li><li><b>lazy_eye</b> is the amount of lag between the player's eye and the
+player's mob.  By default it is 0 so the mob stays centered.  If set to a
+non-zero value, the mob can walk away from the center by the specified
+amount before the view shifts it back to the center.
+<p>
+
+</p></li><li><b>dir</b> is the direction of "up" on on the player's screen.  By default
+it is <var>NORTH</var>, which is the same as the map editor.  Other possible
+values are <var>SOUTH</var>, <var>EAST</var>, and <var>WEST</var>.  Diagonals are
+valid too, but will be approximated by one of the four cardinal directions.
+The effect of each arrow key is automatically rotated along with the map.
+<p>
+
+</p></li><li><b>address</b> is the network address of the player.  If the world is
+running directly in the client (the local server) this will be an empty text
+string, which is sometimes useful for giving super-user access.  Otherwise,
+this could be used to ban access from certain IP addresses if people from
+there always turn out to be annoying.
+<p>
+
+</p></li><li><b>statobj</b> is the object being viewed by the player in the stat panels.
+<p>
+
+</p></li><li><b>statpanel</b> is the name of the stat panel currently visible to the
+player.
+<p>
+
+</p></li></a><li><a name="ClientVars"><b>verbs</b> is the list of verbs attached to the client.  Verbs could be
+added or removed from this list at run-time using techniques described
+in section </a><a href="../../C%3A/Users/trist/Desktop/chap10.html#VerbList">10.6.2</a>.
+<p>
+
+</p></li>
+<li><b>script</b> specifies a DM Script program to send to the client when the
+player connects.  The use and syntax of DM Script will be discussed in
+section <a href="../../C%3A/Users/trist/Desktop/chap11.html#StyleSheets">11.5</a> and in the appendix (page
+<a href="../../C%3A/Users/trist/Desktop/app4.html#DMScriptAppendix">[4]</a>).  Its primary purpose is to configure the
+appearance of output text by using a style sheet.  Command aliases and
+keyboard macros can also be defined.
+<p>
+
+</p></li>
+<li><b>macro_mode</b> may be set to 1 to interpret keys as macros by default.
+See the appendix (page <a href="../../C%3A/Users/trist/Desktop/app4.html#DMScriptAppendix">[4]</a>) for more information.
+<p>
+
+</p><p>
+Using the <var>client.mob</var> variable, we can make a better <code>who</code> command
+which only lists players who are currently logged in.
+</p><p>
+
+</p><pre>mob/verb/who()
+   var/mob/M
+   usr &lt;&lt; "Active players:"
+   for(M)
+      if(M.client)
+         usr &lt;&lt; M.name
+</pre>
+<p>
+Mobs without a client (i.e. NPCs) are excluded from the output list.
+</p><p>
+<a name="9.2">
+</a></p><h3><a name="9.2">2. Client Procs</a></h3><a name="9.2">
+</a><a name="ClientProcs">
+<p>
+There are a number of pre-defined procs which handle various forms of input
+from the user.  These and other client procs are described in the following
+sections.
+</p></a><p><a name="ClientProcs">
+</a><a name="9.2.1">
+</a></p><h4><a name="9.2.1">2.1 Direction Procs</a></h4><a name="9.2.1">
+
+
+<p>
+When the player clicks an arrow key, this calls a corresponding client
+proc.  There are procedures for each of the keys: <var>North</var>(),
+<var>South</var>(), <var>East</var>(), <var>West</var>(), <var>Northeast</var>(),
+<var>Northwest</var>(), <var>Southeast</var>(), <var>Southwest</var>(), and
+<var>Center</var>().
+</p><p>
+It would be more precise to call these verbs, because that is in fact what
+they are.  They just happen to be verbs with names starting with a dot, which
+means they don't show up in any expansion lists until you type the dot.  So
+you could type ".north" instead of clicking the up arrow if you really
+wanted.  That is all the up arrow does for you.
+</p><p>
+
+</p><p>
+By default, the directional procs call the client's <var>Move</var> proc,
+which in turn calls the mob's own <var>Move</var> proc.  It is simply there to
+redefine if you want.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Move</var> </td>
+<td> (Loc,Dir) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Loc</code> is the new location to move to. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Dir</code> is the direction to face. </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns 1 on success, 0 on failure.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="9.2.1">
+The <var>Center</var> proc also exists primarily for you to redefine.  The only
+default action is to stop any automated movement of the player's mob.  That
+topic will be discussed in section </a><a href="../../C%3A/Users/trist/Desktop/chap14.html#MovementInstructions">14.2</a>.
+</p><p>
+In some games, you might want to disallow diagonal movements.  You could do
+that by simply redefining the relevant procs to do nothing.
+</p><p>
+
+</p><pre>client
+   //disable diagonals
+   Northeast()
+   Northwest()
+   Southeast()
+   Southwest()
+</pre>
+<p>
+<a name="9.2.2">
+</a></p><h4><a name="9.2.2">2.2 <var>Click</var> proc</a></h4><a name="9.2.2">
+</a><a name="ClientClick">
+
+</a><p><a name="ClientClick">
+The <var>Click</var> proc is called when the player clicks an object on the
+map or in the stat panels.  There is an identical proc <var>DblClick</var>
+which is activated by double-clicking.  The default action simply calls the
+object's own <var>Click</var> or <var>DblClick</var> proc.  These object
+procedures were described in section </a><a href="../../C%3A/Users/trist/Desktop/chap07.html#ObjectClick">7.4</a>.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Click</var>    </td>
+<td> (O,Panel) </td>
+</tr>
+<tr><td>
+<var>DblClick</var> </td>
+<td> (O,Panel) </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>O</code> is the object clicked. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Panel</code> is the stat panel (or null if none). </td>
+</tr>
+<tr><td>
+</td>
+</tr>
+</tbody>
+</table>
+
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example tells you what you clicked.
+</p><p>
+
+</p><pre>client/Click(O)
+   usr &lt;&lt; "You clicked [O]."
+</pre>
+<p>
+Note that the default (parent) proc was not called in this example.  That
+means the object's own <var>Click</var> procedure will not be called.  You
+must remember to call <var>..()</var> if you wish this to still take place.
+</p><p>
+The client's <var>Click</var> procedure is convenient to use when you want to
+perform an action that is the same for all types of objects.  When the
+action depends on the type of object, the object's own <var>Click</var>
+procedure is usually the better choice.
+</p><p>
+<a name="9.2.3">
+</a></p><h4><a name="9.2.3">2.3 <var>Stat</var> proc</a></h4><a name="9.2.3">
+
+</a><p><a name="9.2.3">
+The <var>Stat</var> proc is called periodically by the client to refresh the
+stat panels.  By default, this merely calls <var>statobj.Stat()</var>.  You
+could generate stat output directly from this proc, but when the contents
+reflect the status of another object (like the player's mob), this is
+normally done in the object's own <var>Stat</var> proc.  Generation of stat
+output was discussed in section </a><a href="../../C%3A/Users/trist/Desktop/chap07.html#StatProc">7.3</a>.
+</p><p>
+<a name="9.2.4">
+</a></p><h4><a name="9.2.4">2.4 <var>Topic</var> proc</a></h4><a name="9.2.4">
+
+</a><a name="ClientTopic">
+</a><p><a name="ClientTopic">
+The <var>Topic</var> proc is activated by the player clicking on a topic link
+embedded in the text output somewhere.  You could use it to give the player
+more information on the indicated subject (hence the name <em>topic</em>).
+However, there is no restriction on what action you may perform.  Some of
+the possibilities will be explored in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap11.html#InputOutputChapter">11</a>.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Topic</var> </td>
+<td> (Topic,Obj,SubTopic) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Topic</code> is the topic link selected by the player. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Obj</code> is the object referenced if any. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>SubTopic</code> is the <code>Obj</code> topic.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The <code>Obj</code> and <code>SubTopic</code> parameters are only supplied if <code>Topic</code>
+begins with an object reference (embedded with <code>\ref</code>).  By default,
+the object's own <var>Topic</var> proc is called with <code>SubTopic</code> as the
+argument.  You saw the result of that in section <a href="../../C%3A/Users/trist/Desktop/chap07.html#ObjectTopic">7.6</a> when we
+created a link to a game object.
+</p><p>
+Since all topic links go through the client first, you have a chance to
+control which objects a player may access.  You may also have topics which
+do not really belong to any particular object.  In that case, you can just
+handle them in the client object.
+</p><p>
+Topic hyperlinks are created in an HTML tag.  The syntax was already
+introduced in connection with object links, but for client topics, you do not
+necessarily have to insert an object reference.  It is also possible to use
+this tag for other types of links.  The general syntax will be described in
+section <a href="../../C%3A/Users/trist/Desktop/chap11.html#Link">11.2.8</a>.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+"... &lt;A HREF=#<it>topic</it>
+&gt; <u>click here</u> &lt;/A&gt; ..."</td>
+</tr>
+<tr><td>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+As an example of a client topic link, you could give some advice to new
+players.
+</p><p>
+
+</p><pre>client/Topic(T)
+   if(T == "help")
+      usr &lt;&lt; "The motto here is: you are what you eat."
+   else ..()
+
+mob/Login()
+   ..()
+   usr &lt;&lt; "When in doubt, click <a href="#help">here</a>."
+</pre>
+<p>
+<a name="9.2.5">
+</a></p><h4><a name="9.2.5">2.5 <var>Import</var> and <var>Export</var> procs</a></h4><a name="9.2.5">
+
+<p>
+The <var>Import</var> and <var>Export</var> procs are used to read and write to
+a save file stored in the player's key file.  This is useful if the same
+information about a player will be used in multiple worlds.  In that case,
+rather than each world saving information about the player separately, it
+can be attached to the player's key and carried from world to world that way.
+</p></a><p><a name="9.2.5">
+Since we haven't covered save files yet, further discussion of these procs
+will be postponed until that time.  See chapter </a><a href="../../C%3A/Users/trist/Desktop/chap12.html#SavefileChapter">12</a>.
+</p><p>
+<a name="9.2.6">
+</a></p><h4><a name="9.2.6">2.6 <var>New</var> and <var>Del</var> procs</a></h4><a name="9.2.6">
+
+<p>
+The <var>New</var> and <var>Del</var> procs are called at creation and
+destruction of the client, as they are for all objects.  The default
+behavior of <var>New</var> is to connect the player to the mob with the same
+key as the player.  If none is found, one will be created.  If there is a
+mob defined to have the same key, that type of mob will be used; otherwise
+world.mob is used.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>New</var> </td>
+<td> (Topic) </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Topic</code> is the initial topic being accessed. </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>usr</code> is the mob with the same key as the player (if any). </td>
+</tr>
+<tr><td>
+             </td>
+<td> Returns the mob selected for the player.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Normally an initial topic is not specified when a player connects.  However,
+it may be useful in some situations.  By default, once a mob has been
+selected, the <var>Topic</var> proc is called to handle it.
+</p><p>
+You could override the <var>New</var> proc to ban certain keys from connecting.
+</p><p>
+
+</p><pre>client/New()
+   if(key == "Real Jerk") return //sorry pal!
+   return ..()
+</pre>
+<p>
+
+</p></a></li>
+</body>
+</html>

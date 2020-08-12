@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 18</h1>
+ <h2 align="center">User-Defined Data Objects</h2>
+
+
+<p>
+</p>
+<blockquote>  He touched the fish, saying in a terrible voice, `Fish, fish, are you
+  doing your duty?' To these words the fish lifting up their heads replied,
+  `Yes, yes.  If you reckon, we reckon.  If you pay your debts, we pay
+  ours.  If you fly, we conquer, and are content.'
+</blockquote>
+<center>--<i>The Vizier who was Punished</i>, The Arabian Nights</center>
+
+<p>
+Most of the time, the data objects you create will be pre-defined, or at
+least derived from one of the pre-defined types.  However, it is possible to
+make your own datum from scratch.  Such an object may be useful for
+your own specialized purpose when you don't need all the extra baggage
+associated with the built-in types.
+</p>
+<p>
+<a name="18.1">
+</a></p>
+<h3><a name="18.1">1. Defining a Datum</a></h3>
+<a name="18.1">
+<p>
+To define a new data type, simply derive it from the root, rather than from
+an existing object type.  The following code demonstrates the syntax by
+defining a <code>Quest</code> datum.
+</p><p>
+
+</p><pre>Quest
+   var
+      mob/sponsor
+      quest_obj_type
+      reward_obj_type
+      desc
+
+   proc
+      Check()
+         var/mob/M
+         var/obj/O
+         for(M in view(sponsor,1))
+            O = locate(quest_obj_type) in M
+            if(O)
+               Reward(M,O)
+               return 1
+      Reward(mob/M,obj/O)
+         var/obj/R = new reward_obj_type(M)
+         O.Move(sponsor)
+         M &lt;&lt; "You have completed the quest!"
+         M &lt;&lt; "[sponsor] takes [O] and rewards you with \an [R]."
+</pre>
+<p>
+As you can see, object variables and procs are defined just as with any
+other data object.  Inheritance works the same too, so you can derive new
+types from ones you have already defined.
+</p></a><p><a name="18.1">
+</a><a name="18.2">
+</a></p>
+<h3><a name="18.2">2. Object Variables</a></h3>
+<a name="18.2">
+<p>
+Generic data objects are intended to have as small of a pre-defined
+"footprint" as possible.  As a result, there are very few built-in
+variables.  These are described in the following list.
+</p><p>
+
+</p><p>
+
+</p><li><b>type</b> contains the type path of the object.
+<p>
+
+</p></li><li><b>tag</b> contains an optional unique text identifier for the object.
+Once you have assigned this, you may use <var>locate(<it>tag</it>)</var> to get
+a reference to the datum.
+<p>
+
+</p></li></a><li><a name="18.2"><b>vars</b> is the list of variables belonging to the object.  The
+items in the list are the variable names.  Each one is associated with the
+value of the variable itself.  See section </a><a href="../../C%3A/Users/trist/Desktop/chap12.html#AdvancedSavefiles">12.7</a> for an
+example.
+<p>
+
+</p><p>
+<a name="18.3">
+</a></p><h3><a name="18.3">3. Object Procedures</a></h3><a name="18.3">
+
+</a><p><a name="18.3">
+There are only a few pre-defined procedures for data objects.  These all
+have the same meaning as for the atomic objects which have already been
+introduced.  Figure </a><a href="#AbstractProcs">18.27</a> lists the procedures and the page
+where you may find a full description.
+</p><p>
+
+</p><center><h3>Figure 18.27: Abstract Object Procedures</h3></center>
+<a name="AbstractProcs">
+
+<table border="0" align="center">
+<tbody><tr><td>
+
+<b>Procedure</b> </td>
+<td> <b>See Page</b> </td>
+</tr>
+<tr><td>
+
+<var>New</var>       </td>
+<td> <a href="../../C%3A/Users/trist/Desktop/chap07.html#NewDel">[7.2]</a> </td>
+</tr>
+<tr><td>
+<var>Del</var>       </td>
+<td> <a href="../../C%3A/Users/trist/Desktop/chap07.html#NewDel">[7.2]</a> </td>
+</tr>
+<tr><td>
+<var>Topic</var>     </td>
+<td> <a href="../../C%3A/Users/trist/Desktop/chap07.html#ObjectTopic">[7.6]</a> </td>
+</tr>
+<tr><td>
+<var>Read</var>      </td>
+<td> <a href="../../C%3A/Users/trist/Desktop/chap12.html#ReadWrite">[12.4]</a> </td>
+</tr>
+<tr><td>
+<var>Write</var>     </td>
+<td> <a href="../../C%3A/Users/trist/Desktop/chap12.html#ReadWrite">[12.4]</a> </td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+
+</a><p><a name="AbstractProcs">
+</a><a name="18.4">
+</a></p><h3><a name="18.4">4. Creation of Data Objects</a></h3><a name="18.4">
+
+<p>
+The <var>new</var> instruction is used to create data objects and <var>del</var>
+is used to destroy them.  The following example shows how the previously
+defined quest object might be used.
+</p><p>
+
+</p><pre>mob/king
+   var/quests[0]
+
+   verb/beg()  //get a new quest
+      set src in view()
+      var/Quest/q = RandQuest()
+      usr &lt;&lt; q.desc
+      quests += q
+
+   verb/bow()  //finish quest
+      set src in view()
+      var/Quest/q
+      for(q in quests)
+         if(q.Check())
+            quests -= q
+            return
+</pre>
+
+<pre>   proc/RandQuest()
+      var/qtype = pick(typesof(/Quest) - /Quest)
+      var/Quest/q = new qtype()
+      q.sponsor = src
+      return q
+</pre>
+
+<pre>Quest/Goblin
+   quest_obj_type = /obj/corpse/goblin
+   reward_obj_type = /obj/potion/newlife
+   desc = "Bring us the head of a goblin and ye shall have new life!"
+
+Quest/Ring
+   quest_obj_type = /obj/magic_ring
+   reward_obj_type = /obj/wand/lightning
+   desc = "Bring us a golden ring and thy reward shall be great!"
+</pre>
+<p>
+By begging the king, one receives a new quest.  With the requested object
+in hand, one must simply bow before the king to receive the reward.  The
+<var>typesof</var> instruction was used here to pick a quest randomly from all
+that are defined in the code.
+</p><p>
+Obviously one could add all sorts of improvements to this basic system.  For
+example, other types of rewards and requests could be added.  However, it is
+a good start and a nice demonstration of a user-defined datum.
+</p><p>
+
+</p><p>
+Note that we never bothered to delete the quest when it was finished but
+simply remove it from the list.  Since there are no longer any references to
+the object anywhere, it will be automatically deleted by the garbage
+collector.
+
+</p></a></li>
+</body>
+</html>

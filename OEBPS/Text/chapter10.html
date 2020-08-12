@@ -1,0 +1,1304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 10</h1>
+ <h2 align="center">Lists</h2>
+
+<a name="ListChapter">
+
+<p>
+</p><blockquote>  The dark and chilling silence was broken by the blood curdling scream of a
+  modem.  One witness later identified it as 28.8 kbaud from the final
+  strangulated burst of static.
+</blockquote>
+<center></center>
+
+<p>
+A list is a data object which contains a number of values.  The items in the
+list are numbered 1, 2, 3, to the last in the list.  This number is called
+the <em>index</em> of the item and is used to access it.  This makes the list
+datum in DM similar to an array in the C language.
+</p></a><p><a name="ListChapter">
+</a><a name="10.1">
+</a></p>
+<h3><a name="10.1">1. Declaring a List</a></h3>
+<a name="10.1">
+
+<p>
+There are several ways to declare a list variable.  One is to use the
+<var>list</var> object type as you would with any other type of variable.  The
+others use a special syntax designed specifically for lists.
+</p><p>
+</p><center>
+<table border="0"><tbody><tr><td>
+<ol>
+<li>var/list/mylist
+</li>
+<li>var/mylist[]
+</li>
+<li>var/mylist = <var>new</var> /list(<it>size</it>)
+</li>
+<li>var/mylist[<it>size</it>]
+</li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+</center>
+<p>
+The first and second methods are identical.  They define a list variable.
+Note however, that they do not actually create a list object.  It is just
+the same as when you define a variable of any other type (like a mob).  Only
+the type of the variable has been defined.  The contents of the variable are
+still initialized to <var>null</var>.
+</p><p>
+The third and fourth methods for defining a list create a new list object in
+addition to defining the variable.  The specified size indicates how many
+items to allocate room for in the list.  Since the size can be changed
+dynamically (that is whenever you need to), an initial size of 0 may even be
+specified.
+</p></a><p><a name="10.1">
+</a><a name="10.2">
+</a></p>
+<h3><a name="10.2">2. Accessing List Items</a></h3>
+<a name="10.2">
+</a><a name="AccessingList">
+
+<p>
+An individual item in the list may be accessed by putting the item's index
+inside braces <b>[ ]</b>.  This is called <em>indexing</em> the item.
+</p><p>
+The following (useless) example creates some objects and stores them in a
+list.
+</p><p>
+
+</p><pre>var/dwarves[7]
+
+world/New()
+   var/i
+   for(i=1,i&lt;=7,i++)
+      dwarves[i] = new/mob/dwarf()
+</pre>
+<p>
+The individual dwarves can then be accessed at any time by using their
+indices: <code>dwarves[1]</code>, <code>dwarves[2]</code> to get the first dwarf,
+second dwarf, and so on.
+</p><p>
+
+</p><p>
+It is an error to specify an index that is beyond the end of the list.
+Doing so will cause the procedure to crash.  That means you should be
+careful to stay within the bounds of the list, which brings us to the next
+topic.
+</p></a><p><a name="AccessingList">
+</a><a name="10.3">
+</a></p>
+<h3><a name="10.3">3. <var>len</var> variable</a></h3>
+<a name="10.3">
+
+<p>
+The length of a list is stored in its <var>len</var> variable.  This can be
+changed to resize the list.  More commonly it is used to find out how many
+items are in the list.
+</p><p>
+The previous example could be improved so that the number of dwarves is only
+specified in one place.
+</p><p>
+
+</p><pre>var/dwarves[7]
+
+world/New()
+   var/i
+   for(i=1,i&lt;=dwarves.len,i++)
+      dwarves[i] = new/mob/dwarf()
+</pre>
+<p>
+This is a very common use of the <var>for</var> loop.  Note the difference
+between this where we are looping over the indices of a list and the other
+type of for loop, <code>for(i in dwarves)</code>, that iterates over the items in
+the list.  The indices are necessary, as in this example, when you need to
+assign the item to a different value.
+</p></a><p><a name="10.3">
+</a><a name="10.4">
+</a></p>
+<h3><a name="10.4">4. List Procs and Operators</a></h3>
+<a name="10.4">
+<p>
+The list data object provides a number of procedures and operators for
+manipulating the items in a list.  These are described in the following
+sections.
+</p></a><p><a name="10.4">
+</a><a name="10.4.1">
+</a></p>
+<h4><a name="10.4.1">4.1 <b>+</b> and <b>+=</b> operators</a></h4>
+<a name="10.4.1">
+<p>
+The <b>+</b> operator creates a new list containing the items from the first
+list followed by those from the second list.  If the second argument is not
+a list, it is added as an individual item.
+</p><p>
+The <b>+=</b> operator behaves the same except a new list is not created.
+Instead the left-hand list is directly altered.  In cases where this is the
+desired effect, it is more efficient to use this operator than to create an
+entirely new list.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>list1</it>
+ </td>
+<td> <b>+</b>  </td>
+<td> <it>list2</it>
+ </td>
+</tr>
+<tr><td>
+<it>list1</it>
+ </td>
+<td> <b>+=</b> </td>
+<td> <it>list2</it>
+</td>
+</tr>
+</tbody>
+</table>
+
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This leads to yet another way of initializing the seven dwarves.
+</p><p>
+
+</p><pre>var/dwarves[0]
+
+world/New()
+   var/i
+   for(i=1,i&lt;=7,i++)
+      dwarves += new/mob/dwarf()
+</pre>
+<p>
+In that example, individual items are added one at a time.  In the next
+example, the ability to operate on an entire list is exercised to make an
+annoying little trap:
+</p><p>
+
+</p><pre>turf/naked_maker
+   Enter(mob/M)
+      contents += M.contents
+      return 1
+</pre>
+<p>
+Do you see what it does?  One thing you must know to understand what happens
+here is that contents lists are handled specially.  When an object enters one
+contents list, it is automatically removed from any other.  So when the
+user's contents are added to the turf's contents, all the objects in the
+user's inventory drop to the ground.  Beware of the <em>naked maker</em>!
+</p></a><p><a name="10.4.1">
+</a><a name="10.4.2">
+</a></p>
+<h4><a name="10.4.2">4.2 <b>-</b> and <b>-=</b> operators</a></h4>
+<a name="10.4.2">
+<p>
+The <b>-</b> operator does the reverse of the <b>+</b> operator.  It creates
+a new list containing the items from the first list with those from the
+second list removed.  If the second argument is not a list, only that
+individual item is removed.  If the same value exists twice, the one towards
+the end of the list will be removed first.
+</p><p>
+Similarly, the <b>-=</b> operator behaves exactly like <b>-</b> except it
+directly modifies the left-hand list.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>list1</it>
+ </td>
+<td> <b>-</b>  </td>
+<td> <it>list2</it>
+ </td>
+</tr>
+<tr><td>
+<it>list1</it>
+ </td>
+<td> <b>-=</b> </td>
+<td> <it>list2</it>
+</td>
+</tr>
+</tbody>
+</table>
+
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="10.4.2">
+</a><a name="10.4.3">
+</a></p>
+<h4><a name="10.4.3">4.3 <var>Add</var> and <var>Remove</var> procs</a></h4>
+<a name="10.4.3">
+<p>
+The <var>Add</var> and <var>Remove</var> procs behave respectively like the
+<b>+=</b> and <b>-=</b> operators.  The only difference is that
+<var>Remove</var> returns 1 if any values were actually removed and 0 if not.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Add</var>    </td>
+<td> (Item1,Item2,...) </td>
+</tr>
+<tr><td>
+<var>Remove</var> </td>
+<td> (Item1,Item2,...)
+</td>
+</tr>
+</tbody>
+</table>
+
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="10.4.3">
+</a><a name="10.4.4">
+</a></p>
+<h4><a name="10.4.4">4.4 <var>Find</var> proc</a></h4>
+<a name="10.4.4">
+
+<p>
+The <var>Find</var> proc searches for an item in the list and returns the
+index if it is found.  By default the entire list is searched, but a smaller
+section can be specified.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Find</var> </td>
+<td> (Item,Start=1,End=0) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Item</code> is the value to search for. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Start</code> is the first index to search. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>End</code> is the first index not to search. </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns the index of the item or 0 if none.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This could be used, for example, to determine which of the seven dwarves a
+given dwarf is.
+</p><p>
+
+</p><pre>mob/dwarf
+   verb/which()
+      set src in view()
+      var/n = dwarves.Find(src)
+      usr &lt;&lt; "I am the [n]\th dwarf.  Where is Snow White?"
+</pre>
+<p>
+This way, you can happily wander around asking each dwarf which one they are
+and they will tell you.  Notice the use of the <code>\th</code> text
+macro.  That produces the correct ordinal ending: 1st, 2nd, 3rd, and so on.
+</p></a><p><a name="10.4.4">
+</a><a name="10.4.4.1">
+</a></p>
+<h5><a name="10.4.4.1">4.4.1 <var>in</var> operator</a></h5>
+<a name="10.4.4.1">
+
+<p>
+The <b>in</b> operator can be used to tell you if an item is in a list.  The
+<var>Find</var> proc could be used for that purpose, but if you don't care
+about the position of the item in the list, <b>in</b> is more convenient and
+efficient.  The expression is 1 if the item exists in the list and 0 if not.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<it>item</it>
+ <b>in</b> <it>list</it>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Using this, you could check if a given dwarf is one of the seven with the
+statement <code>if(D in dwarves) ...</code>.
+</p><p>
+A more complex example using this would be a list of super-users.
+</p><p>
+
+</p><pre>var/SuperUsers[0]
+
+client/New()
+   if(key in SuperUsers)
+      usr = new/mob/DM()
+      usr.name = key
+      usr.key = key //connect the player
+   return ..()
+</pre>
+<p>
+Anyone in the special <code>SuperUser</code> list gets a mob of type <code>/mob/DM</code>.
+Everyone else gets the default <var>world.mob</var>.  Of course, you would need
+to add some keys to the <code>SuperUser</code> list for this to have any effect.
+</p></a><p><a name="10.4.4.1">
+</a><a name="10.4.5">
+</a></p>
+<h4><a name="10.4.5">4.5 <var>Copy</var> proc</a></h4>
+<a name="10.4.5">
+
+<p>
+The <var>Copy</var> proc creates a new list from the contents of all or part
+of the source list.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Copy</var> </td>
+<td> (Start=1,End=0) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Start</code> is the first index to copy. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>End</code> is the first index not to copy. </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns a new list.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="10.4.5">
+</a><a name="10.4.6">
+</a></p>
+<h4><a name="10.4.6">4.6 <var>Cut</var> proc</a></h4>
+<a name="10.4.6">
+
+<p>
+The <var>Cut</var> proc removes a section (or all) of a list.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Cut</var> </td>
+<td> (Start=1,End=0) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>Start</code> is the first index to copy. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>End</code> is the first index not to copy.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="10.4.6">
+</a><a name="10.5">
+</a></p>
+<h3><a name="10.5">5. Creating Lists</a></h3>
+<a name="10.5">
+
+<p>
+There are several instructions in DM for creating lists.  Each one
+initializes the contents of the list in a different way.  These are
+described in the following sections.
+</p></a><p><a name="10.5">
+</a><a name="10.5.1">
+</a></p>
+<h4><a name="10.5.1">5.1 <var>list</var> instruction</a></h4>
+<a name="10.5.1">
+</a><a name="List">
+
+<p>
+The <var>list</var> instruction creates a list from its arguments.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>list</var> </td>
+<td> (Item1,Item2,...) </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns a list of the specified items.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The most common place where one uses this is in the argument definition of a
+verb.
+</p><p>
+
+</p><pre>mob/verb/set_gender(G in list("male","female","neuter"))
+   gender = G
+</pre>
+<p>
+This is a more user-friendly version of the gender changing verb.  Instead
+of having the user type into an open-ended text field, this verb restricts
+the choice of gender to three allowed values.
+</p></a><p><a name="List">
+</a><a name="10.5.2">
+</a></p>
+<h4><a name="10.5.2">5.2 <var>newlist</var> instruction</a></h4>
+<a name="10.5.2">
+
+<p>
+The <var>newlist</var> instruction creates a list of objects from the specified
+types.  It is called <em>newlist</em> because it is equivalent to
+<var>list()</var> with <var>new</var> called on each argument.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>newlist</var> </td>
+<td> (Type1,Type2,...) </td>
+</tr>
+<tr><td>
+                 </td>
+<td> Returns a new list.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This instruction can be used to initialize the contents of an object.  In the
+following example, new players will be created with two objects already in
+their inventory.
+</p><p>
+
+</p><pre>mob/player
+   contents = newlist(/obj/scroll/introduction,
+                      /obj/food/fortune_cookie)
+</pre>
+<p>
+Notice that DM permits arguments to be placed on successive lines.  That
+applies to any procedure--not just <var>newlist</var>.  Any amount of space,
+newline, and indentation may follow each comma.  When argument lists get
+very long (as they may with <var>list</var> and <var>newlist</var>), it is
+sometimes nice to format them in a column rather than a single line.
+</p></a><p><a name="10.5.2">
+</a><a name="10.5.3">
+</a></p>
+<h4><a name="10.5.3">5.3 <var>typesof</var> instruction</a></h4>
+<a name="10.5.3">
+
+<p>
+The <var>typesof</var> instruction creates a list of all the object types
+derived from the specified type of object.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>typesof</var>(Type1,Type2,...)
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This instruction often saves one from having to code the same list manually
+(and then maybe forgetting to update it when adding a new object type).  As
+an example, suppose you wanted the super-user to be able to create any
+object at will.
+</p><p>
+
+</p><pre>mob/DM
+   verb/create(TypeOfObject in typesof(/obj,/mob))
+      new TypeOfObject(usr) //Presto!
+</pre>
+<p>
+This has the user enter a raw type name (like <code>/obj</code> or
+<code>/obj/scroll</code>).  That's ok for the DM, but one could make it more
+friendly by having the user select from a list of objects rather than types.
+</p><p>
+
+</p><pre>var/objects[0]
+world/New()
+   var/T
+   for(T in typesof(/obj,/mob))
+      objects += new T
+mob/DM
+   verb/create(O in objects)
+      new O:type(usr)
+</pre>
+<p>
+The global list of objects is initialized in <var>world/New()</var>.  Of
+course to be used in this way, we are assuming that all the objects have
+unique names.  All sorts of variations are possible.  For example, you could
+have an object variable indicating if certain object types should be
+excluded from the list or if an alternative name should be used, etc.  The
+<var>typesof</var> instruction is a useful tool when writing generalized code
+such as this.
+</p></a><p><a name="10.5.3">
+</a><a name="10.6">
+</a></p>
+<h3><a name="10.6">6. Pre-Defined Lists</a></h3>
+<a name="10.6">
+<p>
+So far, you have seen several object variables which are also lists.  This
+section will review these and add a new list to your bag of tricks.
+</p><p>
+It is worth noting that the pre-defined lists are each used so frequently
+that they are implemented specially by DM for improved efficiency.  For the
+most part, they behave just like lists that you might create yourself, but
+in some cases there are subtle differences.  These will be mentioned in the
+sections that follow.
+</p></a><p><a name="10.6">
+</a><a name="10.6.1">
+</a></p>
+<h4><a name="10.6.1">6.1 contents list</a></h4>
+<a name="10.6.1">
+
+</a><a name="ContentsLists">
+<p>
+All the game objects (and the world object too) have a <var>contents</var>
+variable.  In the case of the world, this contains all mobs, objs, turfs,
+and areas.  Areas contain turfs, mobs, and objs.  In all other cases, the
+contents are mobs and objs.  No other object types may be added to these
+lists.  Each game object exists in the world contents list and possibly the
+contents of one other object, depending on whether the object's <var>loc</var>
+is <var>null</var> or not.
+</p><p>
+Order of objects in the world contents list is not meaningful.  Newer
+objects may exist before or after older objects because of the way the list
+is managed internally.  The order in all other contents lists is from oldest
+arrivals to newest, with objs first and mobs following.  This is the same
+order in which the objects are displayed on the map.
+</p><p>
+Another peculiarity about contents lists is that every object has its own
+fixed list.  It is not possible, for example, to make the contents variable
+of an object refer to another list.  If you try to assign it, the list will
+be copied rather than shared.  This is different from the normal behavior in
+which assignments merely copy references to objects rather than duplicating
+the object data.
+</p><p>
+The following example takes advantage of the order of contents to make the
+center key on the keypad pick up the top most object.
+</p><p>
+
+</p><pre>client/Center()
+   var/obj/O
+   var/obj/LastO
+
+   for(O in usr.loc) LastO = O
+   if(LastO) //top most obj
+      LastO.Move(usr)
+</pre>
+<p>
+This works by looping through the turf contents and saving a reference to
+the last one.  Another way to accomplish the same thing would be to manually
+loop through the contents list in reverse.  In either case, the reason for
+using a loop rather than just taking the last item in the contents list is
+to filter out mobs.
+</p></a><p><a name="ContentsLists">
+</a><a name="10.6.1.1">
+</a></p>
+<h5><a name="10.6.1.1">6.1.1 Area Contents</a></h5>
+<a name="10.6.1.1">
+
+<p>
+The contents of areas are handled a little differently from other objects.
+Normally, only those objects directly inside another are listed in its
+contents list.  For example, if a player is carrying around a bag object,
+the contents of the bag are not listed in the player's contents.
+</p><p>
+In the case of areas on the map, however, this would result in only turfs
+being listed in the contents of the area.  As a convenience, the contents of
+turfs are also included in areas.
+</p><p>
+Using this fact, you could make a <code>sniff</code> command which informs the user
+about other creatures in the area.
+</p><p>
+
+</p><pre>mob/wolfman
+   verb/sniff()
+      var/A = usr.loc
+
+      //loop through usr's containers
+      //until we hit an area
+      while(A &amp;&amp; !istype(A,/area))
+         A = A:loc
+
+      usr &lt;&lt; "You smell:"
+      var/mob/M
+      for(M in A)
+         usr &lt;&lt; "\a [M]"
+</pre>
+<p>
+First a reference to the user's area is obtained.  We could have just set it
+equal to <code>usr.loc:loc</code>, that is the area containing the user's turf.
+However, the method used is more general.  It works even if the user is
+inside an object other than a turf.  If that is not possible in your game,
+then you can just assume the player is always located on a turf.
+</p><p>
+The <code>\a</code> macro used in the output text generates the correct indefinite
+article for the following object.  For example it would produce "a cat" in
+one case and "an elephant" in another.  With a proper noun like "Dan,"
+it produces nothing at all.
+</p></a><p><a name="10.6.1.1">
+</a><a name="10.6.2">
+</a></p>
+<h4><a name="10.6.2">6.2 verb lists</a></h4>
+<a name="10.6.2">
+</a><a name="VerbList">
+
+<p>
+The real objects and the client object all have verb lists.  These contain a
+list of all the verbs attached to the object.  By manipulating the verb
+lists, commands can be added and removed at run-time.
+</p><p>
+A reference to a procedure is obtained by specifying the path to its
+definition.  It is this value that exists in the verb list.  Note that there
+is no difference between proc and verb references.  You can add either one
+to the list of verbs.
+</p><p>
+The next example allows a player to memorize spells from a book and thus
+permanently add a command to their repertoire.
+</p><p>
+
+</p><pre>obj/spellbook
+   verb/read_stunray()
+      usr.verbs += /obj/spellbook/proc/stunray
+   proc/stunray(mob/trg)
+      set src=usr
+      view() &lt;&lt; "[usr] immobilizes [trg] with a mysterious gesture."
+</pre>
+<p>
+To add another spell to the book, one would create a verb for reading it and
+a corresponding proc that will be added to the player's list of verbs.
+</p><p>
+Another way to add to an object's verb list is by using <var>new</var>.  This
+method also provides a way to assign a new name or description to the verb.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>new</var> </td>
+<td> Proc(Obj,Name,Desc) </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Proc</code> is a reference to an existing procedure. </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Obj</code> is the object to add the verb to. </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Name</code> is the optional new name for the verb. </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>Desc</code> is the optional new description of the verb. </td>
+</tr>
+<tr><td colspan="2">
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The <code>read_stunray</code> verb can be rewritten as follows:
+</p><p>
+
+</p><pre>obj/spellbook
+   verb/read_stunray()
+      new/obj/spellbook/proc/stunray(usr)
+</pre>
+</a><p><a name="VerbList">
+</a><a name="10.6.3">
+</a></p>
+<h4><a name="10.6.3">6.3 <var>args</var> list</a></h4>
+<a name="10.6.3">
+</a><a name="ArgsList">
+
+<p>
+The <var>args</var> list is a proc variable that contains each of the
+parameters passed to the procedure.  This can be used to create procedures
+that take an arbitrary number of arguments.
+</p><p>
+An example using this is a procedure like <var>typesof</var>, except it
+only includes final types--that is, object types with no children.
+</p><p>
+
+</p><pre>proc/final_typesof()
+   var/BaseType
+   var/DerivedType
+   var/FinalList[0]
+   for(BaseType in args)
+      for(DerivedType in typesof(BaseType))
+         var/children[] = typesof(DerivedType)
+         if(children.len == 1) FinalList += DerivedType
+   return FinalList
+</pre>
+<p>
+By using the <var>args</var> list, we allow for multiple arguments being
+specified to <code>final_typesof()</code> just like the <var>typesof()</var>
+procedure.
+</p></a><p><a name="ArgsList">
+</a><a name="10.7">
+</a></p>
+<h3><a name="10.7">7. Multi-Dimensional Lists</a></h3>
+<a name="10.7">
+
+<p>
+The lists described so far have been single-dimensional, meaning that a
+single index is specified to retrieve a value.  Multi-dimensional lists may
+also be created.  The most common case would be a two- or three-dimensional
+list used to hold some information about the map.
+</p></a><p><a name="10.7">
+</a><a name="10.7.1">
+</a></p>
+<h4><a name="10.7.1">7.1 Declaring the List</a></h4>
+<a name="10.7.1">
+<p>
+The following are two ways to declare a multi-dimensional list.
+</p><p>
+</p><ol>
+<li><code>var/MyList[5][10]</code>
+</li>
+<li><code>var/MyList[][] = new/list(5,10)</code>
+</li>
+</ol>
+<p>
+These two examples each create a 2-dimensional list.  Such a list is really a
+<em>list of lists</em>.  In this case, <code>MyList</code> is a list of five lists.
+Those five lists each have a length of ten.
+</p><p>
+Whether you use <var>new</var> to create the list or specify the size
+directly in the brackets depends on whether you know the size of the
+dimensions at the time when the variable is defined.
+</p></a><p><a name="10.7.1">
+</a><a name="10.7.2">
+</a></p>
+<h4><a name="10.7.2">7.2 Using the List</a></h4>
+<a name="10.7.2">
+<p>
+The elements in a multi-dimensional list are accessed by specifying an index
+for each dimension in brackets.  If fewer dimensions are specified, then the
+result is itself a list containing all the values for the missing dimensions.
+</p><p>
+The following example creates a copy of the map in a three-dimensional
+list.  This could be used to restore the map at a later time.
+</p><p>
+
+</p><pre>var/initmap[][][]
+
+proc/CopyMap()
+   var
+      x; y; z
+
+   initmap = new/list(world.maxx,world.maxy,world.maxz)
+   for(x=1, x&lt;=world.maxx, x++)
+      for(y=1, y&lt;=world.maxy, y++)
+         for(z=1, z&lt;=world.maxz, z++)
+            var/turf/T = locate(x,y,z)
+            initmap[x][y][z] = T.type
+</pre>
+<p>
+To get a reference to the turf at a given coordinate, the <var>locate</var>
+instruction is used.  The procedure simply loops over all coordinates on the
+map and stores the type of turf found there.
+</p></a><p><a name="10.7.2">
+</a><a name="10.8">
+</a></p>
+<h3><a name="10.8">8. Associative Lists</a></h3>
+<a name="10.8">
+
+<p>
+An associative list is one in which unique items in the list are paired with
+other values.  Associated values are accessed by using the list <em>item</em>
+as the index into the list.  The item is still accessed by using its
+numerical index.
+</p><p>
+
+</p><center><h3>Figure 10.13: An Associative List</h3></center>
+</a><a name="MaterialsList">
+<center>
+<table border="0">
+<tbody><tr><td>
+
+Index </td>
+<td> Item </td>
+<td> Value </td>
+</tr>
+<tr><td>
+1 </td>
+<td> <code>"wall"</code> </td>
+<td> <code>/turf/wall</code> </td>
+</tr>
+<tr><td>
+2 </td>
+<td> <code>"floor"</code> </td>
+<td> <code>/turf/floor</code> </td>
+</tr>
+<tr><td>
+3 </td>
+<td> <code>"door"</code> </td>
+<td> <code>/turf/door</code> </td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+</center>
+
+
+</a><p><a name="MaterialsList">
+The following code demonstrates how to construct a list such as the one in
+figure </a><a href="#MaterialsList">10.13</a>.
+</p>
+<p>
+
+</p>
+<pre>var/materials[0]
+proc/InitMaterials()
+   materials["wall"] = /turf/wall
+   materials["floor"] = /turf/floor
+   materials["door"] = /turf/door
+</pre>
+<p>
+Notice that the items <code>"wall"</code>, <code>"floor"</code>, and <code>"door"</code> are
+implicitly added to the list, merely by assigning their associated values.
+We could have begun by doing
+<code>materials.Add("wall","floor","door")</code>, but that would have
+been redundant.
+</p>
+<p>
+Having constructed the list of building materials, you can now make a verb
+that puts it to good use.
+</p>
+<p>
+
+</p>
+<pre>mob/verb
+   build(m in materials)
+      var/mtype = materials[m]
+      new mtype(usr.loc)
+</pre>
+<p>
+This provides a nicer looking list of building materials than the raw type
+paths.  Players see <code>"door"</code> instead of <code>/turf/door</code>.
+</p>
+<p>
+This example emphasizes the fact that <code>materials</code> behaves in every way
+like a list of text strings, not a list of object types.  Only when indexed
+by one of the text strings does it reveal the associated value, which in
+this case is an object type.
+</p>
+<p>
+<a name="10.8.1">
+</a></p>
+<h4><a name="10.8.1">8.1 Looping</a></h4>
+<a name="10.8.1">
+<p>
+The same methods for looping through lists work with associative lists.  In
+fact, whether a list contains associated values or not really has no bearing
+on the matter.  However, it is instructive to see how the associated value
+is accessed in the process.
+</p><p>
+Displaying the contents of the <code>materials</code> list can be done as follows.
+</p><p>
+
+</p><pre>mob/verb
+   list_materials()
+      var/m
+      for(m in materials)
+         usr &lt;&lt; "[m] = [materials[m]]"
+</pre>
+<p>
+That method loops through the items in the list.  It can also be done by
+looping through the numerical indices.
+</p><p>
+
+</p><pre>mob/verb
+   list_materials()
+      var/i
+      for(i=1,i&lt;=materials.len,i++)
+         var/m = materials[i]
+         usr &lt;&lt; "[m] = [materials[m]]"
+</pre>
+<p>
+Notice the difference between <code>materials[i]</code> and <code>materials[m]</code>.
+The first is a text string and the second is the associated object type.
+</p></a><p><a name="10.8.1">
+</a><a name="10.8.2">
+</a></p>
+<h4><a name="10.8.2">8.2 Specifics</a></h4>
+<a name="10.8.2">
+<p>
+From the preceding discussion, you can gather several things.  One is that
+numerical list items may not have associated values.  The reason is that a
+numerical index is treated differently from an object or text string index.
+The former is referred to as an <em>array</em> index and the latter is
+referred to as an <em>associative</em> index.  There is no way to specify an
+associative index for a number.  <small>(However, you could store the
+number in an object, or convert it to a text string.)</small>  
+</p><p>
+Another thing to note is that items in an associative list should generally
+be unique.  If two list entries refer to the same item, they cannot each
+have an independent association.  Instead, they share the associated value.
+</p><p>
+As long as you only add items implicitly by using them as an index in the
+assignment of an associated value, there is no need to worry about
+uniqueness.  New entries will only be formed for items which do not already
+exist.  Only if you explicitly add items (using <var>list.Add()</var> or
+<b>+=</b>) is there any possibility of duplicate items.
+</p><p>
+Another related question is what happens if you try to get the associated
+value for an item which does not exist in the list (like
+<code>materials["window"]</code>).  The result will be <var>null</var>, but the index
+item is <em>not</em> added to the list.  In this way, you can be sure that the
+list is never modified when reading from it, only when writing to it.
+</p><p>
+As a final note on the implementation, be warned that the special lists
+(such as <var>contents</var>) do not support associative values.  Of course, if
+anyone can come up with a good reason why they should, that may change.
+</p></a><p><a name="10.8.2">
+</a><a name="10.9">
+</a></p>
+<h3><a name="10.9">9. Parameter Lists</a></h3>
+<a name="10.9">
+</a><a name="ParameterLists">
+
+<p>
+One very common use for associative lists is to contain a list of parameters.
+By that, I mean a list of unique names and associated values.
+</p></a><p><a name="ParameterLists">
+</a><a name="10.9.1">
+</a></p>
+<h4><a name="10.9.1">9.1 <var>world.params</var></a></h4>
+<a name="10.9.1">
+</a><a name="WorldParamsDetails">
+</a><p><a name="WorldParamsDetails">
+The <var>world.params</var> list, mentioned in section </a><a href="../../C%3A/Users/trist/Desktop/chap08.html#WorldParams">8.1</a>, is an
+example.  It allows a world to receive arbitrary parameters from the person
+who starts it up.  While that isn't something you would want to do very
+often, it does allow a DM program to adapt to various conditions or to
+perform different functions.
+</p>
+<p>
+The <var>-params</var> command-line option to Dream Daemon is used to
+initialize the parameter list.  Multiple parameters may be assigned in a
+single argument or several <var>-params</var> may be specified.
+</p>
+<p>
+</p>
+<table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>-params</var> <it>name1</it>
+<b>=</b><it>value1</it>
+<b>&amp;</b><it>name2</it>
+<b>=</b><it>value2</it>
+<b>&amp;</b>...
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p>
+<p>
+This produces a <var>world.params</var> list with items <code>"name1"</code>,
+<code>"name2"</code>, and so on, with the corresponding associated values.  A
+semicolon <b>;</b> may be used in place of <b>&amp;</b> to separate fields.
+There are a few other special characters that will be described in the
+following section.
+</p>
+<p>
+<a name="10.9.2">
+</a></p>
+<h4><a name="10.9.2">9.2 <var>params2list</var></a></h4>
+<a name="10.9.2">
+
+<p>
+Another time when parameter lists may be useful is in topic links.  You can
+pack several pieces of information into a single text string using the same
+format as for <var>-params</var>.  The result may be tagged onto a URL as
+additional "topic" information.  In fact, the format for parameter text
+strings is borrowed from HTML forms, which use it for a similar purpose.
+</p><p>
+The <var>params2list</var> instruction handles conversion from a parameter
+text string to an associative list.  It is automatically used to generate
+<var>world.params</var> but you may invoke it yourself in other situations.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>params2list</var> </td>
+<td> (ParamText) </td>
+</tr>
+<tr><td>
+                     </td>
+<td> <code>ParamText</code> is the parameter text string. </td>
+</tr>
+<tr><td>
+                     </td>
+<td> Returns an associative parameter list.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+As a simple example, the expression
+</p><p>
+
+</p><pre>params2list("DM=James+Byond&amp;SaveFile=myworld.sav")
+</pre>
+<p>
+ would produce the following parameter list:
+</p><p>
+
+
+</p><table border="0" align="center">
+<tbody><tr><td>
+
+Index </td>
+<td> Item </td>
+<td> Value </td>
+</tr>
+<tr><td>
+1 </td>
+<td> <code>"DM"</code> </td>
+<td> <code>"James Byond"</code> </td>
+</tr>
+<tr><td>
+2 </td>
+<td> <code>"SaveFile"</code> </td>
+<td> <code>"myworld.sav"</code> </td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<p></p><p>
+Notice that <b>+</b> in the parameter text is translated into a space.  In
+this case, we could have simply used a space instead, but the official format
+encodes all characters other than letters, numbers, periods, and dashes
+specially.  <small>(The standard MIME type
+being used here is <code>application/x-www-form-urlencoded</code> for you CGI
+programmers out there.)</small>   That allows the parameter text to be used on the
+command-line or in other contexts where special characters might be
+interpreted strangely.
+</p><p>
+
+</p></a><p><a name="10.9.2">
+All special characters other than spaces are encoded using an ASCII value.
+The format is <b>%</b><var>xx</var> where <var>xx</var> are two
+hexadecimal digits representing the ASCII value.  A few common
+cases are listed in figure </a><a href="#UrlAsciiTable">10.15</a>.
+</p>
+<p>
+  <small>(Hexadecimal is a base 16 number system.  Digits 10 through 15
+are written in either upper or lowercase as <var>A</var> through <var>F</var>.)</small>  
+</p>
+<p>
+
+</p>
+<center><h3>Figure 10.15: Special Characters in Parameter Text</h3></center>
+<a name="UrlAsciiTable">
+
+<table border="0" align="center">
+<tbody><tr><td>
+
+Character </td>
+<td> Hex-code </td>
+</tr>
+<tr><td>
+
+<b>=</b>  </td>
+<td>  %3d </td>
+</tr>
+<tr><td>
+<b>&amp;</b> </td>
+<td>  %26 </td>
+</tr>
+<tr><td>
+<b>;</b>  </td>
+<td>  %3b </td>
+</tr>
+<tr><td>
+<b>+</b>  </td>
+<td>  %2b </td>
+</tr>
+<tr><td>
+<code>\n</code> </td>
+<td>  %0d%0a </td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+
+</a><p><a name="UrlAsciiTable">
+</a><a name="10.9.3">
+</a></p>
+<h4><a name="10.9.3">9.3 <var>list2params</var></a></h4>
+<a name="10.9.3">
+
+<p>
+The <var>list2params</var> instruction does the reverse of
+<var>params2list</var>.  It takes an associative list and returns the
+parameter text corresponding to it.  Special characters are automatically
+encoded in the process.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>list2params</var> </td>
+<td> (List) </td>
+</tr>
+<tr><td>
+                     </td>
+<td> <code>List</code> is the list of parameters and associated values. </td>
+</tr>
+<tr><td>
+                     </td>
+<td> Returns corresponding parameter text.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+You could use <var>list2params</var> to pack several parameters into a topic
+link.  Then when the link is executed, you could use <var>params2list</var> to
+extract the information.
+</p><p>
+The following example does that to form an inter-world communication channel.
+</p><p>
+
+</p><p>
+
+</p><pre>mob/verb/broadcast(msg as text,address as text)
+   var/plist[0]
+   plist["function"] = "broadcast"
+   plist["speaker"] = usr.key
+   plist["message"] = msg
+
+   //broadcast message to world at given address
+   world.Export("[address]#[list2params(plist)]")
+
+//here is where we receive messages from other worlds
+world/Topic(T)
+   var
+      plist = params2list(T)
+      function = plist["function"]
+
+   if(function == "broadcast")
+      var
+         speaker = plist["speaker"]
+         message = plist["message"]
+
+      world &lt;&lt; "[speaker] broadcasts, '[message]'"
+   else return ..()
+</pre>
+
+</a>
+</body>
+</html>

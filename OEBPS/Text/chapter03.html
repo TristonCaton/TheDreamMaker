@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 3</h1>
+ <h2 align="center">Objects in the Tree</h2>
+
+<a name="ObjectChapter">
+
+
+<p>
+</p><blockquote>  As mind is the witness and reality of all dream-objects, so soul
+  is the only reality in the diversities of this universe.
+</blockquote>
+<center>--Bhagavat Gita</center>
+
+<p>
+There are four basic object types.  Each has its own special properties, as
+well as those that they all share.  The basic objects are
+<em>mob</em>, <em>obj</em>, <em>turf</em>, and <em>area</em>.  There are other
+objects as well, but these four are the ones which are visible to players.
+We call them <em>atomic</em> objects.
+</p><p>
+The simplest difference between them is the order in which they appear on
+the map.  Areas are drawn in the first layer.  The icon of an area is often
+simply a solid background color.  Turfs are drawn on top of areas; these
+usually represent some type of terrain like grass, roads, or walls.  Objs
+are drawn next, and might stand for items such as swords or cookies.  Mobs
+are drawn on top of everything else.  They normally represent players or
+computer-controlled creatures.  <small>(The term <em>mob</em> stands for
+<em>mobile object</em>.  It is also suggestive of <em>monster</em>, which is a
+common role they play.)</small>  
+</p><p>
+On the map, the mobs and objs are said to be <em>contained</em> by the turf.
+That in turn is contained by the area.  It is also possible for mobs and
+objs to contain things.  For example, a chest obj might contain a bunch of
+treasure items; and a player's mob could contain all the player's
+possessions.
+</p><p>
+Notice how I keep using words like `might,' `could,' or `normally.' That is
+because DM gives you, the designer, a great deal of flexibility.  Many of
+the basic object properties were defined with a particular purpose in mind.
+That doesn't mean you have to use them that way.  The meaning of the game
+objects is up to you.
+</p><p>
+
+</p><center><h3>Figure 3.4: Atomic Objects from Lowest to Highest Drawing Layer</h3></center>
+
+<table border="0" align="center">
+<tbody><tr><td>
+
+<b>a</b>rea </td>
+</tr>
+<tr><td>
+<b>t</b>urf </td>
+</tr>
+<tr><td>
+<b>o</b>bj </td>
+</tr>
+<tr><td>
+<b>m</b>ob </td>
+</tr>
+<tr><td>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+
+</a><p><a name="ObjectChapter">
+</a><a name="3.1">
+</a></p>
+<h3><a name="3.1">1. Object Properties</a></h3>
+<a name="3.1">
+
+</a><p><a name="3.1">
+First let us look at the properties that all of the objects have in common.
+We have already seen that they each have a name and an icon.  These are
+variables.  (There are also some procs, but the discussion of those takes
+place later in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap07.html#ObjectProcChapter">7</a>.)  Here is a list of each
+variable and a description of its purpose.
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<li><b>name</b>
+<p>
+This is the name of the object, which by default is the same as the type
+(i.e. node) name with any underscores replaced by spaces.
+</p><p>
+
+</p></li>
+<li><b>gender</b>
+<p>
+The grammatical gender of the object may be set using this variable.  The
+possible values are <code>"neuter"</code>, <code>"male"</code>, <code>"female"</code>, and
+<code>"plural"</code>.  The default is <code>"neuter"</code>.
+</p><p>
+
+</p></li>
+<li><b>desc</b>
+<p>
+This is a description of the object.  It often appears in the "stat"
+panels when the player examines the object.  Controlling the content of
+those panels will be discussed in section <a href="../../C%3A/Users/trist/Desktop/chap07.html#StatProc">7.3</a>.
+</p><p>
+
+</p></li>
+<li><b>suffix</b>
+<p>
+This is some text commonly displayed after the name of the object in the
+"stat" panels.  For example, this could indicate the status of equipment
+items: <code>"(weapon in hand)"</code>, <code>"(worn on body)"</code>, and so on.
+</p><p>
+
+</p></li>
+<li><b>text</b>
+<p>
+This is a single character used to represent the object on a non-graphical
+map.  If you have ever played rogue or any of its derivatives, you will know
+what this means.
+</p><p>
+
+</p></li>
+<li><b>icon</b>
+<p>
+This is the icon file used to graphically represent the object.
+</p><p>
+
+</p></li>
+<li><b>icon_state</b>
+<p>
+Icon files may contain several alternate representations for an object.
+For example, a door could be open or closed.  This variable is the name of
+the currently active state.
+</p><p>
+
+</p></li>
+<li><b>dir</b>
+<p>
+This is the direction the object is facing.  Some icons may be directional,
+meaning that they look different depending on which way the object is
+pointed.  This is most often used for mobs, which change direction as they
+move around.
+</p><p>
+
+</p></li>
+<li><b>overlays</b>
+<p>
+This is a list of icons or object types which appear on top of the object's
+main icon.
+</p><p>
+
+</p></li>
+<li><b>underlays</b>
+<p>
+This is a list of icons or object types which appear underneath the object's
+main icon.
+</p><p>
+
+</p></li>
+<li><b>visibility</b>
+<p>
+This is 1 or 0 to indicate whether the object is visible.
+</p><p>
+
+</p></li>
+<li><b>luminosity</b>
+<p>
+This is 0 to 6 to indicate how far the object emits light.  Only areas are
+luminous by default, which has the effect of casting light on everything
+else in the area.
+</p><p>
+
+</p></li>
+<li><b>opacity</b>
+<p>
+This is 1 or 0 depending on whether the object blocks light.  An opaque
+object will block the view of objects behind it.
+</p><p>
+
+</p></li>
+<li><b>density</b>
+<p>
+This is 1 or 0 to indicate whether the object fills up the space it
+occupies.  Only mobs are dense by default.  Normally, no two dense objects
+may occupy the same position (but you will see how to circumvent that in
+section <a href="../../C%3A/Users/trist/Desktop/chap07.html#MovementProcs">7.1</a>).
+</p><p>
+
+</p></li>
+<li><b>contents</b>
+<p>
+This is a list of all the objects directly inside of an object.  The term
+often used in the case of mobs is <em>inventory</em>.  You will learn more
+about this and lists in general in chapter&#160;<a href="../../C%3A/Users/trist/Desktop/chap10.html#ListChapter">10</a>.
+</p><p>
+
+</p></li>
+<li><b>verbs</b>
+<p>
+This is a list of the verbs (that is, commands) associated with the object.
+These will be discussed in chapter&#160;<a href="../../C%3A/Users/trist/Desktop/chap04.html#VerbChapter">4</a>.
+</p><p>
+
+</p></li>
+<li><b>type</b>
+<p>
+This is the type path of the object.  For example, it might be
+<tt>/turf</tt> or <tt>/turf/trap</tt>.  You could look at this value in a
+procedure in order to find out what type of object you are dealing with.
+</p><p>
+
+</p><p>
+<a name="3.1.1">
+</a></p><h4><a name="3.1.1">1.1 Location</a></h4><a name="3.1.1">
+</a><p><a name="3.1.1">
+The following location variables apply to all object types except areas,
+which never exist inside other objects.  These variables are only used in
+proc code, which will be discussed in chapter&#160;</a><a href="../../C%3A/Users/trist/Desktop/chap06.html#ProcChapter">6</a>.
+</p><p>
+
+<a name="LocVars">
+</a></p><p><a name="LocVars">
+
+</a></p></li>
+<li><a name="LocVars"><b>loc</b>
+<p>
+This indicates the container of an object.  In other words, if object A
+contains object B, B's loc will be equal to A, and B will exist in A's
+contents list.
+</p><p>
+
+</p></a></li>
+<li><a name="LocVars"><b>x, y, z</b>
+<p>
+These indicate the position of an object on the map.  Valid coordinates
+start at (1,1,1).  The x and y coordinates represent east/west and
+north/south positioning, respectively.  The z coordinate specifies the map
+level.
+</p><p>
+
+</p></a><p><a name="LocVars">
+</a><a name="3.1.2">
+</a></p><h4><a name="3.1.2">1.2 Additional Mob Properties</a></h4><a name="3.1.2">
+</a><a name="MobVars">
+<p>
+In addition to these commonly held variables, mobs add a few of their own.
+</p><p>
+
+</p><p>
+
+</p></a></li>
+<li><a name="MobVars"><b>key</b>
+<p>
+This is the login name of the player.  By default, when a new mob is created
+for a player, the mob's name is set equal to this.  Every key is
+unique--even when stripped of punctuation and ignoring case.  That makes it
+a good way to keep track of people.
+</p><p>
+
+</p></a></li>
+<li><a name="MobVars"><b>ckey</b>
+</a><p><a name="MobVars">
+This is the player's key in canonical form (stripped of punctuation and
+converted to lowercase).  This is useful when saving information about the
+player for future use.  More will be said about doing that in
+chapter&#160;</a><a href="../../C%3A/Users/trist/Desktop/chap12.html#SavefileChapter">12</a>.
+</p><p>
+
+</p></li>
+<li><b>client</b>
+<p>
+This is the player's client object (if any).  The client object will be
+described in chapter&#160;<a href="../../C%3A/Users/trist/Desktop/chap09.html#ClientChapter">9</a>.
+</p><p>
+
+</p></li>
+<li><b>sight</b>
+<p>
+This value controls special visual powers of a mob, permitting sight of
+invisible or obscured objects.  It can be one or more of the following
+numerical constants added together: SEEINVIS, SEEMOBS,
+SEEOBJS, SEETURFS, BLIND.
+</p><p>
+  <small>(
+  Normally, one uses the bitwise OR operator <b>|</b> to combine sight
+  values.  However, you can use a plain old <b>+</b> as long as you don't
+  include the same value more than once.
+)</small>  
+</p><p>
+
+</p></li>
+<li><b>group</b>
+<p>
+This is a list of one's mob friends.  It serves the very practical purpose
+of avoiding traffic problems.  When a friend tries to move past another, the
+two switch places.  Otherwise it can be rather annoying to continually bump
+into each other.  This variable would be manipulated in the proc code.
+</p><p>
+
+</p><p>
+<a name="3.2">
+</a></p><h3><a name="3.2">2. Assigning Variables</a></h3><a name="3.2">
+<p>
+
+</p><p>
+By assigning a few variables, one can create a wide variety of objects.
+This is done in the object definition.  For example, here are a few
+different combinations of opacity and density.
+</p><p>
+
+</p><pre>turf
+   floor
+      icon = 'floor.dmi'
+
+   wall
+      icon = 'wall.dmi'
+      density = 1
+      opacity = 1
+
+      secret_door
+         name = "wall"
+         density = 0
+
+   window
+      icon = 'window.dmi'
+      density = 1
+</pre>
+<p>
+This example defines four turfs: <code>floor</code>, <code>wall</code>, <code>secret_door</code>,
+and <code>window</code>.  One can walk and see across the floor but not the wall.
+The secret door is just like a wall, except one can walk through it.  To
+round out the set, the window is transparent but not traversable.
+</p><p>
+Notice how we had to explicitly set the name of the secret door to
+<code>wall</code> to prevent the default <code>secret door</code> from taking effect.  You
+would also need to do this if you wanted the name to contain a character
+that is not allowed in a node name.
+</p></a><p><a name="3.2">
+</a><a name="3.2.1">
+</a></p><h4><a name="3.2.1">2.1 Constant Values</a></h4><a name="3.2.1">
+<p>
+This example illustrates three basic types of values: numbers, text strings,
+and resource files.  These are called constant values.
+</p></a><p><a name="3.2.1">
+</a><a name="3.2.1.1">
+</a></p><h5><a name="3.2.1.1">2.1.1 Numbers</a></h5><a name="3.2.1.1">
+<p>
+
+</p><p>
+Numerical constants may be positive or negative, integer or floating point,
+and can make use of scientific notation.  For example 3.15e7 or 31500000 is
+approximately the number of seconds in a year.  The maximum possible value
+is 3.4e38 and the smallest is 1.4e-45.  <small>(The numerical limits are
+those of a single-precision IEEE floating point value, in case you were
+wondering.)</small>  
+</p></a><p><a name="3.2.1.1">
+</a><a name="3.2.1.2">
+</a></p><h5><a name="3.2.1.2">2.1.2 Text</a></h5><a name="3.2.1.2">
+</a><a name="TextConstants">
+
+<p>
+Text constants are often simply called <em>strings</em> by programmers because
+they consist of a string of characters.  They begin and end with a double
+quote.  There are several special <em>text macros</em> that can be used inside
+the text.  For example, a name is assumed to be a proper noun if it is
+capitalized.  You can override that by using the <code>\improper</code> text macro.
+</p><p>
+
+</p><pre>obj/CPU
+   name = "\improper CPU"
+</pre>
+</a><p><a name="TextConstants">
+Like all text macros, <code>\improper</code> begins with a backslash.  The space
+after it serves merely as a separator and is ignored.  A complete
+description of this and other text macros will be given in section
+</a><a href="../../C%3A/Users/trist/Desktop/chap11.html#TextMacros">11.3</a>.
+</p><p>
+In this particular example, the purpose of using <code>\improper</code> is to
+modify how the name of the object is treated in output text.  As an improper
+noun, it would produce sentences like "You insert the CPU." rather than
+"You insert CPU." You will see exactly how to construct sentences like
+that later.
+</p><p>
+<a name="3.2.1.3">
+</a></p><h5><a name="3.2.1.3">2.1.3 Resource Files</a></h5><a name="3.2.1.3">
+
+<p>
+Resource files, such as icons or sounds are specified inside single quotes.
+For instance, to access an icon file located at
+<tt>C:\myworld\man.dmi</tt>, you would enter the value
+<code>'man.dmi'</code>.  You can make use of sub-directories within your project to
+organize things as you wish.
+</p></a><p><a name="3.2.1.3">
+</a><a name="3.2.2">
+</a></p><h4><a name="3.2.2">2.2 Constant Macros</a></h4><a name="3.2.2">
+
+<p>
+If you use a particular value in several places, you might want to define a
+macro for it, rather than repeatedly entering the same value.  This is also
+useful if you want to be able to easily change the value in the future.
+Rather than hunt for it in your code, you can simply change the definition.
+To easily identify them in the code, it is standard practice to capitalize
+macros.  Example:
+</p><p>
+
+</p><pre>#define MASTER_KEY "Dan"  //The all-powerful super-user!
+
+mob/DM
+   key = MASTER_KEY
+</pre>
+<p>
+This example defines a special mob type for use by the DM (Dungeon Master,
+Dream Maker, Dan Maestro, or whatever self-serving title you desire).  No
+code has been included to this effect, but one could give the DM all sorts
+of awesome powers to manage the game.  By defining the <code>MASTER_KEY</code>
+macro at the beginning of the code, it is easy to notice and change at a
+later date (say if someone else takes over).
+</p><p>
+When players log in, before creating a mob for them, a search is first made
+to find an existing mob or type of mob with the corresponding key.  If one is
+found, that mob becomes the player's avatar.  Otherwise, a new mob is
+created for the purpose and assigned the player's key.  Therefore, a player
+who logs out and comes back later would normally re-inhabit the same mob.
+</p></a><p><a name="3.2.2">
+</a><a name="3.3">
+</a></p><h3><a name="3.3">3. Putting It All Together</a></h3><a name="3.3">
+<p>
+As a demonstration of all four basic object types, consider the following
+example:
+</p><p>
+
+</p><pre>area/dark
+   luminosity = 0
+
+obj/torch
+   icon = 'torch.dmi'
+   luminosity = 3
+
+turf
+   floor
+      icon = 'floor.dmi'
+   wall
+      icon = 'wall.dmi'
+      density = 1
+
+mob/DM
+   key = "Dan"
+   density = 0  //I can walk through walls!
+</pre>
+<p>
+Make the necessary icons and a map.  Spread the dark area out over part of
+the map to see what effect it has when you walk around in it.  If you change
+the name of the DM's key to match your own, you should be able to walk
+through walls.
+</p><p>
+If you play around with this code a bit, you will undoubtedly run into
+things that you are not sure how to do yet.  For example, what if you want
+the DM to be able to turn off the special ability of walking through walls
+at will?  How about a command to create a torch with the wave of a hand?
+Such actions require the stronger magic of verb procedures.  Read on!
+
+</p></a></li>
+</body>
+</html>

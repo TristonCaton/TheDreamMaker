@@ -1,0 +1,772 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 19</h1>
+ <h2 align="center">Managing Code in Large Projects</h2>
+
+<a name="BigProjectChapter">.
+
+<p>
+</p><blockquote>  It can happen--if you practice the Art of Memory--that the symbols you put
+  next to one another will modify themselves without your choosing it, and
+  that when next you call them forth, they may say something new and
+  revelatory to you, something you didn't know you knew.
+</blockquote>
+<center>--<i>John Crowley</i>, Little Big</center>
+
+<p>
+So far the examples given have been quite small and would therefore be most
+easily handled in a single <tt>.dm</tt> code file.  However, for large
+projects, it may be advantageous to split your code up into several files.
+For example, the basic combat system might be defined in one file, monsters
+in another, magic scrolls in another, and so on.  In some cases, different
+people may be working on various aspects of the project, making it
+convenient to split the code along those lines.
+</p><p>
+Another reason to use multiple files is to write code which can be re-used
+in multiple projects.  Such files are often called <em>library</em> files.
+You may define such files yourself or you may use some that other people
+have created.
+</p></a><p><a name="BigProjectChapter">
+</a><a name="19.1">
+</a></p>
+<h3><a name="19.1">1. Including Files</a></h3>
+<a name="19.1">
+
+<p>
+The contents of one source file may be inserted into another by using the
+<var>#include</var> command.  There are two forms depending on where you want
+the compiler to look for the file.  In one case it only looks in the library
+directory and in the other it looks in the current directory first and then
+in the library directory if necessary.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>#include</var> </td>
+<td> &lt;libfile&gt; </td>
+</tr>
+<tr><td>
+<var>#include</var> </td>
+<td> <code>"</code>dmfile<code>"</code> </td>
+</tr>
+<tr><td>
+                   </td>
+<td> <code>libfile</code> is a library file. </td>
+</tr>
+<tr><td>
+                   </td>
+<td> <code>dmfile</code> is a source code file. </td>
+</tr>
+<tr><td colspan="2">
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+If the same file is included multiple times, only the first request is
+processed.  This prevents trouble in cases where several files in a project
+all include the same library file.
+</p><p>
+All projects implicitly include the file
+<tt>&lt;stddef.dm&gt;</tt> at the top of the code.  This file
+defines a few standard constants and makes some basic definitions.
+</p><p>
+Besides inserting source code files (ending in <tt>.dm</tt>), the
+<var>#include</var> command is also used to attach map files (ending in
+<tt>.dmm</tt>) to a project.  The syntax is the same in either case.  Map
+files are inserted into the main world map in successive z-levels and the x-y
+boundaries of the main map are automatically adjusted to fit the largest map
+which is included.
+</p><p>
+</p><hr/>
+<center><h3>Figure 19.28: Pre Pre-processing</h3></center>
+<p>
+If you are using the Dream Maker interface to manage your project, you will
+very rarely have to use the standard <var>#include</var> and
+<var>#define</var> <var>FILE_DIR</var> macros.  The reason is that Dream Maker
+automates these functions through the interface.
+</p><p>
+As mentioned earlier, code and map files are included by selecting the
+corresponding check-boxes in the file tree.  The file referencing is handled
+with similar ease.  All files in the project directory and below are
+automatically recognized without the need to supply directories or manually
+create <var>FILE_DIR</var> entries.  For instance, if your project is in the
+directory <tt>world</tt>, you may access the file
+<tt>world/icons/mobs/warrior.dmi</tt> by simply supplying the name,
+<tt>warrior.dmi</tt>.  
+</p></a><p><a name="19.1">
+One time when you might need to use <var>#include</var> directly is to force
+a file to be processed before the code which follows.  Section
+</a><a href="#CodeOrder">19.3.1</a> describes the few situations in which the order of DM source
+code does matter.
+</p>
+<p>
+</p>
+<hr/>
+<p>
+<a name="19.2">
+</a></p>
+<h3><a name="19.2">2. The Preprocessor</a></h3>
+<a name="19.2">
+
+<p>
+The <var>#include</var> command is one of several <em>preprocessor</em>
+commands.  They all begin with "<b>#</b>" and are placed on a line by
+themselves.  <small>(The DM preprocessor is identical to the one used in C
+and C++ compilers.  The commands are often called <em>preprocessor
+directives</em> by C programmers.)</small>   The preprocessor handles such commands while
+the code file is initially being read and can be used to alter the
+appearance of the file as seen by the compiler.  Additional preprocessor
+commands will be described in the following sections.
+</p></a><p><a name="19.2">
+</a><a name="19.2.1">
+</a></p>
+<h4><a name="19.2.1">2.1 <var>#define</var></a></h4>
+<a name="19.2.1">
+
+<p>
+The <var>#define</var> command creates a preprocessor macro.  Any subsequent
+occurrences of the macro in the code will be replaced by the contents of the
+macro.  Places where the macro occurs as part of another word or inside a
+text string do not count and will not be substituted.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>#define</var> </td>
+<td> Name Value </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Name</code> is the macro name. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Value</code> is the text to substitute in its place.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This and all other preprocessor commands are terminated by the end of the
+line.  Therefore, if you wish to extend it onto multiple lines, you must use
+<b>\</b> to escape the end of the line.
+</p><p>
+The name of the macro may consist of upper and lowercase letters as well as
+digits and the underscore, as long as the first character is not a digit.
+By convention, macros are often named in all uppercase, but this is not a
+requirement.
+</p><p>
+It is also possible to have the macro take arguments which may then be
+substituted into the replacement text as desired.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>#define</var> </td>
+<td> Name(Arg1,Arg2,...) Value </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Arg1</code> is the name of the first argument. </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Arg2</code> is the name of the second argument, etc.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+Wherever the argument names appear in the replacement text, they will be
+replaced by the values passed to the macro when it is used.  Such a macro
+can be used like a procedure, but since it operates at the textual level, it
+is possible to do things which would not be possible with a procedure.
+</p><p>
+Care should be taken when using macros in expressions.  Since the macro
+substitution simply inserts text from one place into another there is no
+guarantee that expressions within the macro will be evaluated before being
+combined with an outer expression.  To be safe, you can put parenthesis
+around macro expressions to ensure they do not get combined in some
+unforeseen way with the external code.
+</p><p>
+The following code, for example, uses this technique to prevent the bitshift
+operator <b>&lt;&lt;</b> from taking a lower order of operations
+when the macro is used in some larger expression.
+</p><p>
+
+</p><pre>#define FLAG1 (1&lt;&lt;0)
+#define FLAG2 (1&lt;&lt;1)
+#define FLAG3 (1&lt;&lt;2)
+</pre>
+</a><p><a name="19.2.1">
+</a><a name="19.2.2">
+</a></p>
+<h4><a name="19.2.2">2.2 Special Macros</a></h4>
+<a name="19.2.2">
+<p>
+There are a few macros with special meanings.  These are described in the
+following sections.
+</p></a><p><a name="19.2.2">
+</a><a name="19.2.2.1">
+</a></p>
+<h5><a name="19.2.2.1">2.2.1 <var>FILE_DIR</var></a></h5>
+<a name="19.2.2.1">
+
+<p>
+The <var>FILE_DIR</var> macro defines the search path for resource files (i.e.
+files in single quotes).  Unlike most macros, it may be defined multiple
+times in a cumulative fashion.  Subsequent definitions simply add to the
+list of paths to search.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>#define</var> </td>
+<td> <var>FILE_DIR</var> Path </td>
+</tr>
+<tr><td>
+                  </td>
+<td> <code>Path</code> is the location of resource files.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+By using this macro, you can avoid entering the full path to resource files
+but can instead just enter the name of the file and let the compiler find it
+for you.  Of course this would lead to confusion if the files in all the
+specified locations do not have unique names.  If that happens, the first
+one found will be used.
+</p><p>
+The following example is a typical case.  It simply defines two
+directories--one for icons and one for sounds.
+</p><p>
+
+</p><pre>#define FILE_DIR icons
+#define FILE_DIR sounds
+</pre>
+</a><p><a name="19.2.2.1">
+</a><a name="19.2.2.2">
+</a></p>
+<h5><a name="19.2.2.2">2.2.2 <var>DEBUG</var></a></h5>
+<a name="19.2.2.2">
+
+<p>
+The <var>DEBUG</var> macro enables the inclusion of extra debugging
+information in the dmb file.  This makes the file bigger and will result in
+very slightly slower execution of procedures.  However, the advantage is that
+when a proc crashes, it will tell you the source file and line number where
+the problem occurred.  Without the extra debugging information, only the
+name of the procedure is reported.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>#define</var> <var>DEBUG</var>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+It doesn't matter if you give <var>DEBUG</var> a value or not.  Just defining
+it turns on debugging mode.
+</p></a><p><a name="19.2.2.2">
+</a><a name="19.2.2.3">
+</a></p>
+<h5><a name="19.2.2.3">2.2.3 <var>__FILE__</var></a></h5>
+<a name="19.2.2.3">
+
+<p>
+The <var>__FILE__</var> macro is replaced by a text string containing the
+name of the current source file.  This may be useful when generating
+debugging error messages.
+</p></a><p><a name="19.2.2.3">
+</a><a name="19.2.2.4">
+</a></p>
+<h5><a name="19.2.2.4">2.2.4 <var>__LINE__</var></a></h5>
+<a name="19.2.2.4">
+
+<p>
+The <var>__LINE__</var> macro is replaced by the number of the current
+source line being read.  This too may be useful when generating debugging
+error messages.  The following example demonstrates this.
+</p><p>
+
+</p><pre>proc/MyProc()
+   //blah blah
+
+   world.log &lt;&lt; "[__FILE__]:[__LINE__]: We got this far!"
+
+   //blah blah
+</pre>
+</a><p><a name="19.2.2.4">
+</a><a name="19.2.2.5">
+</a></p>
+<h5><a name="19.2.2.5">2.2.5 <var>DM_VERSION</var></a></h5>
+<a name="19.2.2.5">
+
+<p>
+The <var>DM_VERSION</var> macro is the version number of the compiler (217 at
+the time I am writing).  This could be used by library writers when the code
+requires new language features that were not available before a certain
+version or if the syntax changed in some way.  By using conditional
+compilation or the <var>#error</var> command, one could make the library code
+adapt to earlier versions of the compiler just in case someone tries to use
+one.
+</p></a><p><a name="19.2.2.5">
+</a><a name="19.2.3">
+</a></p>
+<h4><a name="19.2.3">2.3 <var>#undef</var></a></h4>
+<a name="19.2.3">
+
+<p>
+The <var>#undef</var> command removes a macro.  In the code that follows, the
+macro will no longer be substituted.  This could be used at the end of
+library files to prevent any macros that are used internally from taking
+effect in the code that includes them.
+</p></a><p><a name="19.2.3">
+</a><a name="19.2.4">
+</a></p>
+<h4><a name="19.2.4">2.4 Conditional Compilation</a></h4>
+<a name="19.2.4">
+<p>
+The preprocessor can be used to skip sections of code conditionally.  The
+condition usually depends on the existence or value of other macros.  In
+this way you can turn on or off features in the code by configuring a few
+macro definitions at the top of the project.
+</p><p>
+The commands for conditionally compiling code are described in the following
+sections.
+</p></a><p><a name="19.2.4">
+</a><a name="19.2.4.1">
+</a></p>
+<h5><a name="19.2.4.1">2.4.1 <var>#ifdef</var></a></h5>
+<a name="19.2.4.1">
+
+<p>
+The <var>#ifdef</var> command compiles the code which follows only if the
+specified macro has been defined.  The section is terminated by the
+<var>#endif</var> command.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>#ifdef</var> </td>
+<td> Macro </td>
+</tr>
+<tr><td>
+                 </td>
+<td> //Conditional code.</td>
+</tr>
+<tr><td colspan="2">
+<var>#endif</var>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+There is also a <var>#ifndef</var> command which has the opposite effect.
+The code that follows is only compiled if the macro is <em>not</em> defined.
+</p><p>
+
+</p><p>
+The <var>DEBUG</var> macro is sometimes used to turn on certain debugging
+features in the code.  The following example demonstrates this technique.
+</p><p>
+
+</p><pre>#ifdef DEBUG
+mob/verb/GotoMob(mob/M in world)
+   set category = "Debugging"
+   usr.loc = M.loc
+#endif
+</pre>
+</a><p><a name="19.2.4.1">
+</a><a name="19.2.4.2">
+</a></p>
+<h5><a name="19.2.4.2">2.4.2 <var>#if</var></a></h5>
+<a name="19.2.4.2">
+
+<p>
+The <var>#if</var> command is a more general version of the <var>#ifdef</var>
+command because it can take any expression involving other macros and
+constants.  If the expression is true, the code which follows is compiled.
+Otherwise it is skipped.  Alternate conditions can be supplied with the
+<var>#elif</var> command and a final section to be compiled if all else fails
+may follow the <var>#else</var> command.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>#if</var> </td>
+<td> Condition </td>
+</tr>
+<tr><td>
+              </td>
+<td> //Conditional code. </td>
+</tr>
+<tr><td colspan="2">
+<var>#elif</var> Condition </td>
+</tr>
+<tr><td>
+              </td>
+<td> //Conditional code. </td>
+</tr>
+<tr><td colspan="2">
+<var>#else</var> </td>
+</tr>
+<tr><td>
+              </td>
+<td> //Conditional code. </td>
+</tr>
+<tr><td colspan="2">
+<var>#endif</var>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The condition may involve any of the basic operators but usually only uses
+the boolean operators.  One addition is the <var>defined</var> instruction
+which tests if the specified macro has been defined.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>defined</var> </td>
+<td> (Macro) </td>
+</tr>
+<tr><td>
+                 </td>
+<td> <code>Macro</code> is the name of a macro. </td>
+</tr>
+<tr><td>
+                 </td>
+<td> Returns 1 if macro has been defined and 0 if not.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+One common use of the <var>#if</var> command is to block out a section of
+code.  This is sometimes done in the course of debugging or possibly to turn
+off a feature without throwing away the code.  The following example
+demonstrates this technique.
+</p><p>
+
+</p><pre>#if 0
+   //Disabled code.
+#endif
+</pre>
+<p>
+Since DM allows comments to be nested (one inside another) it is also
+possible to accomplish the same thing by putting <code>/* */</code> around the
+disabled code.  It is a C programmer's habit to use the <var>#if</var>
+command because many C compilers get confused by nested comments.
+</p></a><p><a name="19.2.4.2">
+</a><a name="19.2.5">
+</a></p>
+<h4><a name="19.2.5">2.5 <var>#error</var></a></h4>
+<a name="19.2.5">
+
+<p>
+The <var>#error</var> command stops compilation and displays the specified
+error message.  Library writers can use this to tell the user of the library
+if something is wrong.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>#error</var> Message
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example will refuse to compile if the DM macro is not defined.
+</p><p>
+
+</p><pre>#ifndef DM
+#error You need to define DM as the name of your key!
+#endif
+</pre>
+</a><p><a name="19.2.5">
+</a><a name="19.3">
+</a></p>
+<h3><a name="19.3">3. Some Code Management Issues</a></h3>
+<a name="19.3">
+<p>
+There are a few things to keep in mind when working with large DM projects.
+First and foremost one must strive for simplicity.  The art of programming
+is mostly a matter of realizing your own limitations and compensating for
+them.
+</p><p>
+If, as the project grows, each new piece of code depends upon the details of
+every previous piece of code, the complexity of the project is growing
+exponentially.  Before you know it, the code will rise up in revolt and
+stick you in a dark smelly dungeon.  End of story.
+</p><p>
+Fortunately, most programming tasks do not require exponential complexity.
+With a good design, you can split the project into pieces which interact
+with each other in a fairly simple way.  These pieces are often called
+modules which is why this practice is termed <em>modular
+programming</em>.  <small>(It is interesting to note, however, that all such
+schemes to avoid exponentially complex code ultimately fail.  They only move
+the exponential growth to a higher level--from individual statements to
+procedures to objects and on and on.  It may be true that complexity will
+always win out in the end and that every project undergoing perpetual growth
+must periodically be redesigned from scratch in order to remain
+comprehensible.  Or perhaps this tendency is merely the result of a periodic
+increase in wisdom to offset the inevitable decline in intelligence.  In my
+own case, I know this to be a prominent factor.)</small>  
+</p><p>
+Although the term <em>module</em> can refer to any unit of code, it most often
+is embodied by a file or group of files.  The <em>public</em> parts of the
+module are those procedures, variables, and object types which are
+advertised for use by code outside the module.  This is called the module
+<em>interface</em> and defines the syntax for putting information in and
+getting results out of the module.  All other <em>private</em> material is
+considered internal to the module and is not for use by outside code.
+</p><p>
+When devising a project, one should foresee the function of the different
+component modules and have a rough idea of the interface to each one.  When
+work commences on a module, it is worth putting a description of the public
+interface in a comment at the top of the file.  This helps focus development
+along lines consistent with a good clean interface.  You will also find it a
+useful reference in the future when you or someone else needs to use the
+module.  You won't need to page through expanses of code to figure out how
+to operate your wonderful gadget.
+</p></a><p><a name="19.3">
+</a><a name="19.3.1">
+</a></p>
+<h4><a name="19.3.1">3.1 Ordering Code</a></h4>
+<a name="19.3.1">
+</a><a name="CodeOrder">
+<p>
+In many cases, the sequential order of DM code makes no difference.  For
+example, a procedure, variable, or object type may be defined before or
+after being used in the code.  This is different from some languages which
+require every symbol to be defined prior to being used.
+</p><p>
+There are a few cases, however, when the order of code does matter.  The
+preprocessor, for example, operates strictly sequentially from top to bottom
+of the code.  The principle consequence of this is that macro definitions
+must precede their use.  This is one good reason to instead use constant
+variables for the purpose when it is possible.
+</p><p>
+Another time when code sequence matters is when overriding object procedures
+or variable initializations.  If the same procedure is overridden several
+times in the same object type, subsequent versions take precedence and will
+treat previous ones as their parent procedure.
+</p><p>
+
+</p><p>
+One might, for example, add functionality to the <var>client.Topic()</var>
+procedure in several different locations in the code.  As long as you
+remember to execute the parent procedure each time, the additions are
+cumulative.
+</p><p>
+
+</p><pre>client/Topic(T)
+   if(T == "introduction")
+      usr &lt;&lt; "Once upon a time..."
+   else ..()
+
+client/Topic(T)
+   if(T == "help")
+      usr &lt;&lt; "The situation is helpless."
+   else ..()
+</pre>
+<p>
+As written, these two definitions of the <var>Topic</var> procedure can fall in
+any order with any amount of intervening code.  If one of them neglected to
+call <var>..()</var>, however, it would disable any previous versions of the
+procedure.  It is therefore good practice to always call the parent
+procedure unless you specifically wish to disable it.  Then you don't have
+to worry about maintaining any special order of the procedures.
+</p></a><p><a name="CodeOrder">
+</a><a name="19.3.2">
+</a></p>
+<h4><a name="19.3.2">3.2 Debugging Code</a></h4>
+<a name="19.3.2">
+</a><a name="Debugging">
+
+<p>
+Bugs happen.  Actually that is an understatement in large projects.  Bugs
+happen frequently.  This is fortunate, because there is nothing more
+satisfying than exterminating a bug.
+</p></a><p><a name="Debugging">
+</a><a name="19.3.2.1">
+</a></p>
+<h5><a name="19.3.2.1">3.2.1 Good Coding Habits</a></h5>
+<a name="19.3.2.1">
+<p>
+The novice programmer has far too much faith in the compiler.  The veteran
+bug hunter, however, knows that just because the code compiles doesn't mean
+it works.  It could still be infested with potential problems.
+</p><p>
+The first rule for successful debugging is to compile the code yourself.  Of
+course you do not need to generate the byte code by hand; that's what the
+compiler is for.  Compiling the code yourself means reading through the code
+you have written as though you were the compiler and making sure what the
+compiler sees matches what you intended.
+</p><p>
+The second good debugging habit is to run the code yourself.  Initialize the
+necessary variables to some typical values and step through the procedure in
+your mind.  The server can catch simple errors, but only you know what the
+code is <em>supposed</em> to do, so only you can tell the difference between
+code which runs and code which actually works.  After doing a typical case,
+also be sure to think through any exceptional cases which may occur.  For
+example, with a loop, you should verify that the first and last iteration
+will operate as expected.
+</p><p>
+After doing these pre-checks, it is, of course, vital to test the code for
+real.  This is known as <em>beating</em> on the code.  Don't be gentle.  Treat
+it roughly to expose any unforeseen weaknesses.  If it is code which responds
+to user input, try doing the usual things and then try things you wouldn't
+normally expect.
+</p><p>
+Code which has passed these three tests will be reasonably sound.  By
+catching bugs early, you save yourself a lot of trouble, because the code is
+fresh in your mind and therefore easier to decipher.  Besides, you will find
+that deciphering bug reports from other users can be even harder!
+</p></a><p><a name="19.3.2.1">
+</a><a name="19.3.2.2">
+</a></p>
+<h5><a name="19.3.2.2">3.2.2 Elusive Bugs</a></h5>
+<a name="19.3.2.2">
+
+<p>
+Even when you have been careful, some subtle problems may still
+occasionally slip through.  Hunting them down can be a frustrating
+experience, so it is good to have a few tricks up the sleeve.
+</p><p>
+There are two types of bugs: proc crashers and silent errors.  Those that
+crash procs are the result of some exceptional case occurring.  For example,
+the code might be trying to access an object's variable but the object
+reference is <var>null</var>.  Allowing this sort of case to silently slide by
+(by pretending the variable of the non-existent object is <var>null</var>, for
+example) might be a convenient thing to do in some cases, but in others it
+might cover up a genuine error that needs to be corrected by the
+programmer.  Crashing the procedure and reporting the problem therefore
+makes it much easier for you to discover the problem and find its source.
+</p><p>
+
+</p><p>
+When the procedure crashes, some diagnostic information is output to
+<var>world.log</var>.  When running the world directly in the client, this
+information is displayed directly in the terminal window.  With a
+stand-alone server, it is normally in the server's output but may be
+redirected to a file.
+</p><p>
+The most important part of the diagnostic information is the name of the
+procedure that crashed.  The value of the <var>src</var> and <var>usr</var>
+variables are also included.  If there are any procedures in the call stack
+(that is, the procedure which called this one, and the procedure which in
+turn called it, and so on) these are displayed.
+</p><p>
+
+</p><p>
+If this is not enough information for you to locate the source of the
+problem, try compiling the world with the <var>DEBUG</var> macro defined.  This
+will add source file and line number information to the diagnostic output.
+</p><p>
+One may also need to probe around in the code to see what is going on.  This
+can be accomplished by sending your own diagnostic information to
+<var>world.log</var>.  For example, you might to know the value of a variable
+at a particular point in the code.  This could be done with a line like the
+following:
+</p><p>
+
+</p><pre>world.log &lt;&lt; "[__LINE__]: myvar = [myvar]"
+</pre>
+<p>
+Sometimes debugging output such as this is simply removed after fixing the
+problem, but sometimes you may want diagnostic information to appear
+whenever you are testing the code.  In this case, a macro such as the
+following may be useful.
+</p><p>
+
+</p><pre>#ifdef DEBUG
+#define debug world.log
+#else
+#define debug null
+#endif
+</pre>
+<p>
+You can then send output to <code>debug</code> and it will be ignored when not in
+<var>DEBUG</var> mode.
+</p><p>
+
+</p><p>
+Another tool for hunting bugs is to comment out code.  This may be helpful
+when determining whether a certain piece of code is responsible for an
+observed problem.  By simplifying the procedure and gradually disabling all
+but the code which causes the glitch, you can save yourself from
+scrutinizing a lot of irrelevant material.
+</p><p>
+This is also essential when asking others for help.  Nobody wants to read
+through pages and pages of somebody else's code.  If you can't see the
+problem yourself but can isolate it down to a small piece of code, you will
+find it much easier (and fruitful) when getting help from other programmers.
+Sometimes just trying to clearly define the problem enables you to suddenly
+see the solution yourself--avoiding the embarrassment altogether.
+
+</p><p>
+
+</p><p>
+
+</p></a>
+</body>
+</html>

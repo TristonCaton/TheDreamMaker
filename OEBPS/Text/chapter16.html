@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 16</h1>
+ <h2 align="center">Mathematics</h2>
+
+<a name="MathChapter">
+<p>
+</p><blockquote>  Have you ever wondered why mathematicians look at you strangely?
+  Somewhere in the digits of pi, your diary is written in plain ASCII.
+</blockquote>
+<center></center>
+
+</a><p><a name="MathChapter">
+The basic mathematical operators were already described in section
+</a><a href="../../C%3A/Users/trist/Desktop/chap06.html#MathOperators">6.10</a>.  Many additional mathematical functions are provided
+for various specialized purposes.  These are described in the following
+sections.
+</p>
+<p>
+<a name="16.1">
+</a></p>
+<h3><a name="16.1">1. Randomness</a></h3>
+<a name="16.1">
+<p>
+Chance plays a large role in many types of games, so DM provides several
+instructions that make use of randomness.  In actual fact, they all rely on a
+pseudo-random number generator which only appears to be random.  However,
+for all practical purposes, they can be relied upon to provide probabilistic
+results with no discernible pattern.
+</p></a><p><a name="16.1">
+</a><a name="16.1.1">
+</a></p>
+<h4><a name="16.1.1">1.1 <var>rand</var></a></h4>
+<a name="16.1.1">
+
+<p>
+The <var>rand</var> instruction generates a random number in the specified
+range.  The number returned is always an integer, so to get fractional
+numbers, you would need to specify some larger range and then divide the
+result.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>rand</var> </td>
+<td> (L=0,U) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>L</code> is the lower bound. </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>U</code> is the upper bound. </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns a number equal to or between <code>L</code> and <code>U</code>.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+If only a single argument is given, it is treated as the upper bound and the
+lower bound takes its default of zero.
+</p><p>
+The following example makes a potion for gamblers.
+</p><p>
+
+</p><pre>obj/potion/lucky
+   verb/drink()
+      usr.AddLife(rand(-20,20))
+</pre>
+<p>
+Depending on how lucky the user is, the potion could do anything from -20 in
+damage to +20 in healing.
+</p></a><p><a name="16.1.1">
+This code assumes the definition of an <code>AddLife()</code> procedure that handles
+healing or damaging a mob.  It would be similar to the <code>HurtMe()</code> proc
+defined in section </a><a href="../../C%3A/Users/trist/Desktop/chap06.html#HurtMe">6.1</a> but with the meaning of the argument
+reversed.
+</p>
+<p>
+<a name="16.1.2">
+</a></p>
+<h4><a name="16.1.2">1.2 <var>prob</var></a></h4>
+<a name="16.1.2">
+
+<p>
+The <var>prob</var> instruction is true or false with a probability specified
+in the form of a percentage.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>prob</var> </td>
+<td> (P) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>P</code> is the percent chance of being true.</td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns 1 <code>P</code> percent of the time, otherwise 0.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+This can be used to choose between one of two possible outcomes.  The
+following example gives a player a certain chance of bad side-effects when
+drinking a magic potion.
+</p><p>
+
+</p><pre>obj/potion/health
+   verb/drink()
+      if(prob(20)) //backfire 20% of time
+         usr.AddLife(-10)
+      else
+         usr.AddLife(20)
+</pre>
+</a><p><a name="16.1.2">
+</a><a name="16.1.3">
+</a></p>
+<h4><a name="16.1.3">1.3 <var>roll</var></a></h4>
+<a name="16.1.3">
+
+<p>
+The <var>roll</var> instruction rolls some dice for you and returns the sum
+obtained.  The sides of the dice are numbered from one to the number of sides
+and all are equally likely.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>roll</var> </td>
+<td> (dice=1,sides) </td>
+</tr>
+<tr><td>
+<var>roll</var> </td>
+<td> ("dice<b>d</b>sides") </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>dice</code> is the number of dice to roll.</td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>sides</code> is the number of sides on the dice.</td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns the sum of the dice.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The dice parameters can either be specified as two separate numerical
+arguments or as one combined text value.  The text version might be useful
+if you want to store the dice parameters in a single variable.
+</p><p>
+The following example uses <var>roll</var> to compute the impact of a weapon.
+</p><p>
+
+</p><pre>obj/weapon
+   var/power
+   clipboard
+      power = "1d4"
+   calculator
+      power = "2d6"
+
+   verb/swing(mob/trg in view(1))
+      var/damage = roll(power)
+      view() &lt;&lt; "[usr] hits [trg] with \a [src] for [damage] point\s!"
+</pre>
+<p>
+In both programming and combat, you have to make do with what you have.
+</p></a><p><a name="16.1.3">
+</a><a name="16.1.4">
+</a></p>
+<h4><a name="16.1.4">1.4 <var>pick</var></a></h4>
+<a name="16.1.4">
+
+<p>
+The <var>pick</var> instruction randomly chooses one of its arguments and
+returns that value.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>pick</var> </td>
+<td> (Val1,Val2,...) </td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns one of the given values.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+If you want to give a particular value a higher or lower chance of being
+chosen, a relative probability may be specified.  A relative probability of
+200 is twice as likely as the norm, 50 is half, and so on.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>prob</var> (</td>
+<td>P)<b>;</b> Val </td>
+</tr>
+<tr><td>
+<tt><b>Or</b></tt>    </td>
+<td>P<b>;</b> Val </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>P</code> is relative probability (default is 100). </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Val</code> is the value with the altered likelihood.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The following example uses <var>pick()</var> to implement a fortune cookie.
+</p><p>
+
+</p><pre>obj/fortune_cookie
+   verb/eat()
+      usr &lt;&lt; "The message inside says:"
+      usr &lt;&lt; pick (
+         "Never trust an undead doctor.",
+         "Only trust undead lawyers.",
+        prob(25)
+         "The throne marks the way.",
+        prob(10)
+         "The wall behind the throne is an illusion!"
+      )
+      del(src)
+</pre>
+<p>
+In this example, there are a couple messages with the normal default
+probability, one a quarter as likely, and one a tenth as likely to be seen.
+Note how <var>prob()</var> may be followed by a newline instead of a semicolon
+since the two are equivalent.  That allows you to line things up, if you are
+the lining-up sort of person.
+</p></a><p><a name="16.1.4">
+</a><a name="16.2">
+</a></p>
+<h3><a name="16.2">2. <var>abs</var></a></h3>
+<a name="16.2">
+
+<p>
+The <var>abs</var> instruction computes the absolute value of a number.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>abs</var> </td>
+<td> (N) </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>N</code> is a numerical expression.</td>
+</tr>
+<tr><td>
+             </td>
+<td> Returns the absolute value.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="16.2">
+</a><a name="16.3">
+</a></p>
+<h3><a name="16.3">3. <var>min</var></a></h3>
+<a name="16.3">
+
+<p>
+The <var>min</var> instruction returns the minimum of its arguments.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>min</var> </td>
+<td> (N1,N2,...) </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>N1</code> is the first numerical expression.</td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>N2</code> is the second and so on.</td>
+</tr>
+<tr><td>
+             </td>
+<td> Returns the minimum value.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="16.3">
+</a><a name="16.4">
+</a></p>
+<h3><a name="16.4">4. <var>max</var></a></h3>
+<a name="16.4">
+
+<p>
+The <var>max</var> instruction returns the maximum of its arguments.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>max</var> </td>
+<td> (N1,N2,...) </td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>N1</code> is the first numerical expression.</td>
+</tr>
+<tr><td>
+             </td>
+<td> <code>N2</code> is the second and so on.</td>
+</tr>
+<tr><td>
+             </td>
+<td> Returns the maximum value.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="16.4">
+</a><a name="16.5">
+</a></p>
+<h3><a name="16.5">5. <var>round</var></a></h3>
+<a name="16.5">
+
+<p>
+The <var>round</var> instruction rounds a number to the nearest specified
+multiple.  If no rounding multiple is specified (or if it is zero), the
+integer portion is returned.  Note that this is different from specifying a
+multiple of 1, which <em>rounds</em> to the nearest integer.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>round</var> </td>
+<td> (N,M) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>N</code> is the numerical expression to round. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>M</code> is the rounding multiple.  </td>
+</tr>
+<tr><td>
+               </td>
+<td> Returns the nearest multiple of <code>M</code> to <code>N</code>.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="16.5">
+</a><a name="16.6">
+</a></p>
+<h3><a name="16.6">6. <var>sqrt</var></a></h3>
+<a name="16.6">
+
+<p>
+The <var>sqrt</var> instruction computes the square root of a number.  This is
+equivalent to raising the number to the power of 1/2 using the
+<b>**</b> operator but is provided for convenience.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>sqrt</var> </td>
+<td> (N) </td>
+</tr>
+<tr><td>
+              </td>
+<td> <code>N</code> is a numerical expression.</td>
+</tr>
+<tr><td>
+              </td>
+<td> Returns the square root.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+
+</p></a>
+</body>
+</html>

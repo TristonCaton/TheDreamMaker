@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<h1 align="left">Chapter 8</h1>
+ <h2 align="center">The <var>world</var> Data Object</h2>
+
+
+
+<p>
+</p>
+<blockquote>  Is it a dream?<br/>
+
+  Nay but the lack of it the dream,<br/>
+
+  And failing it life's lore and wealth a dream,<br/>
+
+  And all the world a dream.<br/>
+
+</blockquote>
+<center>--<i>Walt Whitman</i>, Song of the Universal</center>
+
+<p>
+The object types you have seen so far are mob, obj, turf, and area.  These
+are the atomic objects seen and manipulated by players.  There are other
+types of data objects which only you, the programmer, can manipulate.  To
+distinguish between the two, we either use the term <em>atom</em> or
+<em>datum</em>.  The atoms are the physical building blocks for the world and
+the datums are intangible creatures consisting purely of data.
+</p>
+<p>
+  <small>(Yes, I know the plural of datum is data.  But that doesn't
+rhyme with atoms.  In programming, poetic concerns outweigh linguistic
+trifles.  However, I may occasionally slip and refer to them as <em>data
+objects</em>.)</small>  
+</p>
+<p>
+DM provides datums for world and player information, lists, and save files.
+You can also define your own data objects to manage information in whatever
+manner you like.  These topics will all be discussed in the following
+chapters.
+</p>
+<p>
+The <var>world</var> object is created when the server starts and destroyed
+when it finishes.  The global variable <var>world</var> contains a reference to
+this object.  The variables and procedures belonging to this object are
+defined under <tt>/world</tt>.  By changing these, you can modify the
+behavior of the game as a whole.
+</p>
+<p>
+<a name="8.1">
+</a></p>
+<h3><a name="8.1">1. <var>world</var> variables</a></h3>
+<a name="8.1">
+</a><a name="WorldVars">
+<p>
+The variables of the <var>world</var> data object are described in the
+following list.
+</p><p>
+
+</p><p>
+</p><li><b>name</b>
+
+<p>
+is the name of the world.  By default it is the same name as the <tt>dmb</tt>
+file without the extension.  Players will see this as the name of the world
+they are connected to.
+</p><p>
+</p></li><li><b>mob</b>
+
+<p>
+is the type of mob created for new players when they log in.  By
+default it is <code>/mob</code>.
+</p><p>
+</p></li><li><b>turf</b>
+
+<p>
+is the default turf to be placed on the map when none other is
+specified.  By default it is <code>/turf</code>.
+</p><p>
+</p></li><li><b>area</b>
+
+<p>
+is the default area placed on the map when none other is specified.  By
+default it is <code>/area</code>.
+</p><p>
+</p></li><li><b>maxx,maxy,maxz</b>
+
+<p>
+are the size of the map.  Normally, you would not set this in the code but
+would let the map file produced by the map editor do the job.  However, if
+you only want a map with the default turf and area, you can create it by
+specifying the size here.  These variables all default to 0 (no map at all)
+but if you set any one of them, the others will default to 1.  So, for
+example, you can set <var>maxx</var> and <var>maxy</var> without bothering to set
+<var>maxz</var> to get a one-level map.
+</p><p>
+</p></li></a><li><a name="WorldVars"><b>view</b>
+
+</a><p><a name="WorldVars">
+is the maximum view range.  The default value of 5 gives you an 11x11 map
+viewport.  The maximum value of 10 yields a 21x21 map.  More will be said
+about this in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap14.html#MapChapter">14</a>.
+</p><p>
+</p></li>
+<li><b>contents</b>
+
+<p>
+is a list of all the real objects in the world (that is mobs, objs, turfs,
+and areas).  When the <var>world</var> is used where a list is expected, this
+list will be used.
+</p><p>
+</p></li>
+<li><b>log</b>
+
+<p>
+is a useful destination for debugging output.  Text sent here is
+displayed by the server program in its output.  When running a world
+directly inside the client (the local server), the text is displayed on the
+client terminal.  Internal errors, like proc crashes, are all reported to
+<var>world.log</var>.
+</p><p>
+</p></li>
+<li><b>params</b>
+
+<a name="WorldParams">
+</a><p><a name="WorldParams">
+is a list of user-defined parameters supplied to the world before it was
+started.  More will be said about this in section </a><a href="../../C%3A/Users/trist/Desktop/chap10.html#ParameterLists">10.9</a>.
+</p><p>
+</p></li>
+<li><b>realtime</b>
+
+<p>
+is the time in 10$^ths$ of seconds since 00:00:00 GMT, January 1,
+2000 (also known as BYOND time).  The principal use for this is when you
+need to record when something happened (like when a user last logged in).
+</p><p>
+</p></li>
+<li><b>time</b>
+
+<p>
+is the length in 10$^ths$ of seconds that the world has been running
+(also known as game time).  This is actually a measure of cpu time rather
+than real time.  For example, if the server sleeps when no players are logged
+in, that time is not counted.
+</p><p>
+</p></li>
+<li><b>sleep_offline</b>
+
+<p>
+if set to 1 will cause the world to be suspended when there are no players.
+The default value is 0, which means the world will only be suspended if
+nothing is going on.  Use this variable if you don't want your NPCs to get
+up to mischief while the humans are away.
+</p><p>
+</p></li>
+<li><b>tick_lag</b>
+
+<p>
+controls the length of time between one moment and the next.  It is the
+smallest meaningful unit of time (measured in 10$^ths$ of seconds).  The
+default value is 1, which means all events in the world happen in increments
+of 0.1 seconds.  The smaller this value, the more precise timings will be,
+the faster players can issue commands, etc.  The cost of this, however, is
+in extra load on the cpu.  If it gets too high, the extra overhead can
+actually make the game run slower as a result.  More will be said on the
+subject of event timing in chapter <a href="../../C%3A/Users/trist/Desktop/chap13.html#RealtimeChapter">13</a>.
+</p><p>
+</p></li>
+<li><b>cpu</b>
+
+<p>
+is the percentage of time being used up by the server in running the
+world.  It is normally close to 0, indicating that the server is getting
+everything done ahead of schedule and then twiddling its thumbs for the rest
+of the tick.  A value over 100 would indicate that the server is not able to
+get everything done in the allocated amount of time (i.e. <var>tick_lag</var>).
+Usually, you don't need the <var>cpu</var> variable to tell you when this is
+happening.  When the game becomes sluggish (and its not a matter of network
+traffic) it probably means the cpu is overloaded.
+</p><p>
+</p></li>
+<li><b>address</b>
+
+<p>
+is the network address of the machine hosting the world or <var>null</var> if
+this cannot be determined.
+</p><p>
+</p></li>
+<li><b>port</b>
+
+<p>
+is the port number of the world or 0 if the world has no open network port.
+The full address of the world is formed by combining the world address and
+port like this: <code>"[address]:[port]"</code>.
+</p><p>
+
+
+</p><p>
+<a name="8.2">
+</a></p><h3><a name="8.2">2. <var>world</var> procs</a></h3><a name="8.2">
+</a><a name="WorldProcs">
+<p>
+The various <var>world</var> procs provide control over the server and allow
+you to respond to events which affect it.  They are described in the
+following sections.
+</p></a><p><a name="WorldProcs">
+</a><a name="8.2.1">
+</a></p><h4><a name="8.2.1">2.1 <var>New</var> and <var>Del</var></a></h4><a name="8.2.1">
+
+<p>
+Like all data objects, <var>world</var> has <var>New</var> and <var>Del</var>
+procs, which are called at creation and destruction of the world.  They do
+not take any arguments.  The only thing to happen before <var>New</var> gets
+called is initialization of global variables and creation of the map and its
+contents.  Similarly, <var>Del</var> is called prior to destroying the map and
+other existing objects.
+</p></a><p><a name="8.2.1">
+You could use these procs to perform any initialization while loading and
+cleanup when shutting down.  One common task would be to read and write
+information about the state of the world to a save file, which will be
+covered in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap12.html#SavefileChapter">12</a>.
+</p><p>
+
+</p><pre>world
+   New()
+      world.log &lt;&lt; "[name] started at [realtime]."
+      ..()
+   Del()
+      world.log &lt;&lt; "[name] shutdown at [realtime]."
+      ..()
+</pre>
+<p>
+In this example output is sent to <var>world.log</var>.  Since it may be true
+that no players are connected at the time, that is a useful destination for
+output in procs of this nature.
+</p><p>
+<a name="8.2.2">
+</a></p><h4><a name="8.2.2">2.2 <var>Repop</var> proc</a></h4><a name="8.2.2">
+
+<p>
+The <var>Repop</var> proc <em>re-populates</em> the map.  Any objects (that is
+mobs or objs) which have been destroyed and which were on the initial map
+will be recreated in their original positions.
+</p><p>
+This simple example gives the DM mob a command to restore the world's
+depleted population.
+</p><p>
+
+</p><pre>mob/DM
+   verb/repop()
+      world.Repop()
+</pre>
+<p>
+Any objects which one does not want re-populated could be created dynamically
+(that is using <var>new</var>) instead of with the map editor.  Otherwise, one
+could just avoid deleting them by moving them to the null location instead.
+Only deleted objects created with the map editor will be restored by
+<var>Repop</var>.
+</p></a><p><a name="8.2.2">
+In many cases, you might want to automatically call <var>Repop</var> every so
+often.  That will be covered later in chapter </a><a href="../../C%3A/Users/trist/Desktop/chap13.html#RealtimeChapter">13</a> on
+scheduling events.
+</p><p>
+<a name="8.2.3">
+</a></p><h4><a name="8.2.3">2.3 <var>Reboot</var> proc</a></h4><a name="8.2.3">
+
+<p>
+The <var>Reboot</var> proc causes the entire world to be recreated from
+scratch.  Any players who are connected will automatically re-login once the
+world has finished loading.
+</p><p>
+This could be used to restart the server when you have recompiled the dmb
+file with revised code.  In that case, a simple command could give the DM
+power to cause the reboot.
+</p><p>
+
+</p><pre>mob/DM
+   verb/reboot()
+      world.Reboot()
+</pre>
+<p>
+If you need to save any information about the state of the world, you could
+do so by overriding the <var>Reboot</var> proc.  This would first save the
+information and then call the parent proc to perform the reboot.
+</p></a><p><a name="8.2.3">
+</a><a name="8.2.4">
+</a></p><h4><a name="8.2.4">2.4 Inter-world Communication</a></h4><a name="8.2.4">
+</a><a name="WorldTopicProc">
+</a><p><a name="WorldTopicProc">
+It is possible for two worlds running on the network to communicate with
+each other.  This opens up some very interesting possibilities, including
+mega-worlds distributed across the network, taking advantage of the
+parallelism of multiple machines.  It is a large topic, worthy of its own
+chapter, and it shall have one.  However, this section briefly introduces
+the procs which make it possible, just to give you a complete introduction
+to the <var>world</var> data object.  For the conclusion of this story, see
+section </a><a href="../../C%3A/Users/trist/Desktop/chap12.html#World2World">12.6</a>.
+</p><p>
+<a name="8.2.4.1">
+</a></p><h5><a name="8.2.4.1">2.4.1 <var>Topic</var> proc</a></h5><a name="8.2.4.1">
+
+<p>
+The <var>Topic</var> proc receives messages from other worlds.  When worlds
+communicate, they must pick a topic of conversation--hence the name of the
+proc.  Often the topic itself is the entire message, but you will see in a
+following section how to send more data.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Topic</var> </td>
+<td> (Topic,Addr,Master) </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Topic</code> is the topic text string. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Addr</code> is the address of the remote world. </td>
+</tr>
+<tr><td>
+               </td>
+<td> <code>Master</code> is true if the sender is this world's parent. </td>
+</tr>
+<tr><td>
+               </td>
+<td> Return value is passed back to the remote world.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The return value of the <var>Topic</var> proc gets sent back to the remote
+world.  It is therefore possible to ask simple questions, by sending a
+message and getting back a response.
+</p><p>
+
+</p><p>
+The most basic question is, "are you there?"  This example shows how you
+might handle it.
+</p><p>
+
+</p><pre>world/Topic(Topic)
+   if(Topic == "ping") return 1
+   ..()
+</pre>
+<p>
+Actually, the "ping" topic is such a common one that it is built in to the
+default <var>Topic</var> proc.  The only difference is that it returns one
+plus the number of players, a useful piece of information which is always
+true.  The reason we want to return a true value is that the remote world
+will get <var>null</var> back if it tries to send a message to a non-existent
+address.
+</p></a><p><a name="8.2.4.1">
+</a><a name="8.2.4.2">
+</a></p><h5><a name="8.2.4.2">2.4.2 <var>Export</var> proc</a></h5><a name="8.2.4.2">
+
+<p>
+The <var>Export</var> proc is used to send (or <em>export</em>) a message to
+another world.  It may be used to send a file, but may also just access a
+topic.  The proc returns the value passed back by the world receiving the
+message.  If the message cannot be sent, <var>null</var> is returned.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Export</var> </td>
+<td> (Addr,File) </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>Addr</code> is the address and topic. </td>
+</tr>
+<tr><td>
+                </td>
+<td> <code>File</code> is the file to send. </td>
+</tr>
+<tr><td>
+                </td>
+<td> Returns the remote <var>Topic</var>() result.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p><p>
+The format for the address is <code>ip:port#topic</code>.  Here is an example
+that uses the "ping" topic described in the previous section.
+</p><p>
+
+</p><pre>mob/DM/verb/ping()
+   var/p = world.Export("dantom.com:6000#ping")
+   usr &lt;&lt; "Ping returned '[p]'."
+</pre>
+</a><p><a name="8.2.4.2">
+</a><a name="8.2.4.3">
+</a></p><h5><a name="8.2.4.3">2.4.3 <var>Import</var> proc</a></h5><a name="8.2.4.3">
+
+<p>
+The <var>Import</var> proc is used to receive a file which was sent from
+another world using <var>Export</var>.  It may only be used while handling a
+call to the <var>Topic</var> proc.
+</p><p>
+</p><table align="center" border="1"><tbody><tr><td>
+<table border="0">
+<tbody><tr><td>
+<var>Import</var> </td>
+<td> () </td>
+</tr>
+<tr><td>
+                </td>
+<td> Returns the downloaded file.
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p></p></a><p><a name="8.2.4.3">
+This proc is normally used to transfer a save file and will be discussed in
+greater detail in section </a><a href="../../C%3A/Users/trist/Desktop/chap12.html#World2World">12.6</a>.  However, it could be used to
+send resource files too.  The following example defines a topic that
+receives and plays a sound file to everyone in the world.
+</p><p>
+
+</p><pre>world/Topic(Topic)
+   if(Topic == "sound")
+      world &lt;&lt; Import()
+</pre>
+<p>
+Not bad for a few lines of code!  Of course, why you would want to do this is
+another question.
+
+</p></li>
+</body>
+</html>
