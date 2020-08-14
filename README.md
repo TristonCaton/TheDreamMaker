@@ -2,7 +2,7 @@
 <h3>A community led "fork" of the Dantom original!</h3>
 <hr>
 <h2>Project Goal</h2>
-<p>The goal of this project is to provide a verion of the BYOND Guide that is kept up to date by the community</p>
+<p>The goal of this project is to provide a version of the BYOND Guide that is kept up to date by the community</p>
 <hr>
 <h4>Compiling</h4>
 <p>To compile this into an ebook simply zip the root folder and change .zip to .epub</p>
